@@ -5,27 +5,95 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design system definition.
+ * Obsidian Ledger — the Sigil design system.
  *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
+ * A printed ledger struck in obsidian: warm paper-white type on near-black
+ * stock, with hot ember accents wherever your work glows. Editorial and quiet,
+ * with one moment of heat per screen.
  *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ * Never use: purple / blue-violet gradients, glassmorphism blur stacks,
+ * Inter, Roboto, Arial.
  */
 
+:root {
+  /* Surfaces */
+  --sg-bg-0: #0B0A0C;          /* app background, obsidian */
+  --sg-bg-1: #121115;          /* panels */
+  --sg-bg-2: #1A181E;          /* raised surfaces, inputs */
+  --sg-bg-3: #242129;          /* hover, selected rows */
+  --sg-border: #2E2A33;
+  --sg-border-strong: #453F4C;
+
+  /* Ink */
+  --sg-ink-0: #F3EFE8;         /* primary text, warm paper */
+  --sg-ink-1: #B9B2A6;         /* secondary text */
+  --sg-ink-2: #7C766D;         /* tertiary, placeholders */
+
+  /* Heat */
+  --sg-ember: #FF6A2B;         /* primary accent */
+  --sg-ember-glow: #FFB04A;    /* highlights, gradient end */
+  --sg-gold: #E8C36A;          /* achievements, rank */
+  --sg-verdigris: #4FD1B0;     /* success */
+  --sg-crimson: #E5484D;       /* error, destructive */
+  --sg-azure: #5B8DEF;         /* info, links */
+
+  /* Spacing scale (base 4px) */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-6: 24px; --sp-8: 32px; --sp-12: 48px; --sp-16: 64px;
+
+  /* Border radius */
+  --r-sm: 4px;  --r-md: 8px;  --r-lg: 14px; --r-xl: 22px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-elevated: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 16px 48px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 32px rgba(255, 106, 43, 0.25);
+
+  /* shadcn semantic tokens mapped onto Obsidian Ledger */
+  --radius: var(--r-md);
+  --background: var(--sg-bg-0);
+  --foreground: var(--sg-ink-0);
+  --card: var(--sg-bg-1);
+  --card-foreground: var(--sg-ink-0);
+  --popover: var(--sg-bg-2);
+  --popover-foreground: var(--sg-ink-0);
+  --primary: var(--sg-ember);
+  --primary-foreground: var(--sg-bg-0);
+  --secondary: var(--sg-bg-2);
+  --secondary-foreground: var(--sg-ink-0);
+  --muted: var(--sg-bg-2);
+  --muted-foreground: var(--sg-ink-1);
+  --accent: var(--sg-bg-3);
+  --accent-foreground: var(--sg-ink-0);
+  --destructive: var(--sg-crimson);
+  --destructive-foreground: var(--sg-ink-0);
+  --border: var(--sg-border);
+  --input: var(--sg-bg-2);
+  --ring: var(--sg-ember);
+  --chart-1: var(--sg-ember);
+  --chart-2: var(--sg-gold);
+  --chart-3: var(--sg-verdigris);
+  --chart-4: var(--sg-azure);
+  --chart-5: var(--sg-ember-glow);
+  --sidebar: var(--sg-bg-1);
+  --sidebar-foreground: var(--sg-ink-0);
+  --sidebar-primary: var(--sg-ember);
+  --sidebar-primary-foreground: var(--sg-bg-0);
+  --sidebar-accent: var(--sg-bg-3);
+  --sidebar-accent-foreground: var(--sg-ink-0);
+  --sidebar-border: var(--sg-border);
+  --sidebar-ring: var(--sg-ember);
+}
+
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --radius-2xl: calc(var(--r-lg) + 8px);
+  --radius-3xl: calc(var(--r-lg) + 12px);
+  --radius-4xl: calc(var(--r-lg) + 16px);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -46,90 +114,31 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-}
 
-:root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
-}
+  /* Obsidian Ledger named tokens */
+  --color-obsidian: var(--sg-bg-0);
+  --color-panel: var(--sg-bg-1);
+  --color-raised: var(--sg-bg-2);
+  --color-hover-surface: var(--sg-bg-3);
+  --color-ink: var(--sg-ink-0);
+  --color-ink-muted: var(--sg-ink-1);
+  --color-ink-faint: var(--sg-ink-2);
+  --color-ember: var(--sg-ember);
+  --color-ember-glow: var(--sg-ember-glow);
+  --color-gold: var(--sg-gold);
+  --color-verdigris: var(--sg-verdigris);
+  --color-crimson: var(--sg-crimson);
+  --color-azure: var(--sg-azure);
+  --color-line: var(--sg-border);
+  --color-line-strong: var(--sg-border-strong);
 
-.dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Hanken Grotesk", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-elevated: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 16px 48px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 32px rgba(255, 106, 43, 0.25);
 }
 
 @layer base {
@@ -140,5 +149,41 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+}
+
+/* Ember breathing glow — the single ambient loop per screen.
+   Slow and warm, like embers, not snappy. 3s ease. */
+@keyframes sg-breath {
+  0%, 100% {
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--sg-ember) 35%, transparent),
+      0 0 22px -8px color-mix(in oklab, var(--sg-ember) 30%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--sg-ember) 65%, transparent),
+      0 0 38px -4px color-mix(in oklab, var(--sg-ember) 55%, transparent);
+  }
+}
+
+@utility sg-breath {
+  animation: sg-breath 3s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+/* Ruled ledger-line input: a single underline, no box. */
+@utility sg-ledger {
+  border-bottom: 1px solid var(--sg-border);
+  background: transparent;
+  &:focus-within {
+    border-bottom-color: var(--sg-ember);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sg-breath {
+    animation: none;
+  }
+  * {
+    scroll-behavior: auto !important;
   }
 }
