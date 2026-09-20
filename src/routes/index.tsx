@@ -1,24 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Studio } from "@/components/sigil/Studio";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Sigil — Nine living cards for your GitHub profile" },
+      {
+        name: "description",
+        content:
+          "Turn any GitHub username into a matching set of animated stat cards. Paste one line of Markdown — no rate-limit errors. Free, open-source, MIT.",
+      },
+      { property: "og:title", content: "Sigil — Your developer sigil" },
+      {
+        property: "og:description",
+        content: "Nine living cards for your GitHub profile, one line to install.",
+      },
+    ],
+  }),
+  component: Studio,
 });
-
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
