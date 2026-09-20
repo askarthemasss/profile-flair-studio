@@ -14,8 +14,9 @@ function srgbToLinear(channel: number): number {
 /** Parse a #rrggbb hex string into its r, g, b channels (0-255). */
 function parseHex(hex: string): { r: number; g: number; b: number } {
   const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
-  if (!m) throw new Error(`Invalid hex color (expected #rrggbb): ${hex}`);
-  const n = Number.parseInt(m[1], 16);
+  const h = m?.[1];
+  if (!h) throw new Error(`Invalid hex color (expected #rrggbb): ${hex}`);
+  const n = Number.parseInt(h, 16);
   return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
 }
 

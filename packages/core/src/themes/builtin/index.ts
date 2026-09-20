@@ -18,7 +18,7 @@ export const BUILTIN_THEMES: CardTheme[] = [
 
 /** Resolve a theme by id, falling back to the default (Obsidian). */
 export function getTheme(id: string): CardTheme {
-  return BUILTIN_THEMES.find((t) => t.id === id) ?? BUILTIN_THEMES[0];
+  return BUILTIN_THEMES.find((t) => t.id === id) ?? obsidian;
 }
 
-export const DEFAULT_THEME_ID = BUILTIN_THEMES[0].id;
+export const DEFAULT_THEME_ID = obsidian.id;
