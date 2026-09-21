@@ -14,13 +14,272 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      card_presets: {
+        Row: {
+          created_at: string
+          id: string
+          is_public: boolean
+          name: string
+          params: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          name: string
+          params: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          name?: string
+          params?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_presets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contribution_years: {
+        Row: {
+          created_at: string
+          days: number[]
+          fetched_at: string
+          login: string
+          total: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          days: number[]
+          fetched_at?: string
+          login: string
+          total: number
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          days?: number[]
+          fetched_at?: string
+          login?: string
+          total?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      github_tokens: {
+        Row: {
+          ciphertext: string
+          created_at: string
+          iv: string
+          last_used_at: string | null
+          revoked_at: string | null
+          scopes: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ciphertext: string
+          created_at?: string
+          iv: string
+          last_used_at?: string | null
+          revoked_at?: string | null
+          scopes?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ciphertext?: string
+          created_at?: string
+          iv?: string
+          last_used_at?: string | null
+          revoked_at?: string | null
+          scopes?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "github_tokens_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      optouts: {
+        Row: {
+          created_at: string
+          login: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          login: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          login?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "optouts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          github_id: number
+          id: string
+          login: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          github_id: number
+          id: string
+          login: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          github_id?: number
+          id?: string
+          login?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      snapshots: {
+        Row: {
+          created_at: string
+          data: Json
+          fail_count: number
+          fetched_at: string
+          github_id: number | null
+          last_requested_at: string
+          login: string
+          next_refresh_at: string
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          fail_count?: number
+          fetched_at?: string
+          github_id?: number | null
+          last_requested_at?: string
+          login: string
+          next_refresh_at: string
+          source: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          fail_count?: number
+          fetched_at?: string
+          github_id?: number | null
+          last_requested_at?: string
+          login?: string
+          next_refresh_at?: string
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      theme_votes: {
+        Row: {
+          created_at: string
+          theme_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          theme_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          theme_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "theme_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_stale_snapshots: {
+        Args: { batch?: number }
+        Returns: {
+          created_at: string
+          data: Json
+          fail_count: number
+          fetched_at: string
+          github_id: number | null
+          last_requested_at: string
+          login: string
+          next_refresh_at: string
+          source: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "snapshots"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      theme_vote_counts: {
+        Args: never
+        Returns: {
+          theme_id: string
+          votes: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
