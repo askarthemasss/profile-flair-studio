@@ -10,33 +10,69 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiV1ThemesRouteImport } from './routes/api/v1/themes'
+import { Route as CKindUsernameRouteImport } from './routes/c/$kind/$username'
+import { Route as ApiV1UsersUsernameRouteImport } from './routes/api/v1/users/$username'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV1ThemesRoute = ApiV1ThemesRouteImport.update({
+  id: '/api/v1/themes',
+  path: '/api/v1/themes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CKindUsernameRoute = CKindUsernameRouteImport.update({
+  id: '/c/$kind/$username',
+  path: '/c/$kind/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1UsersUsernameRoute = ApiV1UsersUsernameRouteImport.update({
+  id: '/api/v1/users/$username',
+  path: '/api/v1/users/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/v1/themes': typeof ApiV1ThemesRoute
+  '/c/$kind/$username': typeof CKindUsernameRoute
+  '/api/v1/users/$username': typeof ApiV1UsersUsernameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/v1/themes': typeof ApiV1ThemesRoute
+  '/c/$kind/$username': typeof CKindUsernameRoute
+  '/api/v1/users/$username': typeof ApiV1UsersUsernameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/v1/themes': typeof ApiV1ThemesRoute
+  '/c/$kind/$username': typeof CKindUsernameRoute
+  '/api/v1/users/$username': typeof ApiV1UsersUsernameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    '/' | '/api/v1/themes' | '/c/$kind/$username' | '/api/v1/users/$username'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/api/v1/themes' | '/c/$kind/$username' | '/api/v1/users/$username'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/v1/themes'
+    | '/c/$kind/$username'
+    | '/api/v1/users/$username'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiV1ThemesRoute: typeof ApiV1ThemesRoute
+  CKindUsernameRoute: typeof CKindUsernameRoute
+  ApiV1UsersUsernameRoute: typeof ApiV1UsersUsernameRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +84,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/themes': {
+      id: '/api/v1/themes'
+      path: '/api/v1/themes'
+      fullPath: '/api/v1/themes'
+      preLoaderRoute: typeof ApiV1ThemesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/c/$kind/$username': {
+      id: '/c/$kind/$username'
+      path: '/c/$kind/$username'
+      fullPath: '/c/$kind/$username'
+      preLoaderRoute: typeof CKindUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/users/$username': {
+      id: '/api/v1/users/$username'
+      path: '/api/v1/users/$username'
+      fullPath: '/api/v1/users/$username'
+      preLoaderRoute: typeof ApiV1UsersUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiV1ThemesRoute: ApiV1ThemesRoute,
+  CKindUsernameRoute: CKindUsernameRoute,
+  ApiV1UsersUsernameRoute: ApiV1UsersUsernameRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -7,10 +7,10 @@ export const sandstone: CardTheme = {
   mode: "light",
   bg: "#EFE6D6",
   text: "#2A2118",
-  accent: "#B7791F",
+  accent: "#B3751B",
   accentGlow: "#D99A3F",
   gold: "#92400E",
-  muted: "#7A6B52",
+  muted: "#72634A",
   border: "#D8CBB3",
   feel: "Warm desert light",
 };

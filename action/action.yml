@@ -1,0 +1,80 @@
+name: Sigil static backup
+description: Download Sigil cards and commit them so a profile README survives if Sigil is down.
+inputs:
+  username:
+    description: GitHub username the cards are drawn for
+    required: true
+  theme:
+    description: Theme id (obsidian, paper, verdigris, monolith, tidepool, sandstone)
+    required: false
+    default: obsidian
+  cards:
+    description: Comma-separated card kinds
+    required: false
+    default: stats,streak,languages,heatmap,skyline,activity,achievements,repo,banner
+  animate:
+    description: 1 for animated SVGs, 0 for static backups
+    required: false
+    default: "0"
+  directory:
+    description: Directory, relative to the repo root, to write SVGs into
+    required: false
+    default: sigil
+  base-url:
+    description: Sigil origin that serves /c/:kind/:username
+    required: false
+    default: https://sigil.dev
+  commit-message:
+    description: Commit message when a card changes
+    required: false
+    default: "chore: refresh Sigil cards"
+runs:
+  using: composite
+  steps:
+    - name: Download Sigil cards
+      shell: bash
+      env:
+        USERNAME: ${{ inputs.username }}
+        THEME: ${{ inputs.theme }}
+        CARDS: ${{ inputs.cards }}
+        ANIMATE: ${{ inputs.animate }}
+        DIRECTORY: ${{ inputs.directory }}
+        BASE_URL: ${{ inputs.base-url }}
+      run: |
+        set -euo pipefail
+        mkdir -p "$DIRECTORY"
+        snippet="$DIRECTORY/README.md"
+        {
+          echo "<!-- Sigil static backup. Paste these into your profile README. -->"
+        } > "$snippet"
+        IFS=',' read -ra KINDS <<< "$CARDS"
+        for kind in "${KINDS[@]}"; do
+          kind="$(printf '%s' "$kind" | tr -d '[:space:]')"
+          [ -z "$kind" ] && continue
+          dest="$DIRECTORY/${kind}.svg"
+          tmp="$(mktemp)"
+          url="${BASE_URL%/}/c/${kind}/${USERNAME}?theme=${THEME}&animate=${ANIMATE}"
+          if curl -fsSL --retry 2 --retry-delay 1 "$url" -o "$tmp" && grep -q "<svg" "$tmp"; then
+            mv "$tmp" "$dest"
+            echo "![Sigil ${kind}](${DIRECTORY}/${kind}.svg)" >> "$snippet"
+          else
+            rm -f "$tmp"
+            echo "Kept the previous ${kind} card; ${url} did not return an SVG."
+          fi
+        done
+    - name: Commit Sigil cards
+      shell: bash
+      env:
+        DIRECTORY: ${{ inputs.directory }}
+        COMMIT_MESSAGE: ${{ inputs.commit-message }}
+      run: |
+        set -euo pipefail
+        git config user.name "sigil[bot]"
+        git config user.email "sigil@users.noreply.github.com"
+        git add -- "$DIRECTORY"
+        if git diff --cached --quiet; then
+          echo "Sigil cards are already current."
+          exit 0
+        fi
+        git commit -m "$COMMIT_MESSAGE"
+        git push

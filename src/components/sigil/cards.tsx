@@ -158,7 +158,11 @@ function HeatmapCard({ profile, theme, active }: CardProps) {
     >
       <div
         className="grid gap-[3px]"
-        style={{ gridTemplateColumns: "repeat(26, 1fr)" }}
+        style={{
+          gridTemplateColumns: "repeat(26, 1fr)",
+          gridTemplateRows: "repeat(7, 1fr)",
+          gridAutoFlow: "column",
+        }}
       >
         {profile.heatmap.map((v, i) => (
           <span
