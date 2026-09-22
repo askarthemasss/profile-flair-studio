@@ -108,6 +108,33 @@ export function ControlRail({ state, onChange, themes }: Props) {
             onToggle={() => setField("staticBackup", !state.staticBackup)}
           />
         </div>
+        <div className="mt-4">
+          <div className="text-[11px] text-ink-muted">Preview</div>
+          <div className="mt-1 grid grid-cols-2 gap-1 rounded-md border border-line bg-raised p-1">
+            {(
+              [
+                ["studio", "Designed"],
+                ["svg", "Live SVG"],
+              ] as const
+            ).map(([mode, label]) => {
+              const on = state.preview === mode;
+              return (
+                <button
+                  key={mode}
+                  onClick={() => setField("preview", mode)}
+                  className="rounded px-2 py-1.5 text-[12px] transition-colors"
+                  style={{
+                    background: on ? "var(--sg-ember)" : "transparent",
+                    color: on ? "var(--sg-bg-0)" : "var(--sg-ink-muted)",
+                    ...mono,
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <p className="mt-4 text-[10px] leading-relaxed text-ink-faint" style={mono}>
           {BRAND.shortTagline} Sign in with GitHub to add your own API quota and private contributions.
         </p>

@@ -10,7 +10,7 @@ export const verdigris: CardTheme = {
   accent: "#4FD1B0",
   accentGlow: "#6EE7B7",
   gold: "#E8C36A",
-  muted: "#5C7A72",
+  muted: "#68867E",
   border: "#1F2D2A",
   feel: "Oxidized copper",
 };

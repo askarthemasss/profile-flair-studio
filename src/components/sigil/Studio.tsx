@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { BRAND } from "@sigil/core/brand";
 import { BUILTIN_THEMES, getTheme } from "@sigil/core/themes";
+import { sigilMarkdown } from "@sigil/core/markdown";
 import { CARD_KINDS, DEFAULT_STUDIO, DEMO_PROFILE, type CardKind, type StudioState } from "@/lib/studio-data";
 import { toast } from "sonner";
 import { ControlRail } from "./ControlRail";
 import { ThemeGallery } from "./ThemeGallery";
 import { CardGrid } from "./cards";
+import { SvgPreview } from "./SvgPreview";
 
 export function Studio() {
   const [state, setState] = useState<StudioState>(DEFAULT_STUDIO);
@@ -20,11 +22,13 @@ export function Studio() {
   const display = { fontFamily: "var(--font-display)" } as const;
 
   function copyMarkdown() {
-    const lines = enabledKinds.map(
-      (kind) =>
-        `![Sigil ${kind}](https://sigil.dev/c/${kind}/${username}?theme=${theme.id}&animate=${state.animate ? 1 : 0})`,
-    );
-    const md = `<!-- ${BRAND.name} — ${BRAND.tagline} -->\n${lines.join("\n")}`;
+    const md = sigilMarkdown({
+      username,
+      kinds: enabledKinds,
+      themeId: theme.id,
+      animate: state.animate,
+      staticBackup: state.staticBackup,
+    });
     void navigator.clipboard?.writeText(md);
     toast.success("Markdown copied", {
       description: `${enabledKinds.length} card snippet${enabledKinds.length === 1 ? "" : "s"} ready to paste into your profile README.`,
@@ -85,7 +89,7 @@ export function Studio() {
                     The nine marks
                   </h1>
                   <p className="text-[11px] text-ink-faint" style={mono}>
-                    @{username} · {theme.name} theme · live preview
+                    @{username} · {theme.name} theme · {state.preview === "svg" ? "served SVG" : "live preview"}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 text-[10px]" style={mono}>
@@ -95,14 +99,24 @@ export function Studio() {
               </div>
             </div>
 
-            <CardGrid
-              kinds={enabledKinds}
-              profile={profile}
-              theme={theme}
-              animate={state.animate}
-              activeId={activeId}
-              onActive={setActiveId}
-            />
+            {state.preview === "svg" ? (
+              <SvgPreview
+                kinds={enabledKinds}
+                profile={profile}
+                theme={theme}
+                animate={state.animate}
+                live={username.toLowerCase() !== DEMO_PROFILE.username}
+              />
+            ) : (
+              <CardGrid
+                kinds={enabledKinds}
+                profile={profile}
+                theme={theme}
+                animate={state.animate}
+                activeId={activeId}
+                onActive={setActiveId}
+              />
+            )}
 
             <ThemeGallery
               themes={BUILTIN_THEMES}

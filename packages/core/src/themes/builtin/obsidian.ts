@@ -10,7 +10,7 @@ export const obsidian: CardTheme = {
   accent: "#FF6A2B",
   accentGlow: "#FFB04A",
   gold: "#E8C36A",
-  muted: "#7C766D",
+  muted: "#807A71",
   border: "#2E2A33",
   feel: "The studio look",
 };
