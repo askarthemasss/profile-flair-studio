@@ -10,8 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as StudioRouteImport } from './routes/studio'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as DocsCardRouteImport } from './routes/docs.$card'
@@ -26,6 +28,10 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StatusRoute = StatusRouteImport.update({
   id: '/status',
   path: '/status',
@@ -35,6 +41,11 @@ const StudioRoute = StudioRouteImport.update({
   id: '/studio',
   path: '/studio',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/auth/callback',
@@ -81,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/status': typeof StatusRoute
   '/studio': typeof StudioRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/docs/$card': typeof DocsCardRoute
   '/themes/$id': typeof ThemesIdRoute
@@ -94,6 +106,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/status': typeof StatusRoute
   '/studio': typeof StudioRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/docs/$card': typeof DocsCardRoute
   '/themes/$id': typeof ThemesIdRoute
@@ -106,8 +119,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/status': typeof StatusRoute
   '/studio': typeof StudioRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/docs/$card': typeof DocsCardRoute
   '/themes/$id': typeof ThemesIdRoute
@@ -123,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/status'
     | '/studio'
+    | '/dashboard'
     | '/auth/callback'
     | '/docs/$card'
     | '/themes/$id'
@@ -136,6 +152,7 @@ export interface FileRouteTypes {
     | '/'
     | '/status'
     | '/studio'
+    | '/dashboard'
     | '/auth/callback'
     | '/docs/$card'
     | '/themes/$id'
@@ -147,8 +164,10 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/status'
     | '/studio'
+    | '/_authenticated/dashboard'
     | '/auth/callback'
     | '/docs/$card'
     | '/themes/$id'
@@ -161,6 +180,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   StatusRoute: typeof StatusRoute
   StudioRoute: typeof StudioRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
@@ -182,6 +202,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/status': {
       id: '/status'
       path: '/status'
@@ -195,6 +222,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/studio'
       preLoaderRoute: typeof StudioRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/auth/callback': {
       id: '/auth/callback'
@@ -255,8 +289,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   StatusRoute: StatusRoute,
   StudioRoute: StudioRoute,
   AuthCallbackRoute: AuthCallbackRoute,
