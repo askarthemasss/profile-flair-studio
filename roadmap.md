@@ -25,6 +25,16 @@ A lean task list, not a log. Check before reporting work complete.
 - CI theme validator: `bun run check` (text/muted ≥ 4.5:1, accent/gold ≥ 3:1)
 - GitHub Action in `action/` commits static SVG backups
 
+## Done
+
+- Site + workspace: marketing shell (1120px) for `/`, `/themes`, `/themes/$id`, `/docs`,
+  `/docs/$card`, `/status`; full-viewport workspace for `/studio` and `/dashboard`
+  (320px controls · dotted canvas · 340px export; export becomes a bottom sheet below 1024px;
+  three tabs below 768px). Session-aware header, Cmd/Ctrl+K palette, per-page error fallbacks.
+- Google sign-in (Lovable Cloud managed): `/auth/callback`, `_authenticated` gate,
+  `/dashboard` with saved packs, connection summary, and confirm dialogs.
+
 ## Open
 
-- Sign in with GitHub (own API quota + private contributions) — Cloud doesn't support GitHub OAuth natively; needs BYO Supabase or workaround
+- Saving a pack from the studio into `card_presets` (dashboard reads them; studio can't write yet)
+- Theme submissions by pull request (docs page only describes the flow)

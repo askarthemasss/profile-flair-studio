@@ -175,6 +175,14 @@
   animation: sg-breath 3s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
 }
 
+/* Subtle dotted panel grid behind the studio preview canvas. */
+@utility sg-canvas {
+  background-color: var(--sg-bg-1);
+  background-image: radial-gradient(var(--sg-border) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-position: -11px -11px;
+}
+
 /* Ruled ledger-line input: a single underline, no box. */
 @utility sg-ledger {
   border-bottom: 1px solid var(--sg-border);

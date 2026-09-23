@@ -10,6 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as StatusRouteImport } from './routes/status'
+import { Route as StudioRouteImport } from './routes/studio'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as DocsIndexRouteImport } from './routes/docs.index'
+import { Route as DocsCardRouteImport } from './routes/docs.$card'
+import { Route as ThemesIndexRouteImport } from './routes/themes.index'
+import { Route as ThemesIdRouteImport } from './routes/themes.$id'
 import { Route as ApiV1ThemesRouteImport } from './routes/api/v1/themes'
 import { Route as CKindUsernameRouteImport } from './routes/c/$kind/$username'
 import { Route as ApiV1UsersUsernameRouteImport } from './routes/api/v1/users/$username'
@@ -17,6 +26,50 @@ import { Route as ApiV1UsersUsernameRouteImport } from './routes/api/v1/users/$u
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatusRoute = StatusRouteImport.update({
+  id: '/status',
+  path: '/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudioRoute = StudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsIndexRoute = DocsIndexRouteImport.update({
+  id: '/docs/',
+  path: '/docs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsCardRoute = DocsCardRouteImport.update({
+  id: '/docs/$card',
+  path: '/docs/$card',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ThemesIndexRoute = ThemesIndexRouteImport.update({
+  id: '/themes/',
+  path: '/themes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ThemesIdRoute = ThemesIdRouteImport.update({
+  id: '/themes/$id',
+  path: '/themes/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiV1ThemesRoute = ApiV1ThemesRouteImport.update({
@@ -37,12 +90,28 @@ const ApiV1UsersUsernameRoute = ApiV1UsersUsernameRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/status': typeof StatusRoute
+  '/studio': typeof StudioRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/docs/$card': typeof DocsCardRoute
+  '/themes/$id': typeof ThemesIdRoute
+  '/docs/': typeof DocsIndexRoute
+  '/themes/': typeof ThemesIndexRoute
   '/api/v1/themes': typeof ApiV1ThemesRoute
   '/c/$kind/$username': typeof CKindUsernameRoute
   '/api/v1/users/$username': typeof ApiV1UsersUsernameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/status': typeof StatusRoute
+  '/studio': typeof StudioRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/docs/$card': typeof DocsCardRoute
+  '/themes/$id': typeof ThemesIdRoute
+  '/docs': typeof DocsIndexRoute
+  '/themes': typeof ThemesIndexRoute
   '/api/v1/themes': typeof ApiV1ThemesRoute
   '/c/$kind/$username': typeof CKindUsernameRoute
   '/api/v1/users/$username': typeof ApiV1UsersUsernameRoute
@@ -50,6 +119,15 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/status': typeof StatusRoute
+  '/studio': typeof StudioRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/docs/$card': typeof DocsCardRoute
+  '/themes/$id': typeof ThemesIdRoute
+  '/docs/': typeof DocsIndexRoute
+  '/themes/': typeof ThemesIndexRoute
   '/api/v1/themes': typeof ApiV1ThemesRoute
   '/c/$kind/$username': typeof CKindUsernameRoute
   '/api/v1/users/$username': typeof ApiV1UsersUsernameRoute
@@ -57,12 +135,44 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/api/v1/themes' | '/c/$kind/$username' | '/api/v1/users/$username'
+    | '/'
+    | '/status'
+    | '/studio'
+    | '/dashboard'
+    | '/auth/callback'
+    | '/docs/$card'
+    | '/themes/$id'
+    | '/docs/'
+    | '/themes/'
+    | '/api/v1/themes'
+    | '/c/$kind/$username'
+    | '/api/v1/users/$username'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/v1/themes' | '/c/$kind/$username' | '/api/v1/users/$username'
+  to:
+    | '/'
+    | '/status'
+    | '/studio'
+    | '/dashboard'
+    | '/auth/callback'
+    | '/docs/$card'
+    | '/themes/$id'
+    | '/docs'
+    | '/themes'
+    | '/api/v1/themes'
+    | '/c/$kind/$username'
+    | '/api/v1/users/$username'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
+    | '/status'
+    | '/studio'
+    | '/_authenticated/dashboard'
+    | '/auth/callback'
+    | '/docs/$card'
+    | '/themes/$id'
+    | '/docs/'
+    | '/themes/'
     | '/api/v1/themes'
     | '/c/$kind/$username'
     | '/api/v1/users/$username'
@@ -70,6 +180,14 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  StatusRoute: typeof StatusRoute
+  StudioRoute: typeof StudioRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
+  DocsCardRoute: typeof DocsCardRoute
+  ThemesIdRoute: typeof ThemesIdRoute
+  DocsIndexRoute: typeof DocsIndexRoute
+  ThemesIndexRoute: typeof ThemesIndexRoute
   ApiV1ThemesRoute: typeof ApiV1ThemesRoute
   CKindUsernameRoute: typeof CKindUsernameRoute
   ApiV1UsersUsernameRoute: typeof ApiV1UsersUsernameRoute
@@ -82,6 +200,69 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status': {
+      id: '/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof StatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/studio': {
+      id: '/studio'
+      path: '/studio'
+      fullPath: '/studio'
+      preLoaderRoute: typeof StudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/': {
+      id: '/docs/'
+      path: '/docs'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof DocsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/$card': {
+      id: '/docs/$card'
+      path: '/docs/$card'
+      fullPath: '/docs/$card'
+      preLoaderRoute: typeof DocsCardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/themes/': {
+      id: '/themes/'
+      path: '/themes'
+      fullPath: '/themes/'
+      preLoaderRoute: typeof ThemesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/themes/$id': {
+      id: '/themes/$id'
+      path: '/themes/$id'
+      fullPath: '/themes/$id'
+      preLoaderRoute: typeof ThemesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/v1/themes': {
@@ -108,8 +289,27 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  StatusRoute: StatusRoute,
+  StudioRoute: StudioRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
+  DocsCardRoute: DocsCardRoute,
+  ThemesIdRoute: ThemesIdRoute,
+  DocsIndexRoute: DocsIndexRoute,
+  ThemesIndexRoute: ThemesIndexRoute,
   ApiV1ThemesRoute: ApiV1ThemesRoute,
   CKindUsernameRoute: CKindUsernameRoute,
   ApiV1UsersUsernameRoute: ApiV1UsersUsernameRoute,
