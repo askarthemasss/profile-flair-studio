@@ -8,7 +8,7 @@ import { DEMO_PROFILE } from "@/lib/studio-data";
 
 const mono = { fontFamily: "var(--font-mono)" } as const;
 
-export const Route = createFileRoute("/themes")({
+export const Route = createFileRoute("/themes/")({
   head: () => ({
     meta: [
       { title: "Themes — community palettes for Sigil cards" },

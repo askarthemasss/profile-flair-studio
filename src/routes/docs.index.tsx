@@ -9,7 +9,7 @@ import { CARD_KINDS } from "@/lib/studio-data";
 const mono = { fontFamily: "var(--font-mono)" } as const;
 const display = { fontFamily: "var(--font-display)" } as const;
 
-export const Route = createFileRoute("/docs")({
+export const Route = createFileRoute("/docs/")({
   head: () => ({
     meta: [
       { title: "Docs — Sigil card URLs and JSON API" },
