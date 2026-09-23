@@ -14,8 +14,10 @@ const mono = { fontFamily: "var(--font-mono)" } as const;
 const display = { fontFamily: "var(--font-display)" } as const;
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>): { signin?: "1" } =>
-    search["signin"] === "1" ? { signin: "1" } : {},
+  validateSearch: (search: Record<string, unknown>): { signin?: boolean } =>
+    search["signin"] === true || search["signin"] === "1" || search["signin"] === "true"
+      ? { signin: true }
+      : {},
   head: () => ({
     meta: [
       { title: "Sigil — Nine living cards for your GitHub profile" },
@@ -45,7 +47,7 @@ function Landing() {
   const [prompted, setPrompted] = useState(false);
 
   useEffect(() => {
-    if (signin === "1" && !prompted) {
+    if (signin && !prompted) {
       setPrompted(true);
       void signInWithGoogle("/dashboard");
     }

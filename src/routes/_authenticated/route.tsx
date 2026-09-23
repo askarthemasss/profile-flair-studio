@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_authenticated")({
     const { data } = await supabase.auth.getSession();
     if (!data.session) {
       rememberIntendedPath(location.pathname);
-      throw redirect({ to: "/", search: { signin: "1" as const } });
+      throw redirect({ to: "/", search: { signin: true } });
     }
   },
   errorComponent: RouteError,
