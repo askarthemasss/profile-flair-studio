@@ -136,7 +136,7 @@ export function ControlRail({ state, onChange, themes }: Props) {
           </div>
         </div>
         <p className="mt-4 text-[10px] leading-relaxed text-ink-faint" style={mono}>
-          {BRAND.shortTagline} Sign in with GitHub to add your own API quota and private contributions.
+          {BRAND.shortTagline} Sign in with Google to save packs and use your own API quota.
         </p>
       </section>
     </aside>
