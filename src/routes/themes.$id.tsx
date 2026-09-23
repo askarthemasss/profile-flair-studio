@@ -87,12 +87,18 @@ function ThemeDetail() {
         .delete()
         .eq("theme_id", theme.id)
         .eq("user_id", session.user.id);
-      if (error) return toast.error("Could not remove your vote", { description: error.message });
+      if (error) {
+        toast.error("Could not remove your vote", { description: error.message });
+        return;
+      }
     } else {
       const { error } = await supabase
         .from("theme_votes")
         .insert({ theme_id: theme.id, user_id: session.user.id });
-      if (error) return toast.error("Could not save your vote", { description: error.message });
+      if (error) {
+        toast.error("Could not save your vote", { description: error.message });
+        return;
+      }
     }
     await queryClient.invalidateQueries({ queryKey: ["theme-vote", theme.id, session.user.id] });
     await queryClient.invalidateQueries({ queryKey: ["theme-votes"] });

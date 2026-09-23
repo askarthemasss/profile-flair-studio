@@ -14,9 +14,8 @@ const mono = { fontFamily: "var(--font-mono)" } as const;
 const display = { fontFamily: "var(--font-display)" } as const;
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    signin: search["signin"] === "1" ? ("1" as const) : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { signin?: "1" } =>
+    search["signin"] === "1" ? { signin: "1" } : {},
   head: () => ({
     meta: [
       { title: "Sigil — Nine living cards for your GitHub profile" },

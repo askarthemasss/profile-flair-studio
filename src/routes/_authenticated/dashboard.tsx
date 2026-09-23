@@ -60,7 +60,10 @@ function Dashboard() {
 
   async function removePreset(id: string) {
     const { error } = await supabase.from("card_presets").delete().eq("id", id);
-    if (error) return toast.error("Could not delete that pack", { description: error.message });
+    if (error) {
+      toast.error("Could not delete that pack", { description: error.message });
+      return;
+    }
     toast.success("Pack deleted");
     await queryClient.invalidateQueries({ queryKey: ["presets", session?.user.id] });
   }

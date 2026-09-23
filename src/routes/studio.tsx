@@ -6,12 +6,14 @@ import { RouteError } from "@/components/layout/RouteError";
 import { StudioWorkspace } from "@/components/sigil/StudioWorkspace";
 
 export const Route = createFileRoute("/studio")({
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (search: Record<string, unknown>): { user?: string; theme?: string } => {
+    const out: { user?: string; theme?: string } = {};
     const rawUser = typeof search["user"] === "string" ? search["user"] : "";
     const rawTheme = typeof search["theme"] === "string" ? search["theme"] : "";
     const user = normalizeUsername(rawUser);
-    const theme = BUILTIN_THEMES.some((t) => t.id === rawTheme) ? rawTheme : undefined;
-    return { user: user ?? undefined, theme };
+    if (user) out.user = user;
+    if (BUILTIN_THEMES.some((t) => t.id === rawTheme)) out.theme = rawTheme;
+    return out;
   },
   head: () => ({
     meta: [
@@ -36,5 +38,10 @@ export const Route = createFileRoute("/studio")({
 
 function StudioPage() {
   const { user, theme } = Route.useSearch();
-  return <StudioWorkspace initialUsername={user} initialThemeId={theme} />;
+  return (
+    <StudioWorkspace
+      {...(user ? { initialUsername: user } : {})}
+      {...(theme ? { initialThemeId: theme } : {})}
+    />
+  );
 }
