@@ -34,7 +34,18 @@ A lean task list, not a log. Check before reporting work complete.
 - Google sign-in (Lovable Cloud managed): `/auth/callback`, `_authenticated` gate,
   `/dashboard` with saved packs, connection summary, and confirm dialogs.
 
+## Done
+
+- M1 SVG toolkit (`packages/core/src/svg/*`): `esc`, `svg()` document wrapper (scoped theme
+  variables, embedded subset font), `wrapText`, `formatNumber`, `relativeTime`, `monotonePath`,
+  CSS-only animations; card registry + `renderCard` with `CommonParamsSchema`.
+- M2 card catalog: nine cards in `packages/core/src/cards/<id>.ts` (`stats` renamed to `overview`,
+  old URLs still work), golden tests in `packages/core/test/cards`, size budgets in
+  `scripts/check-svg-size.ts` (all in `bun run check`).
+
 ## Open
+
+- M3–M9: the uploaded brief stops after M2 — waiting on the rest of the spec from the user
 
 - Saving a pack from the studio into `card_presets` (dashboard reads them; studio can't write yet)
 - Theme submissions by pull request (docs page only describes the flow)
