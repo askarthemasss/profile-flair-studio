@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getTheme } from "@sigil/core/themes";
-import { isCardKind, normalizeUsername } from "@sigil/core/profile";
+import { normalizeUsername, resolveCardKind } from "@sigil/core/profile";
 import { renderCardSvg } from "@sigil/core/render/svg";
 import { noticeSvg, svgResponse } from "@/lib/card-http";
 
@@ -8,9 +8,9 @@ export const Route = createFileRoute("/c/$kind/$username")({
   server: {
     handlers: {
       GET: async ({ request, params }) => {
-        const kind = params["kind"] ?? "";
+        const kind = resolveCardKind(params["kind"] ?? "");
         const username = normalizeUsername(params["username"] ?? "");
-        if (!isCardKind(kind)) {
+        if (!kind) {
           return svgResponse(noticeSvg("Unknown card"), 404);
         }
         if (!username) {
@@ -28,6 +28,8 @@ export const Route = createFileRoute("/c/$kind/$username")({
           profile: resolved.profile,
           theme,
           animate,
+          params: Object.fromEntries(url.searchParams),
+          now: new Date().toISOString(),
         });
         return svgResponse(svg, 200, { "x-sigil-availability": resolved.availability });
       },

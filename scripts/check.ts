@@ -42,10 +42,10 @@ const escaped = renderCardSvg({ kind: "banner", profile: hostile, theme, animate
 expect(!escaped.includes("<script>"), "name is escaped");
 expect(escaped.includes("&lt;script&gt;"), "name entities present");
 expect(escaped.includes("&amp;"), "ampersand escaped");
-expect(!escaped.includes("sg-glow"), "animate=0 omits the glow");
+expect(!escaped.includes("animation:"), "animate=0 omits motion");
 
-const animated = renderCardSvg({ kind: "stats", profile: DEMO_PROFILE, theme, animate: true });
-expect(animated.includes("sg-glow"), "stats animates");
+const animated = renderCardSvg({ kind: "overview", profile: DEMO_PROFILE, theme, animate: true });
+expect(animated.includes("animation:"), "overview animates");
 
 expect(normalizeUsername(" OctoCat ") === "octocat", "username normalized");
 expect(normalizeUsername("-bad") === null, "leading hyphen rejected");
@@ -89,6 +89,7 @@ expect(built.repo.name === "octocat/hello", "featured repo skips forks");
 expect(built.languages[0]?.name === "Ruby", "language share");
 expect(built.rankPercent >= 1 && built.rankPercent <= 99, "rank in range");
 expect(built.heatmap.length === 182, "heatmap length");
+expect(built.topRepos?.length === 1 && built.topRepos[0]?.name === "octocat/hello", "top repos skip forks");
 expect(built.activity.length === 12, "activity length");
 
 const missing = missingProfile("nobody");
@@ -96,13 +97,13 @@ expect(missing.bio === "No public GitHub profile", "missing profile stays calm")
 
 const markdown = sigilMarkdown({
   username: "octocat",
-  kinds: ["stats"],
+  kinds: ["overview"],
   themeId: "paper",
   animate: false,
   staticBackup: true,
 });
 expect(
-  markdown.includes("https://sigil.dev/c/stats/octocat?theme=paper&animate=0"),
+  markdown.includes("https://sigil.dev/c/overview/octocat?theme=paper&animate=0"),
   "markdown url",
 );
 expect(markdown.includes("Static backup"), "backup comment");
