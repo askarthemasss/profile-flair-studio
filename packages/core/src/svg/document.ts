@@ -76,7 +76,6 @@ export function svg(input: SvgInput): string {
     ...heat.map((c, i) => `--h${i}:${c}`),
   ].join(";");
   const base = [
-    `{${vars}}`,
     `.sf{font-family:SigilDisplay,${serif};font-weight:500}`,
     `.mo{font-family:${MONO_STACK};font-variant-numeric:tabular-nums}`,
     ".tx{fill:var(--tx)}.mu{fill:var(--mu)}.ac{fill:var(--ac)}.gl{fill:var(--gl)}.gd{fill:var(--gd)}.bgf{fill:var(--bg)}",
@@ -86,7 +85,7 @@ export function svg(input: SvgInput): string {
 
   const draft = `${input.defs ?? ""}${input.body}${input.css ?? ""}${theme.id}${w}x${h}${animate}`;
   const id = `sg${hash(draft)}`;
-  const rules = scope(`${base}${input.css ?? ""}`, id).replace(`#${id} {`, `#${id}{`);
+  const rules = `#${id}{${vars}}${scope(`${base}${input.css ?? ""}`, id)}`;
   const motion = animate
     ? `${input.keyframes ?? ""}@media (prefers-reduced-motion:reduce){#${id} *{animation:none!important}}`
     : "";
