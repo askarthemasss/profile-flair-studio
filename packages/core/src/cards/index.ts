@@ -28,7 +28,7 @@ export const CARD_REGISTRY: Record<CardKind, CardModule> = {
   achievements,
   repo,
   banner,
-} as Record<CardKind, CardModule>;
+} as unknown as Record<CardKind, CardModule>;
 
 export interface RenderCardInput {
   snapshot: CardSnapshot;

@@ -57,9 +57,13 @@ export function streakRuns(
   let longest = empty;
   let run: Run | null = null;
   for (const date of active) {
-    if (run && dayMs(date) - dayMs(run.end) === DAY) run = { ...run, end: date, length: run.length + 1 };
-    else run = { length: 1, start: date, end: date };
-    if (run.length > longest.length) longest = run;
+    const prev: Run | null = run;
+    const next: Run =
+      prev && dayMs(date) - dayMs(prev.end) === DAY
+        ? { start: prev.start, end: date, length: prev.length + 1 }
+        : { length: 1, start: date, end: date };
+    run = next;
+    if (next.length > longest.length) longest = next;
   }
   const gap = run ? (dayMs(today) - dayMs(run.end)) / DAY : Infinity;
   return { current: run && gap <= 1 ? run : empty, longest };
