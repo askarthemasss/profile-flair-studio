@@ -4,8 +4,8 @@
  * even when several cards share one HTML page. Tune them with CSS variables.
  */
 export const KEYFRAMES = {
-  /** Stroke draws in. Pair with pathLength="1" and stroke-dasharray:1. */
-  draw: "@keyframes sg-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}",
+  /** Stroke draws in. Pair with pathLength="1"; set --len to the visible dash length. */
+  draw: "@keyframes sg-draw{from{stroke-dashoffset:var(--len,1)}to{stroke-dashoffset:0}}",
   /** Soft ember glow. */
   pulse: "@keyframes sg-pulse{0%,100%{opacity:1}50%{opacity:.45}}",
   /** Candle-like flicker. */
