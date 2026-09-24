@@ -44,7 +44,7 @@ export function calendarGrid(
 const CELL = 10;
 const STEP = 12;
 const X0 = 48;
-const Y0 = 48;
+const Y0 = 58;
 
 function shapeAt(shape: string, x: number, y: number, cls: string): string {
   if (shape === "round") return `<circle cx="${x + 5}" cy="${y + 5}" r="5" class="${cls}"/>`;
@@ -75,6 +75,7 @@ export const heatmap = defineCard({
     const columns = new Map<number, string[]>();
     const months: string[] = [];
     let lastMonth = -1;
+    let lastLabelCol = -9;
     for (const cell of cells) {
       const x = X0 + cell.col * STEP;
       const y = Y0 + cell.row * STEP;
@@ -83,30 +84,33 @@ export const heatmap = defineCard({
       columns.set(cell.col, list);
       const month = new Date(dayMs(cell.date)).getUTCMonth();
       if (cell.row === 0 && month !== lastMonth) {
-        if (cell.col < 51) months.push(mono(x, Y0 - 8, monthName(month), "mu", 9));
+        if (cell.col < 51 && cell.col - lastLabelCol >= 3) {
+          months.push(mono(x, Y0 - 8, monthName(month), "mu", 9));
+          lastLabelCol = cell.col;
+        }
         lastMonth = month;
       }
     }
     const grid = [...columns.entries()]
       .map(([col, shapes]) => `<g class="cl" style="--c:${col}">${shapes.join("")}</g>`)
       .join("");
-    const legend = [0, 1, 2, 3, 4].map((level) => shapeAt(params.shape, 616 + level * 14, 140, `h${level}`)).join("");
+    const legend = [0, 1, 2, 3, 4].map((level) => shapeAt(params.shape, 616 + level * 14, 150, `h${level}`)).join("");
     const span = params.year ? String(params.year) : "the last year";
 
     return {
       title: `@${snapshot.login} — contribution heatmap`,
       desc: `${total} contributions in ${span}.`,
-      body: `${title("Contributions")}${mono(696, 36, `${formatNumber(total)} in ${span}`, "mu", 11, "end")}${months.join(
+      body: `${title("Contributions", 24, 30)}${mono(696, 30, `${formatNumber(total)} in ${span}`, "mu", 11, "end")}${months.join(
         "",
       )}${["Mon", "Wed", "Fri"].map((d, i) => mono(20, Y0 + (i * 2 + 1) * STEP + 9, d, "mu", 9)).join("")}${grid}${mono(
         610,
-        149,
+        159,
         "Less",
         "mu",
         9,
         "end",
-      )}${legend}${mono(690, 149, "More", "mu", 9)}${
-        total === 0 ? mono(48, 149, "No contributions yet — the first square is waiting", "mu", 10) : ""
+      )}${legend}${mono(690, 159, "More", "mu", 9)}${
+        total === 0 ? mono(48, 159, "No contributions yet — the first square is waiting", "mu", 10) : ""
       }`,
       css: animate ? `.cl{${stagger("fade", 500, 18)}}` : "",
       keyframes: keyframes("fade"),

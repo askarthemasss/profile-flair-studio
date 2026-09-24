@@ -97,14 +97,14 @@ export const overview = defineCard({
           : `<circle cx="72" cy="80" r="38" class="h1"/><text x="72" y="90" class="sf tx" font-size="26" text-anchor="middle">${esc(
               initials,
             )}</text>`
-      }${emblem(34, 158, 8)}<text x="48" y="162" class="sf gd" font-size="13">${esc(tier)}</text>${mono(
-        110,
-        162,
+      }${emblem(32, 154, 7)}<text x="44" y="159" class="sf gd" font-size="13">${esc(tier)}</text>${mono(
+        72,
+        174,
         topLabel,
         "mu",
         9,
-        "end",
-      )}<rect x="26" y="174" width="84" height="5" rx="2.5" class="h0"/><rect x="26" y="174" width="${r(
+        "middle",
+      )}<rect x="30" y="182" width="84" height="5" rx="2.5" class="h0"/><rect x="30" y="182" width="${r(
         84 * fraction,
       )}" height="5" rx="2.5" class="ac"/>`;
     }
