@@ -66,7 +66,6 @@ function CardDoc() {
               profile: DEMO_PROFILE,
               theme,
               animate: true,
-              ...(card.id === "repo" ? { params: { repo: "veera-siddhan/forgekit" } } : {}),
             }),
           }}
         />

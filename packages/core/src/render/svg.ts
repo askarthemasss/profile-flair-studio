@@ -25,6 +25,10 @@ export function renderCardSvg(options: RenderCardOptions): string {
     theme: options.theme,
     now,
     animate: options.animate,
-    ...(options.params ? { params: options.params } : {}),
+    // The repo card needs ?repo=; profile-shaped callers default to the featured repo.
+    params:
+      options.kind === "repo" && !options.params?.["repo"]
+        ? { ...options.params, repo: options.profile.repo.name }
+        : (options.params ?? {}),
   });
 }
