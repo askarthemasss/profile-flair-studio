@@ -3,6 +3,7 @@ import { BRAND } from "@sigil/core/brand";
 import { getTheme } from "@sigil/core/themes";
 import { isCardKind } from "@sigil/core/profile";
 import { renderCardSvg } from "@sigil/core/render/svg";
+import { CARD_REGISTRY } from "@sigil/core/cards";
 
 import { MarketingShell } from "@/components/layout/MarketingShell";
 import { RouteError } from "@/components/layout/RouteError";
@@ -44,6 +45,7 @@ export const Route = createFileRoute("/docs/$card")({
 function CardDoc() {
   const { card } = Route.useLoaderData();
   const theme = getTheme("obsidian");
+  const entry = CARD_REGISTRY[card.id];
   const url = `${BRAND.baseUrl}/c/${card.id}/octocat?theme=obsidian&animate=1`;
 
   return (
@@ -54,12 +56,18 @@ function CardDoc() {
       <h1 className="mt-4 text-[34px] leading-tight tracking-tight text-ink md:text-[42px]" style={display}>
         {card.name}
       </h1>
-      <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-ink-muted">{card.hint}</p>
+      <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-ink-muted">{entry.meta.description}</p>
 
-      <div className="mt-8 max-w-[520px] [&_svg]:h-auto [&_svg]:w-full">
+      <div className="mt-8 [&_svg]:h-auto [&_svg]:w-full" style={{ maxWidth: entry.size.w }}>
         <div
           dangerouslySetInnerHTML={{
-            __html: renderCardSvg({ kind: card.id, profile: DEMO_PROFILE, theme, animate: true }),
+            __html: renderCardSvg({
+              kind: card.id,
+              profile: DEMO_PROFILE,
+              theme,
+              animate: true,
+              ...(card.id === "repo" ? { params: { repo: "veera-siddhan/forgekit" } } : {}),
+            }),
           }}
         />
       </div>
@@ -79,6 +87,13 @@ function CardDoc() {
           ["username", "path", "Any public GitHub login. No sign-in required."],
           ["theme", "query", "Theme id. Defaults to obsidian."],
           ["animate", "query", "0 disables motion. Reduced-motion is honoured automatically."],
+          ["hide_border", "query", "1 removes the 1px card border."],
+          ["radius", "query", "Corner radius, 0–24. Defaults to 12."],
+          ...Object.entries(entry.meta.defaults).map(([name, value]) => [
+            name,
+            "query",
+            value ? `Default: ${value}` : "Optional.",
+          ]),
         ].map(([name, kind, note]) => (
           <div key={name} className="grid gap-1 p-3 sm:grid-cols-[120px_70px_minmax(0,1fr)] sm:items-baseline">
             <span className="text-[12px] text-ember" style={mono}>
