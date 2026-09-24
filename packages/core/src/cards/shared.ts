@@ -116,7 +116,5 @@ export function list(value: string | undefined): string[] {
 /** Circle arc as a stroked circle with dash. `pathLength` normalizes to 1. */
 export function ring(cx: number, cy: number, radius: number, fraction: number, cls: string, width = 4): string {
   const f = Math.max(0, Math.min(1, Number.isFinite(fraction) ? fraction : 0));
-  return `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke-width="${width}" stroke-linecap="round" pathLength="1" stroke-dasharray="${r(
-    f,
-  )} 1" transform="rotate(-90 ${cx} ${cy})" class="${cls}"/>`;
+  return `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke-width="${width}" stroke-linecap="round" pathLength="1" stroke-dasharray="${Math.round(f * 1000) / 1000} 1" transform="rotate(-90 ${cx} ${cy})" class="${cls}"/>`;
 }
