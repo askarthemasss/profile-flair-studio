@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { esc } from "../svg/esc";
 import { wrapText } from "../svg/format";
 import { keyframes } from "../svg/animations";
 import { defineCard } from "./types";
@@ -39,9 +38,7 @@ export const languages = defineCard({
 
     const pct = (share: number) => `${(share * 100).toFixed(1)}%`;
     const legend = (x: number, y: number, row: (typeof rows)[number], width: number) =>
-      `<circle cx="${x + 4}" cy="${y - 4}" r="4" fill="${row.color}"/><text x="${x + 14}" y="${y}" class="tx" font-size="12" font-family="inherit">${esc(
-        wrapText(row.name, 16, 1)[0] ?? "",
-      )}</text>${mono(x + width, y, pct(row.share), "mu", 11, "end")}`;
+      `<circle cx="${x + 4}" cy="${y - 4}" r="4" fill="${row.color}"/>${mono(x + 14, y, wrapText(row.name, 16, 1)[0] ?? "", "tx", 12)}${mono(x + width, y, pct(row.share), "mu", 11, "end")}`;
 
     let body = title("Languages");
     let css = "";

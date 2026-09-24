@@ -42,7 +42,7 @@ export const streak = defineCard({
       `<circle cx="240" cy="92" r="44" fill="none" stroke="var(--bd)" stroke-width="5"/>`,
       `<circle cx="240" cy="92" r="44" fill="none" stroke="var(--gl)" stroke-width="9" class="gw"/>`,
       ring(240, 92, 44, progress, "sr", 5),
-      `<path d="${FLAME}" transform="translate(240 70)" class="ac fl"/>`,
+      `<g transform="translate(240 70)"><path d="${FLAME}" class="ac fl"/></g>`,
       mono(240, 110, String(current.length), "tx", 26, "middle"),
       label(240, 160, "Current streak", "middle"),
       mono(240, 176, `next · ${goal} days`, "mu", 10, "middle"),
