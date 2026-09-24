@@ -94,7 +94,7 @@ export const heatmap = defineCard({
     const grid = [...columns.entries()]
       .map(([col, shapes]) => `<g class="cl" style="--c:${col}">${shapes.join("")}</g>`)
       .join("");
-    const legend = [0, 1, 2, 3, 4].map((level) => shapeAt(params.shape, 616 + level * 14, 150, `h${level}`)).join("");
+    const legend = [0, 1, 2, 3, 4].map((level) => shapeAt(params.shape, 600 + level * 14, 150, `h${level}`)).join("");
     const span = params.year ? String(params.year) : "the last year";
 
     return {
@@ -103,13 +103,13 @@ export const heatmap = defineCard({
       body: `${title("Contributions", 24, 30)}${mono(696, 30, `${formatNumber(total)} in ${span}`, "mu", 11, "end")}${months.join(
         "",
       )}${["Mon", "Wed", "Fri"].map((d, i) => mono(20, Y0 + (i * 2 + 1) * STEP + 9, d, "mu", 9)).join("")}${grid}${mono(
-        610,
+        594,
         159,
         "Less",
         "mu",
         9,
         "end",
-      )}${legend}${mono(690, 159, "More", "mu", 9)}${
+      )}${legend}${mono(674, 159, "More", "mu", 9)}${
         total === 0 ? mono(48, 159, "No contributions yet — the first square is waiting", "mu", 10) : ""
       }`,
       css: animate ? `.cl{${stagger("fade", 500, 18)}}` : "",
