@@ -47,7 +47,7 @@ function DocsPage() {
         <pre className="mt-3 overflow-x-auto rounded-md border border-line bg-raised p-3 text-[11.5px] text-ink-muted" style={mono}>
 {`${BRAND.baseUrl}/c/<card>/<username>?theme=<theme>&animate=<0|1>
 
-![Sigil stats](${BRAND.baseUrl}/c/stats/octocat?theme=obsidian&animate=1)`}
+![Sigil overview](${BRAND.baseUrl}/c/overview/octocat?theme=obsidian&animate=1)`}
         </pre>
         <dl className="mt-4 grid gap-3 sm:grid-cols-3">
           {[

@@ -319,7 +319,7 @@ function BannerCard({ profile, theme, active }: CardProps) {
 }
 
 const RENDERERS: Record<CardKind, (p: CardProps) => React.ReactNode> = {
-  stats: StatsCard,
+  overview: StatsCard,
   streak: StreakCard,
   languages: LanguagesCard,
   heatmap: HeatmapCard,

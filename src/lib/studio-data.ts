@@ -6,12 +6,12 @@ export type { CardKind, SigilProfile } from "@sigil/core/profile";
 export { DEMO_PROFILE };
 
 export const CARD_KINDS: { id: CardKind; name: string; hint: string }[] = [
-  { id: "stats", name: "Stats & rank", hint: "Contributions, repos, stars, followers, rank" },
+  { id: "overview", name: "Overview & rank", hint: "Avatar, six headline stats, rank emblem" },
   { id: "streak", name: "Streak", hint: "Current and best day streak" },
   { id: "languages", name: "Languages", hint: "Top languages by share" },
-  { id: "heatmap", name: "Contribution heatmap", hint: "26-week contribution grid" },
+  { id: "heatmap", name: "Contribution heatmap", hint: "53-week contribution calendar" },
   { id: "skyline", name: "Isometric skyline", hint: "Contributions as a 3D skyline" },
-  { id: "activity", name: "Activity graph", hint: "Weekly commits, last 12 weeks" },
+  { id: "activity", name: "Activity graph", hint: "Daily contributions with a 7-day average" },
   { id: "achievements", name: "Achievements", hint: "Earned and in-progress badges" },
   { id: "repo", name: "Repo card", hint: "A featured repository" },
   { id: "banner", name: "Banner", hint: "Name, bio, and mark" },
@@ -31,7 +31,7 @@ export const DEFAULT_STUDIO: StudioState = {
   username: DEMO_PROFILE.username,
   themeId: DEFAULT_THEME_ID,
   enabled: {
-    stats: true,
+    overview: true,
     streak: true,
     languages: true,
     heatmap: true,

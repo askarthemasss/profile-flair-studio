@@ -52,7 +52,7 @@ function ThemesPage() {
               className="[&_svg]:h-auto [&_svg]:w-full"
               dangerouslySetInnerHTML={{
                 __html: renderCardSvg({
-                  kind: "stats",
+                  kind: "overview",
                   profile: DEMO_PROFILE,
                   theme,
                   animate: false,

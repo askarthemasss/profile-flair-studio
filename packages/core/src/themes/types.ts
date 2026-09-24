@@ -7,7 +7,7 @@
 export type ThemeMode = "dark" | "light";
 
 export interface CardTheme {
-  /** Stable id used in URLs: sigil.dev/c/stats/USERNAME?theme=<id> */
+  /** Stable id used in URLs: sigil.dev/c/overview/USERNAME?theme=<id> */
   id: string;
   /** Human-readable name shown in the gallery. */
   name: string;

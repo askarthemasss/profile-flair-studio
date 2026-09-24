@@ -39,7 +39,7 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-const HERO_KINDS = ["banner", "stats", "heatmap"] as const;
+const HERO_KINDS = ["banner", "overview", "heatmap"] as const;
 
 function Landing() {
   const { signin } = Route.useSearch();
@@ -74,7 +74,7 @@ function Landing() {
             struck in obsidian.
           </h1>
           <p className="mt-5 max-w-lg text-[15.5px] leading-relaxed text-ink-muted">
-            Nine cards — stats, streak, languages, heatmap, skyline, activity, achievements,
+            Nine cards — overview, streak, languages, heatmap, skyline, activity, achievements,
             repo, banner — sharing one design language. Type a username, pick a theme, paste one
             line of Markdown. No rate-limit errors, ever: stale data is served instantly and
             refreshed in the background.

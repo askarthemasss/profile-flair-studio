@@ -9,6 +9,7 @@ export interface RepoStats {
   forks: number;
   language: string | null;
   fork: boolean;
+  pushedAt?: string | null;
 }
 
 export interface ProfileParts {
@@ -79,6 +80,21 @@ export function buildProfile(parts: ProfileParts): SigilProfile {
         },
   };
 
+  const sortedOwned = [...owned].sort((a, b) => b.stars - a.stars);
+  profile.days = parts.days
+    .filter((day) => day.date <= parts.today)
+    .slice(-371)
+    .map((day) => ({ date: day.date, count: day.count }));
+  profile.asOf = `${parts.today}T12:00:00Z`;
+  profile.languageBytes = profile.languages.map((row) => ({ name: row.name, bytes: row.pct }));
+  profile.topRepos = sortedOwned.slice(0, 30).map((repo) => ({
+    name: `${parts.login}/${repo.name}`,
+    description: clean(repo.description),
+    stars: Math.max(0, repo.stars),
+    forks: Math.max(0, repo.forks),
+    language: repo.language || "—",
+    pushedAt: repo.pushedAt ?? null,
+  }));
   profile.rankPercent = estimateRankPercent(profile);
   profile.achievements = ACHIEVEMENTS.map((badge) => ({
     name: badge.name,
