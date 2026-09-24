@@ -37,6 +37,7 @@ interface GitHubRepo {
   forks_count: number;
   language: string | null;
   fork: boolean;
+  pushed_at?: string | null;
 }
 
 /** Public GitHub data only. Throws GitHubQuiet when the API will not answer. */
@@ -77,6 +78,7 @@ async function fetchRepos(login: string): Promise<RepoStats[]> {
     name: repo.name,
     description: repo.description,
     stars: repo.stargazers_count ?? 0,
+    pushedAt: repo.pushed_at ?? null,
     forks: repo.forks_count ?? 0,
     language: repo.language,
     fork: Boolean(repo.fork),

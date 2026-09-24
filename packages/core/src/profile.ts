@@ -5,7 +5,7 @@
  */
 
 export const CARD_KIND_IDS = [
-  "stats",
+  "overview",
   "streak",
   "languages",
   "heatmap",
@@ -20,6 +20,14 @@ export type CardKind = (typeof CARD_KIND_IDS)[number];
 
 export function isCardKind(value: string): value is CardKind {
   return (CARD_KIND_IDS as readonly string[]).includes(value);
+}
+
+/** Card ids from older snippets keep working. */
+const CARD_KIND_ALIASES: Record<string, CardKind> = { stats: "overview" };
+
+export function resolveCardKind(value: string): CardKind | null {
+  const id = value.trim().toLowerCase();
+  return isCardKind(id) ? id : (CARD_KIND_ALIASES[id] ?? null);
 }
 
 /** GitHub logins: 1–39 chars, alphanumeric, hyphens not at either end. */
@@ -62,6 +70,25 @@ export interface SigilProfile {
     forks: number;
     language: string;
   };
+  /** Richer fields the card catalog uses when the pipeline has them. */
+  avatarDataUri?: string;
+  commits?: number;
+  prsMerged?: number;
+  reviews?: number;
+  issues?: number;
+  /** Daily counts, oldest first. */
+  days?: { date: string; count: number }[];
+  languageBytes?: { name: string; bytes: number }[];
+  topRepos?: {
+    name: string;
+    description: string;
+    stars: number;
+    forks: number;
+    language: string;
+    pushedAt: string | null;
+  }[];
+  /** ISO time the data describes; default `now` for renders. */
+  asOf?: string;
 }
 
 export const HEATMAP_WEEKS = 26;

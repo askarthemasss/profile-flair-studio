@@ -54,3 +54,28 @@ export function hexToRgba(hex: string, alpha: number): string {
   const { r, g, b } = parseHex(hex);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
+
+/** Linear blend of two #rrggbb colors. t = 0 gives `a`, t = 1 gives `b`. */
+export function mixHex(a: string, b: string, t: number): string {
+  const x = parseHex(a);
+  const y = parseHex(b);
+  const k = Math.max(0, Math.min(1, t));
+  const ch = (p: number, q: number) =>
+    Math.round(p + (q - p) * k)
+      .toString(16)
+      .padStart(2, "0");
+  return `#${ch(x.r, y.r)}${ch(x.g, y.g)}${ch(x.b, y.b)}`;
+}
+
+/**
+ * Nudge `color` toward white (dark backgrounds) or black (light backgrounds)
+ * until it reaches `min` contrast against `bg`.
+ */
+export function ensureContrast(color: string, bg: string, min = 3): string {
+  const target = relativeLuminance(bg) < 0.5 ? "#ffffff" : "#000000";
+  for (let step = 0; step <= 20; step++) {
+    const candidate = mixHex(color, target, step / 20);
+    if (contrastRatio(candidate, bg) >= min) return candidate;
+  }
+  return target;
+}

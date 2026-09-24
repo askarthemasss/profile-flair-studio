@@ -7,7 +7,7 @@
 export type ThemeMode = "dark" | "light";
 
 export interface CardTheme {
-  /** Stable id used in URLs: sigil.dev/c/stats/USERNAME?theme=<id> */
+  /** Stable id used in URLs: sigil.dev/c/overview/USERNAME?theme=<id> */
   id: string;
   /** Human-readable name shown in the gallery. */
   name: string;
@@ -28,4 +28,6 @@ export interface CardTheme {
   border: string;
   /** Short feeling note for the gallery caption. */
   feel: string;
+  /** Display font embedded in every card. Defaults to Fraunces. */
+  font?: "fraunces" | "jetbrains-mono";
 }
