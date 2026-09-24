@@ -28,4 +28,6 @@ export interface CardTheme {
   border: string;
   /** Short feeling note for the gallery caption. */
   feel: string;
+  /** Display font embedded in every card. Defaults to Fraunces. */
+  font?: "fraunces" | "jetbrains-mono";
 }
