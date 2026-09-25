@@ -42,6 +42,19 @@ interface GitHubRepo {
 
 /** Public GitHub data only. Throws GitHubQuiet when the API will not answer. */
 export async function loadGitHubProfile(login: string): Promise<LiveProfile | MissingProfile> {
+  const token = process.env["GITHUB_TOKEN"];
+  if (token) {
+    const { refreshSnapshot, profileFromSnapshot } = await import("../../apps/render/src/pipeline/refresh.server");
+    try {
+      const snap = await refreshSnapshot(login, token);
+      return { availability: "live", profile: profileFromSnapshot(snap), githubId: snap.githubId };
+    } catch (error) {
+      const kind = (error as { kind?: string }).kind;
+      if (kind === "not_found") return { availability: "missing" };
+      if (kind === "rate_limited") throw new GitHubQuiet("GitHub rate limit");
+      console.warn("[github] GraphQL pipeline failed, falling back to public REST", error);
+    }
+  }
   const userRes = await githubFetch(`https://api.github.com/users/${encodeURIComponent(login)}`);
   if (userRes.status === 404) return { availability: "missing" };
   if (userRes.status === 403 || userRes.status === 429) {
