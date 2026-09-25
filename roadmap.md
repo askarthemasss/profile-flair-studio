@@ -49,3 +49,7 @@ A lean task list, not a log. Check before reporting work complete.
 
 - Saving a pack from the studio into `card_presets` (dashboard reads them; studio can't write yet)
 - Theme submissions by pull request (docs page only describes the flow)
+
+## Done
+
+- M3 data pipeline: GraphQL-only snapshot (`packages/core/src/github/*`), stats (`packages/core/src/stats/*`: rank, streak, languages, achievements), refresh + persistence (`apps/render/src/pipeline/*`). Past years cached 30 days; cost logged per query.
