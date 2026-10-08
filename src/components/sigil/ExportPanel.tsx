@@ -1,6 +1,6 @@
 import { BRAND } from "@sigil/core/brand";
 import { sigilMarkdown } from "@sigil/core/markdown";
-import { Copy } from "lucide-react";
+import { Copy, Save } from "lucide-react";
 import { toast } from "sonner";
 
 import type { CardKind } from "@/lib/studio-data";
@@ -13,12 +13,30 @@ export function ExportPanel({
   themeId,
   animate,
   staticBackup,
+  packName,
+  isPublic,
+  saving,
+  sessionLoading,
+  signedIn,
+  editing,
+  onPackName,
+  onPublic,
+  onSave,
 }: {
   username: string;
   kinds: CardKind[];
   themeId: string;
   animate: boolean;
   staticBackup: boolean;
+  packName: string;
+  isPublic: boolean;
+  saving: boolean;
+  sessionLoading: boolean;
+  signedIn: boolean;
+  editing: boolean;
+  onPackName: (name: string) => void;
+  onPublic: (value: boolean) => void;
+  onSave: () => void;
 }) {
   const markdown = sigilMarkdown({ username, kinds, themeId, animate, staticBackup });
 
@@ -36,8 +54,8 @@ export function ExportPanel({
           Export
         </h2>
         <p className="mt-2 text-[11px] leading-relaxed text-ink-faint" style={mono}>
-          @{username} · {themeId} · {animate ? "animated" : "still"} ·{" "}
-          {kinds.length} card{kinds.length === 1 ? "" : "s"}
+          @{username} · {themeId} · {animate ? "animated" : "still"} · {kinds.length} card
+          {kinds.length === 1 ? "" : "s"}
         </p>
         <button
           onClick={copy}
@@ -45,6 +63,57 @@ export function ExportPanel({
           className="sg-breath mt-4 flex w-full items-center justify-center gap-2 rounded-md bg-ember px-4 py-2.5 text-[13px] font-semibold text-obsidian transition-transform hover:scale-[1.01] disabled:opacity-40"
         >
           <Copy className="size-4" /> Copy Markdown
+        </button>
+      </div>
+
+      <div className="rounded-lg border border-line bg-panel p-4 shadow-card">
+        <h2 className="text-[10px] uppercase tracking-[0.2em] text-ink-muted" style={mono}>
+          Save pack
+        </h2>
+        <label className="mt-3 block text-[11px] text-ink-muted">
+          Name
+          <input
+            value={packName}
+            onChange={(event) => onPackName(event.target.value)}
+            maxLength={60}
+            className="mt-1 w-full rounded-md border border-line bg-raised px-3 py-2 text-sm text-ink outline-none placeholder:text-ink-faint"
+            style={mono}
+            spellCheck={false}
+          />
+        </label>
+        <button
+          onClick={() => onPublic(!isPublic)}
+          className="mt-3 flex w-full items-center justify-between text-left"
+        >
+          <span>
+            <span className="block text-[13px] text-ink">Public link</span>
+            <span className="text-[10px] text-ink-faint">
+              anyone with the pack link can open it
+            </span>
+          </span>
+          <span
+            className="relative h-5 w-9 rounded-full transition-colors"
+            style={{ background: isPublic ? "var(--sg-ember)" : "var(--sg-bg-3)" }}
+          >
+            <span
+              className="absolute top-0.5 size-4 rounded-full bg-obsidian transition-all"
+              style={{ left: isPublic ? "calc(100% - 18px)" : "2px" }}
+            />
+          </span>
+        </button>
+        <button
+          onClick={onSave}
+          disabled={saving || sessionLoading || packName.trim().length === 0}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-line px-4 py-2.5 text-[13px] text-ink transition-colors hover:border-line-strong disabled:opacity-40"
+        >
+          <Save className="size-4" />
+          {saving
+            ? "Saving…"
+            : signedIn
+              ? editing
+                ? "Update pack"
+                : "Save pack"
+              : "Sign in to save"}
         </button>
       </div>
 

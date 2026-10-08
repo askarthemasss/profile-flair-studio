@@ -39,6 +39,36 @@ function ThemesPage() {
         lede="A theme is one colour set shared by every card in your pack. All of them pass a WCAG contrast check: text at 4.5:1, accent at 3:1. New themes arrive by pull request."
       />
 
+      <section className="mt-8 rounded-lg border border-line bg-panel p-5 shadow-card">
+        <h2 className="text-[10px] uppercase tracking-[0.2em] text-ink-muted" style={mono}>
+          Contribute a theme
+        </h2>
+        <ol className="mt-3 list-decimal space-y-2 pl-4 text-[13px] leading-relaxed text-ink-muted">
+          <li>
+            Add <span style={mono}>packages/core/src/themes/builtin/&lt;id&gt;.ts</span> exporting a{" "}
+            <span style={mono}>CardTheme</span>. The id is 2–40 characters: lowercase letters,
+            numbers, and hyphens. Copy <span style={mono}>obsidian.ts</span> and change the colours.
+          </li>
+          <li>
+            Register the export in{" "}
+            <span style={mono}>packages/core/src/themes/builtin/index.ts</span> so the gallery, the
+            studio, and the card URLs can resolve it.
+          </li>
+          <li>
+            Run <span style={mono}>bun run check</span>. Text and muted on the background must be at
+            least 4.5:1. Accent and gold must be at least 3:1. The check fails the pull request
+            otherwise.
+          </li>
+        </ol>
+        <a
+          href="https://github.com/askarthemasss/profile-flair-studio/blob/main/packages/core/src/themes/builtin/obsidian.ts"
+          className="mt-4 inline-block text-[12px] text-ember"
+          style={mono}
+        >
+          obsidian.ts →
+        </a>
+      </section>
+
       <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {BUILTIN_THEMES.map((theme) => (
           <Link
@@ -60,10 +90,16 @@ function ThemesPage() {
               }}
             />
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-[15px]" style={{ color: theme.text, fontFamily: "var(--font-display)" }}>
+              <span
+                className="text-[15px]"
+                style={{ color: theme.text, fontFamily: "var(--font-display)" }}
+              >
                 {theme.name}
               </span>
-              <span className="text-[10px] uppercase tracking-[0.14em]" style={{ color: theme.muted, ...mono }}>
+              <span
+                className="text-[10px] uppercase tracking-[0.14em]"
+                style={{ color: theme.muted, ...mono }}
+              >
                 {theme.mode}
               </span>
             </div>

@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "seed:demo": "bun run scripts/seed-demo.ts",
-    "check": "bun scripts/check.ts && bun scripts/check-svg-size.ts && bun test packages/core/test",
+    "check": "bun scripts/check.ts && bun scripts/check-svg-size.ts && bun test packages/core/test src/lib/pack.test.ts",
     "check:svg-size": "bun scripts/check-svg-size.ts",
     "test:cards": "bun test packages/core/test"
   },
