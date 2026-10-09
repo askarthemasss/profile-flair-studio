@@ -10,3 +10,9 @@
 <!-- LOVABLE:END -->
 
 - GitHub data is fetched via GraphQL only (apps/render/src/pipeline); REST path is a no-token fallback. Why: the 5,000-point/hour budget is the core constraint.
+
+## Local development
+
+- Use Bun. CI runs `bun install --frozen-lockfile` and `bun run check` (theme contrast, SVG size, and `packages/core` tests). `bun.lock` is the lockfile.
+- `bun run dev` serves the studio at http://localhost:8080. `@lovable.dev/vite-tanstack-config` pins that port.
+- The committed `.env` has the public Supabase URL and publishable key the app needs to boot. `GITHUB_TOKEN` and `SUPABASE_SERVICE_ROLE_KEY` are optional. Public card routes still render from GitHub without a token, and the studio draws the built-in demo profile in the browser.
