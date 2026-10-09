@@ -6,6 +6,10 @@ import type { SigilProfile } from "./profile";
  * Public stats for the most-followed GitHub developer, Linus Torvalds
  * (@torvalds), frozen on 2026-10-09. The live API does not serve this object
  * for any other login.
+ *
+ * `commits` is that year's public contribution total. `prsMerged`, `reviews`,
+ * and `issues` are public search totals: merged pull requests he authored,
+ * pull requests he reviewed, and issues he opened.
  */
 export const DEMO_PROFILE: SigilProfile = {
   username: "torvalds",
@@ -18,6 +22,10 @@ export const DEMO_PROFILE: SigilProfile = {
   rankPercent: 1,
   streakCurrent: 102,
   streakBest: 102,
+  commits: 3796,
+  prsMerged: 72,
+  reviews: 34,
+  issues: 10,
   languages: [
     {
       name: "C",
