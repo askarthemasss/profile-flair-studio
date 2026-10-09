@@ -220,7 +220,7 @@ function SkylineCard({ profile, theme, active }: CardProps) {
 }
 
 function ActivityCard({ profile, theme, active }: CardProps) {
-  const max = Math.max(...profile.activity);
+  const max = Math.max(1, ...profile.activity);
   return (
     <CardFrame theme={theme} title="Activity graph" active={active}>
       <div className="flex items-end gap-1.5 h-16">

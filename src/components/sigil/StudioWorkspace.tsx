@@ -1,3 +1,5 @@
+import { missingProfile } from "@sigil/core/build-profile";
+import { normalizeUsername } from "@sigil/core/profile";
 import { BUILTIN_THEMES, getTheme } from "@sigil/core/themes";
 import { PanelRight } from "lucide-react";
 import { useState } from "react";
@@ -9,8 +11,10 @@ import {
   DEFAULT_STUDIO,
   DEMO_PROFILE,
   type CardKind,
+  type SigilProfile,
   type StudioState,
 } from "@/lib/studio-data";
+import { liveProfileNote, useLiveProfile } from "@/lib/use-live-profile";
 import { CardGrid } from "./cards";
 import { ControlRail } from "./ControlRail";
 import { ExportPanel } from "./ExportPanel";
@@ -37,12 +41,49 @@ export function StudioWorkspace({
   const [tab, setTab] = useState<Tab>("preview");
 
   const theme = getTheme(state.themeId);
-  const username = state.username.trim() || DEMO_PROFILE.username;
-  const profile = { ...DEMO_PROFILE, username };
+  const typed = state.username.trim();
+  const normalized = normalizeUsername(typed);
+  const username = normalized ?? (typed.replace(/^@/, "") || DEMO_PROFILE.username);
+  const wantsLive = Boolean(normalized && normalized !== DEMO_PROFILE.username);
+  const live = useLiveProfile(wantsLive ? normalized : null);
+  const invalid = typed.length > 0 && !normalized;
+  const status = invalid
+    ? { note: "That is not a valid GitHub login.", warn: true }
+    : liveProfileNote(wantsLive ? live.phase : "idle");
+  const sourceLabel = invalid
+    ? "invalid login"
+    : !wantsLive
+      ? "sample pack"
+      : state.preview === "svg"
+        ? "served SVG"
+        : live.phase === "ready"
+          ? "live GitHub data"
+          : live.phase === "missing"
+            ? "no public profile"
+            : live.phase === "error"
+              ? "GitHub quiet"
+              : "loading GitHub";
+  const profile: SigilProfile | null = !wantsLive
+    ? { ...DEMO_PROFILE, username: normalized ?? DEMO_PROFILE.username }
+    : live.phase === "ready" && live.profile
+      ? live.profile
+      : live.phase === "missing" && normalized
+        ? missingProfile(normalized)
+        : null;
+  let svgProfile = profile;
+  if (!svgProfile && wantsLive && normalized) {
+    svgProfile = { ...DEMO_PROFILE, username: normalized, name: normalized };
+  }
   const enabledKinds = CARD_KINDS.filter((c) => state.enabled[c.id]).map((c) => c.id);
 
   const controls = (
-    <ControlRail state={state} onChange={setState} themes={BUILTIN_THEMES} />
+    <ControlRail
+      state={state}
+      onChange={setState}
+      themes={BUILTIN_THEMES}
+      usernameNote={status.note}
+      usernameWarn={status.warn}
+    />
   );
   const exportPanel = (
     <ExportPanel
@@ -54,15 +95,15 @@ export function StudioWorkspace({
     />
   );
   const preview =
-    state.preview === "svg" ? (
+    state.preview === "svg" && svgProfile ? (
       <SvgPreview
         kinds={enabledKinds}
-        profile={profile}
+        profile={svgProfile}
         theme={theme}
         animate={state.animate}
-        live={username.toLowerCase() !== DEMO_PROFILE.username}
+        live={wantsLive}
       />
-    ) : (
+    ) : profile ? (
       <CardGrid
         kinds={enabledKinds}
         profile={profile}
@@ -71,6 +112,13 @@ export function StudioWorkspace({
         activeId={activeId}
         onActive={setActiveId}
       />
+    ) : (
+      <p
+        className="rounded-lg border border-line bg-panel px-4 py-8 text-center text-[12px] text-ink-muted"
+        style={mono}
+      >
+        {status.note}
+      </p>
     );
 
   const canvasHeader = (
@@ -80,7 +128,7 @@ export function StudioWorkspace({
           The nine marks
         </h1>
         <p className="truncate text-[10.5px] text-ink-faint" style={mono}>
-          @{username} · {theme.name} · {state.preview === "svg" ? "served SVG" : "live preview"}
+          @{username} · {theme.name} · {sourceLabel}
         </p>
       </div>
       <Sheet>
