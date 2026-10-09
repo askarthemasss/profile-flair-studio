@@ -1,9 +1,15 @@
-import { Link, useRouter } from "@tanstack/react-router";
+import { Link, useRouter, type ErrorComponentProps } from "@tanstack/react-router";
 
 const mono = { fontFamily: "var(--font-mono)" } as const;
 
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  return "Unknown error";
+}
+
 /** Per-page fallback in the Obsidian Ledger voice. */
-export function RouteError({ error, reset }: { error: Error; reset?: () => void }) {
+export function RouteError({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
 
   return (
@@ -22,7 +28,7 @@ export function RouteError({ error, reset }: { error: Error; reset?: () => void 
           Nothing was lost. Try this page again, or head back to the studio.
         </p>
         <p className="mt-3 break-words text-[10px] text-ink-faint" style={mono}>
-          {error.message}
+          {errorMessage(error)}
         </p>
         <div className="mt-6 flex flex-wrap gap-2">
           <button
