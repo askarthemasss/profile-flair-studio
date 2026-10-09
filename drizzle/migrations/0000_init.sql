@@ -117,6 +117,8 @@ create table public.card_presets (
 
 create index card_presets_user_idx on public.card_presets (user_id, updated_at desc);
 
+-- anon may read; RLS presets_select still hides rows that are not public.
+grant select on public.card_presets to anon;
 grant select, insert, update, delete on public.card_presets to authenticated;
 grant all on public.card_presets to service_role;
 

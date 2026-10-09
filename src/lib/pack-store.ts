@@ -27,6 +27,8 @@ export async function readCardPreset(id: string): Promise<
   | { error: string }
   | null
 > {
+  // Signed-out reads use the anon role. Public rows are allowed by presets_select;
+  // private rows stay hidden. See drizzle/migrations/0001_card_presets_public_read.sql.
   const { data, error } = await supabase
     .from("card_presets")
     .select("id, name, params, is_public, user_id")
