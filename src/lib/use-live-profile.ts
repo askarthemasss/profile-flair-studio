@@ -31,6 +31,15 @@ export function liveProfileNote(phase: LivePhase): { note: string; warn: boolean
  * Load the public profile for a GitHub login.
  * Pass null to stay idle (empty field, invalid login, or the built-in sample).
  */
+export interface ProfileQuery {
+  isPending: boolean;
+  isError: boolean;
+  data: ProfileQueryData | undefined;
+}
+
+export type ProfileQueryData =
+  { status: "ready"; profile: SigilProfile; availability: string } | { status: "missing" };
+
 export function useLiveProfile(login: string | null): LiveProfileState {
   const debounced = useDebounced(login, 400);
   const query = useQuery({
@@ -41,17 +50,31 @@ export function useLiveProfile(login: string | null): LiveProfileState {
     queryFn: () => fetchProfile(debounced as string),
   });
 
+  return resolveLiveState(login, debounced, query);
+}
+
+/**
+ * A failed refetch keeps the last successful payload in `data`. Prefer that
+ * over the error flag so a blip does not blank cards that already loaded.
+ * A login that has not settled yet stays on the loading state, so the previous
+ * person's stats are not shown under the new name.
+ */
+export function resolveLiveState(
+  login: string | null,
+  debounced: string | null,
+  query: ProfileQuery,
+): LiveProfileState {
   if (!login) return IDLE;
-  if (login !== debounced || query.isPending) {
+  if (login !== debounced || (query.isPending && !query.data)) {
     return { phase: "loading", profile: null, availability: null };
   }
-  if (query.isError || !query.data) {
-    return { phase: "error", profile: null, availability: null };
+  if (query.data?.status === "ready") {
+    return { phase: "ready", profile: query.data.profile, availability: query.data.availability };
   }
-  if (query.data.status === "missing") {
+  if (query.data?.status === "missing") {
     return { phase: "missing", profile: null, availability: "missing" };
   }
-  return { phase: "ready", profile: query.data.profile, availability: query.data.availability };
+  return { phase: "error", profile: null, availability: null };
 }
 
 function useDebounced(value: string | null, ms: number): string | null {
@@ -103,11 +126,7 @@ interface UserPayload {
   availability?: string;
 }
 
-async function fetchProfile(
-  login: string,
-): Promise<
-  { status: "ready"; profile: SigilProfile; availability: string } | { status: "missing" }
-> {
+async function fetchProfile(login: string): Promise<ProfileQueryData> {
   const response = await fetch(`/api/v1/users/${encodeURIComponent(login)}`, {
     headers: { Accept: "application/json" },
     cache: "no-store",
@@ -117,6 +136,10 @@ async function fetchProfile(
   const body = (await response.json()) as UserPayload;
   const profile = profileFromApi(body);
   if (!profile) throw new Error("profile shape");
+  // A cold miss during an outage is a 200 with an empty waiting profile.
+  // Throwing keeps that placeholder out of the ready state, and leaves a
+  // previously loaded profile in the query cache when a later refresh fails.
+  if (body.availability === "degraded") throw new Error("profile degraded");
   return { status: "ready", profile, availability: body.availability ?? "live" };
 }
 
