@@ -110,6 +110,7 @@ async function fetchProfile(
 > {
   const response = await fetch(`/api/v1/users/${encodeURIComponent(login)}`, {
     headers: { Accept: "application/json" },
+    cache: "no-store",
   });
   if (response.status === 404) return { status: "missing" };
   if (!response.ok) throw new Error(`profile ${response.status}`);
