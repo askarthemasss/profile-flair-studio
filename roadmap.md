@@ -45,11 +45,10 @@ A lean task list, not a log. Check before reporting work complete.
 
 ## Open
 
-- M3–M9: the uploaded brief stops after M2 — waiting on the rest of the spec from the user
-
-- Saving a pack from the studio into `card_presets` (dashboard reads them; studio can't write yet)
-- Theme submissions by pull request (docs page only describes the flow)
+- M4–M9: the uploaded brief stops after M2 — waiting on the rest of the spec from the user
 
 ## Done
 
 - M3 data pipeline: GraphQL-only snapshot (`packages/core/src/github/*`), stats (`packages/core/src/stats/*`: rank, streak, languages, achievements), refresh + persistence (`apps/render/src/pipeline/*`). Past years cached 30 days; cost logged per query.
+- Studio writes `card_presets` (name, theme, cards, animation, static backup, public flag). `?pack=` restores a pack; dashboard Open uses that link. A public pack you do not own saves as a copy. `anon` can select the table; row-level security still hides private packs.
+- Theme pull requests: `/themes` lists the file to add, the registry line, and the contrast bars `bun run check` already enforces.
