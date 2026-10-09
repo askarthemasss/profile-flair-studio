@@ -147,11 +147,11 @@ export function profileFromApi(body: UserPayload): SigilProfile | null {
       forks: num(body.repo?.forks),
       language: body.repo?.language || "—",
     },
-    commits: num(body.commits),
-    prsMerged: num(body.prsMerged),
-    reviews: num(body.reviews),
-    issues: num(body.issues),
   };
+  if (typeof body.commits === "number") profile.commits = body.commits;
+  if (typeof body.prsMerged === "number") profile.prsMerged = body.prsMerged;
+  if (typeof body.reviews === "number") profile.reviews = body.reviews;
+  if (typeof body.issues === "number") profile.issues = body.issues;
   const days = (body.days ?? [])
     .filter((day) => typeof day.date === "string")
     .map((day) => ({ date: day.date as string, count: num(day.count) }));
