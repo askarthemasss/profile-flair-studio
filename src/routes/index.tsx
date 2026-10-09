@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { BRAND } from "@sigil/core/brand";
+import { missingProfile } from "@sigil/core/build-profile";
 import { getTheme } from "@sigil/core/themes";
 import { renderCardSvg } from "@sigil/core/render/svg";
 import { normalizeUsername } from "@sigil/core/profile";
@@ -7,7 +8,8 @@ import { useEffect, useState } from "react";
 
 import { MarketingShell } from "@/components/layout/MarketingShell";
 import { RouteError } from "@/components/layout/RouteError";
-import { DEMO_PROFILE } from "@/lib/studio-data";
+import { DEMO_PROFILE, type SigilProfile } from "@/lib/studio-data";
+import { liveProfileNote, useLiveProfile } from "@/lib/use-live-profile";
 import { signInWithGoogle } from "@/lib/auth";
 
 const mono = { fontFamily: "var(--font-mono)" } as const;
@@ -54,8 +56,19 @@ function Landing() {
   }, [signin, prompted]);
 
   const clean = normalizeUsername(input);
-  const username = clean ?? DEMO_PROFILE.username;
-  const profile = { ...DEMO_PROFILE, username, name: clean ? username : DEMO_PROFILE.name };
+  const wantsLive = Boolean(clean && clean !== DEMO_PROFILE.username);
+  const live = useLiveProfile(wantsLive ? clean : null);
+  const invalid = input.trim().length > 0 && !clean;
+  const status = invalid
+    ? { note: "That is not a valid GitHub login.", warn: true }
+    : liveProfileNote(wantsLive ? live.phase : "idle");
+  const profile: SigilProfile | null = !wantsLive
+    ? DEMO_PROFILE
+    : live.phase === "ready" && live.profile
+      ? live.profile
+      : live.phase === "missing" && clean
+        ? missingProfile(clean)
+        : null;
   const theme = getTheme("obsidian");
 
   return (
@@ -96,8 +109,11 @@ function Landing() {
                 style={mono}
               />
             </div>
-            <p className="mt-2 text-[10px] text-ink-faint" style={mono}>
-              {input && !clean ? "That is not a valid GitHub login." : "Preview updates as you type."}
+            <p
+              className={`mt-2 text-[10px] ${status.warn ? "text-ember" : "text-ink-faint"}`}
+              style={mono}
+            >
+              {status.note}
             </p>
           </div>
 
@@ -119,15 +135,24 @@ function Landing() {
         </div>
 
         <div className="min-w-0 space-y-3">
-          {HERO_KINDS.map((kind) => (
-            <div
-              key={kind}
-              className="[&_svg]:h-auto [&_svg]:w-full"
-              dangerouslySetInnerHTML={{
-                __html: renderCardSvg({ kind, profile, theme, animate: true }),
-              }}
-            />
-          ))}
+          {profile ? (
+            HERO_KINDS.map((kind) => (
+              <div
+                key={kind}
+                className="[&_svg]:h-auto [&_svg]:w-full"
+                dangerouslySetInnerHTML={{
+                  __html: renderCardSvg({ kind, profile, theme, animate: true }),
+                }}
+              />
+            ))
+          ) : (
+            <p
+              className="rounded-lg border border-line bg-panel px-4 py-10 text-center text-[12px] text-ink-muted"
+              style={mono}
+            >
+              {status.note}
+            </p>
+          )}
         </div>
       </section>
 

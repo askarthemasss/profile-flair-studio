@@ -1,5 +1,6 @@
 import { buildProfile, type RepoStats } from "@sigil/core/build-profile";
 import { parseContributionHtml, type ContributionCalendar } from "@sigil/core/contributions";
+import { fetchAvatarDataUri } from "@sigil/core/github/avatar";
 import type { SigilProfile } from "@sigil/core/profile";
 
 const USER_AGENT = "Sigil";
@@ -28,6 +29,7 @@ interface GitHubUser {
   bio: string | null;
   followers: number;
   public_repos: number;
+  avatar_url?: string;
 }
 
 interface GitHubRepo {
@@ -63,7 +65,11 @@ export async function loadGitHubProfile(login: string): Promise<LiveProfile | Mi
   if (!userRes.ok) throw new GitHubQuiet(`GitHub user ${userRes.status}`);
 
   const user = (await userRes.json()) as GitHubUser;
-  const [repos, calendar] = await Promise.all([fetchRepos(login), fetchCalendar(login)]);
+  const [repos, calendar, avatarDataUri] = await Promise.all([
+    fetchRepos(login),
+    fetchCalendar(login),
+    user.avatar_url ? fetchAvatarDataUri(sizedAvatar(user.avatar_url)) : Promise.resolve(null),
+  ]);
 
   const profile = buildProfile({
     login: user.login.toLowerCase(),
@@ -76,6 +82,7 @@ export async function loadGitHubProfile(login: string): Promise<LiveProfile | Mi
     days: calendar.days,
     today: new Date().toISOString().slice(0, 10),
   });
+  if (avatarDataUri) profile.avatarDataUri = avatarDataUri;
 
   return { availability: "live", profile, githubId: user.id };
 }
@@ -107,6 +114,17 @@ async function fetchCalendar(login: string): Promise<ContributionCalendar> {
     return parseContributionHtml(await res.text());
   } catch {
     return { total: 0, days: [] };
+  }
+}
+
+/** GitHub avatars accept `s` and stay under the inlined-image cap at 96px. */
+function sizedAvatar(url: string): string {
+  try {
+    const parsed = new URL(url);
+    parsed.searchParams.set("s", "96");
+    return parsed.toString();
+  } catch {
+    return url;
   }
 }
 

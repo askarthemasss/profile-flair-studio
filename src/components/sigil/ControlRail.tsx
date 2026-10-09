@@ -6,9 +6,11 @@ interface Props {
   state: StudioState;
   onChange: (next: StudioState) => void;
   themes: CardTheme[];
+  usernameNote?: string;
+  usernameWarn?: boolean;
 }
 
-export function ControlRail({ state, onChange, themes }: Props) {
+export function ControlRail({ state, onChange, themes, usernameNote, usernameWarn }: Props) {
   const mono = { fontFamily: "var(--font-mono)" } as const;
   const display = { fontFamily: "var(--font-display)" } as const;
 
@@ -45,6 +47,14 @@ export function ControlRail({ state, onChange, themes }: Props) {
             autoComplete="off"
           />
         </div>
+        {usernameNote ? (
+          <p
+            className={`mt-2 text-[10px] ${usernameWarn ? "text-ember" : "text-ink-faint"}`}
+            style={mono}
+          >
+            {usernameNote}
+          </p>
+        ) : null}
 
         <label className="mt-4 block text-[11px] text-ink-muted">Theme</label>
         <div className="mt-1 flex items-center justify-between rounded-md border border-line bg-raised px-3 py-2 text-sm text-ink">
