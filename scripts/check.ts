@@ -2,6 +2,8 @@
  * Theme contrast + SVG renderer + contribution parser.
  * Run: bun scripts/check.ts
  */
+import { readdirSync, readFileSync } from "node:fs";
+
 import { missingProfile, buildProfile } from "../packages/core/src/build-profile";
 import { parseContributionHtml, streaks } from "../packages/core/src/contributions";
 import { DEMO_PROFILE } from "../packages/core/src/demo";
@@ -107,6 +109,15 @@ expect(
   "markdown url",
 );
 expect(markdown.includes("Static backup"), "backup comment");
+
+const migrations = readdirSync("drizzle/migrations")
+  .filter((name) => name.endsWith(".sql"))
+  .map((name) => readFileSync(`drizzle/migrations/${name}`, "utf8"))
+  .join("\n");
+expect(
+  /grant\s+select\s+on\s+(table\s+)?public\.card_presets\s+to\s+anon/i.test(migrations),
+  "anon can select card_presets so a public pack link opens signed out",
+);
 
 if (failures.length > 0) {
   console.error(failures.map((line) => `FAIL ${line}`).join("\n"));

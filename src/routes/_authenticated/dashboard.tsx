@@ -136,7 +136,7 @@ function Dashboard() {
                       <div className="flex shrink-0 items-center gap-2">
                         <Link
                           to="/studio"
-                          search={params.theme ? { theme: params.theme } : {}}
+                          search={{ pack: preset.id }}
                           className="rounded-md border border-line px-3 py-1.5 text-[12px] text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
                         >
                           Open

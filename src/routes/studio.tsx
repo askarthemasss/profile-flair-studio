@@ -5,14 +5,20 @@ import { BUILTIN_THEMES } from "@sigil/core/themes";
 import { RouteError } from "@/components/layout/RouteError";
 import { StudioWorkspace } from "@/components/sigil/StudioWorkspace";
 
+const PACK_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const Route = createFileRoute("/studio")({
-  validateSearch: (search: Record<string, unknown>): { user?: string; theme?: string } => {
-    const out: { user?: string; theme?: string } = {};
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { user?: string; theme?: string; pack?: string } => {
+    const out: { user?: string; theme?: string; pack?: string } = {};
     const rawUser = typeof search["user"] === "string" ? search["user"] : "";
     const rawTheme = typeof search["theme"] === "string" ? search["theme"] : "";
+    const rawPack = typeof search["pack"] === "string" ? search["pack"] : "";
     const user = normalizeUsername(rawUser);
     if (user) out.user = user;
     if (BUILTIN_THEMES.some((t) => t.id === rawTheme)) out.theme = rawTheme;
+    if (PACK_ID.test(rawPack)) out.pack = rawPack.toLowerCase();
     return out;
   },
   head: () => ({
@@ -37,11 +43,12 @@ export const Route = createFileRoute("/studio")({
 });
 
 function StudioPage() {
-  const { user, theme } = Route.useSearch();
+  const { user, theme, pack } = Route.useSearch();
   return (
     <StudioWorkspace
       {...(user ? { initialUsername: user } : {})}
       {...(theme ? { initialThemeId: theme } : {})}
+      {...(pack ? { initialPackId: pack } : {})}
     />
   );
 }
