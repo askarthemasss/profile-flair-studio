@@ -2,10 +2,10 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { BRAND } from "@sigil/core/brand";
 import { getTheme } from "@sigil/core/themes";
 import { isCardKind } from "@sigil/core/profile";
-import { renderCardSvg } from "@sigil/core/render/svg";
 import { CARD_REGISTRY } from "@sigil/core/cards";
 
 import { MarketingShell } from "@/components/layout/MarketingShell";
+import { CardSvg } from "@/components/sigil/CardSvg";
 import { RouteError } from "@/components/layout/RouteError";
 import { CARD_KINDS, DEMO_PROFILE } from "@/lib/studio-data";
 
@@ -50,7 +50,11 @@ function CardDoc() {
 
   return (
     <MarketingShell>
-      <Link to="/docs" className="text-[11px] text-ink-faint transition-colors hover:text-ink" style={mono}>
+      <Link
+        to="/docs"
+        className="sg-focus text-[11px] text-ink-faint transition-colors hover:text-ink"
+        style={mono}
+      >
         ← all cards
       </Link>
       <h1 className="mt-4 text-[34px] leading-tight tracking-tight text-ink md:text-[42px]" style={display}>
@@ -58,17 +62,8 @@ function CardDoc() {
       </h1>
       <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-ink-muted">{entry.meta.description}</p>
 
-      <div className="mt-8 [&_svg]:h-auto [&_svg]:w-full" style={{ maxWidth: entry.size.w }}>
-        <div
-          dangerouslySetInnerHTML={{
-            __html: renderCardSvg({
-              kind: card.id,
-              profile: DEMO_PROFILE,
-              theme,
-              animate: true,
-            }),
-          }}
-        />
+      <div className="mt-8" style={{ maxWidth: entry.size.w }}>
+        <CardSvg kind={card.id} profile={DEMO_PROFILE} theme={theme} animate />
       </div>
 
       <h2 className="mt-10 text-[10px] uppercase tracking-[0.2em] text-ink-muted" style={mono}>
