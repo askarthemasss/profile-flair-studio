@@ -186,7 +186,9 @@
   }
 }
 
-/* Skip layout and paint for cards that are scrolled out of a panel. */
+/* Skip layout for SVG cards scrolled out of a panel.
+   Paint containment clips anything outside the padding box, so this stays off
+   the designed cards — their drop shadow and hover glow would be cut off. */
 @utility sg-defer {
   content-visibility: auto;
   contain-intrinsic-size: auto 220px;

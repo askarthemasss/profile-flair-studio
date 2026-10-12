@@ -362,7 +362,9 @@ export function StudioWorkspace({
           id="studio-export"
           className={cn(
             "min-h-0 w-full flex-1 overflow-y-auto p-3 lg:w-[340px] lg:flex-none lg:shrink-0 lg:border-l lg:border-line lg:p-4",
-            tab === "export" ? "block" : "hidden lg:block",
+            // Phone Export tab shows this panel. From 768px to 1023px it stays
+            // hidden, so a leftover Export tab cannot sit beside the sheet.
+            tab === "export" ? "hidden max-md:block lg:block" : "hidden lg:block",
           )}
         >
           {renderExport()}

@@ -353,7 +353,7 @@ const CardCell = memo(function CardCell({
 }) {
   return (
     <div
-      className={animate ? "sg-defer sg-rise" : "sg-defer"}
+      className={animate ? "sg-rise" : undefined}
       onMouseEnter={() => onActive(kind)}
       onMouseLeave={() => onActive(null)}
     >
