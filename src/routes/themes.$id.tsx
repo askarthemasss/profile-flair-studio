@@ -2,12 +2,12 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BUILTIN_THEMES } from "@sigil/core/themes";
 import { CARD_KIND_IDS } from "@sigil/core/profile";
-import { renderCardSvg } from "@sigil/core/render/svg";
 import { contrastRatio } from "@sigil/core/color";
 import { Heart } from "lucide-react";
 import { toast } from "sonner";
 
 import { MarketingShell } from "@/components/layout/MarketingShell";
+import { CardSvg } from "@/components/sigil/CardSvg";
 import { RouteError } from "@/components/layout/RouteError";
 import { DEMO_PROFILE } from "@/lib/studio-data";
 import { signInWithGoogle, useSession } from "@/lib/auth";
@@ -127,8 +127,9 @@ function ThemeDetail() {
           <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-ink-muted">{theme.feel}</p>
         </div>
         <button
+          type="button"
           onClick={() => void toggleVote()}
-          className="flex shrink-0 items-center gap-2 rounded-md border border-line px-3 py-2 text-[12.5px] text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
+          className="sg-focus flex shrink-0 items-center gap-2 rounded-md border border-line px-3 py-2 text-[12.5px] text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
         >
           <Heart
             className="size-4"
@@ -169,13 +170,13 @@ function ThemeDetail() {
         <Link
           to="/studio"
           search={{ theme: theme.id }}
-          className="sg-breath rounded-md bg-ember px-5 py-2.5 text-[13px] font-semibold text-obsidian"
+          className="sg-breath sg-focus rounded-md bg-ember px-5 py-2.5 text-[13px] font-semibold text-obsidian"
         >
           Use in the studio
         </Link>
         <Link
           to="/themes"
-          className="rounded-md border border-line px-5 py-2.5 text-[13px] text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
+          className="sg-focus rounded-md border border-line px-5 py-2.5 text-[13px] text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
         >
           All themes
         </Link>
@@ -186,13 +187,7 @@ function ThemeDetail() {
         style={{ background: theme.bg, border: `1px solid ${theme.border}` }}
       >
         {CARD_KIND_IDS.map((kind) => (
-          <div
-            key={kind}
-            className="[&_svg]:h-auto [&_svg]:w-full"
-            dangerouslySetInnerHTML={{
-              __html: renderCardSvg({ kind, profile: DEMO_PROFILE, theme, animate: true }),
-            }}
-          />
+          <CardSvg key={kind} kind={kind} profile={DEMO_PROFILE} theme={theme} animate defer />
         ))}
       </div>
     </MarketingShell>

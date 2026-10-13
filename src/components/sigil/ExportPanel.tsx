@@ -40,11 +40,17 @@ export function ExportPanel({
 }) {
   const markdown = sigilMarkdown({ username, kinds, themeId, animate, staticBackup });
 
-  function copy() {
-    void navigator.clipboard?.writeText(markdown);
-    toast.success("Markdown copied", {
-      description: `${kinds.length} card snippet${kinds.length === 1 ? "" : "s"} ready to paste into your profile README.`,
-    });
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(markdown);
+      toast.success("Markdown copied", {
+        description: `${kinds.length} card snippet${kinds.length === 1 ? "" : "s"} ready to paste into your profile README.`,
+      });
+    } catch {
+      toast.error("Could not copy", {
+        description: "Select the snippet below and copy it manually.",
+      });
+    }
   }
 
   return (
@@ -58,9 +64,10 @@ export function ExportPanel({
           {kinds.length === 1 ? "" : "s"}
         </p>
         <button
-          onClick={copy}
+          type="button"
+          onClick={() => void copy()}
           disabled={kinds.length === 0}
-          className="sg-breath mt-4 flex w-full items-center justify-center gap-2 rounded-md bg-ember px-4 py-2.5 text-[13px] font-semibold text-obsidian transition-transform hover:scale-[1.01] disabled:opacity-40"
+          className="sg-breath sg-focus mt-4 flex w-full items-center justify-center gap-2 rounded-md bg-ember px-4 py-2.5 text-[13px] font-semibold text-obsidian transition-transform hover:scale-[1.01] disabled:opacity-40"
         >
           <Copy className="size-4" /> Copy Markdown
         </button>
@@ -82,8 +89,10 @@ export function ExportPanel({
           />
         </label>
         <button
+          type="button"
+          aria-pressed={isPublic}
           onClick={() => onPublic(!isPublic)}
-          className="mt-3 flex w-full items-center justify-between text-left"
+          className="sg-focus mt-3 flex min-h-10 w-full items-center justify-between rounded-md text-left"
         >
           <span>
             <span className="block text-[13px] text-ink">Public link</span>
@@ -102,9 +111,10 @@ export function ExportPanel({
           </span>
         </button>
         <button
+          type="button"
           onClick={onSave}
           disabled={saving || sessionLoading || packName.trim().length === 0}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-line px-4 py-2.5 text-[13px] text-ink transition-colors hover:border-line-strong disabled:opacity-40"
+          className="sg-focus mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-line px-4 py-2.5 text-[13px] text-ink transition-colors hover:border-line-strong disabled:opacity-40"
         >
           <Save className="size-4" />
           {saving

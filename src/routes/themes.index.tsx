@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { BUILTIN_THEMES } from "@sigil/core/themes";
-import { renderCardSvg } from "@sigil/core/render/svg";
 
 import { MarketingShell, PageHeading } from "@/components/layout/MarketingShell";
+import { CardSvg } from "@/components/sigil/CardSvg";
 import { RouteError } from "@/components/layout/RouteError";
 import { DEMO_PROFILE } from "@/lib/studio-data";
 
@@ -78,17 +78,7 @@ function ThemesPage() {
             className="group rounded-lg border border-line p-4 transition-colors hover:border-line-strong"
             style={{ background: theme.bg }}
           >
-            <div
-              className="[&_svg]:h-auto [&_svg]:w-full"
-              dangerouslySetInnerHTML={{
-                __html: renderCardSvg({
-                  kind: "overview",
-                  profile: DEMO_PROFILE,
-                  theme,
-                  animate: false,
-                }),
-              }}
-            />
+            <CardSvg kind="overview" profile={DEMO_PROFILE} theme={theme} animate={false} defer />
             <div className="mt-3 flex items-center justify-between">
               <span
                 className="text-[15px]"

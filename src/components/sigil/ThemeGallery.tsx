@@ -6,48 +6,45 @@ interface Props {
   onSelect: (id: string) => void;
 }
 
-export function ThemeGallery({ themes, selected, onSelect }: Props) {
-  const mono = { fontFamily: "var(--font-mono)" } as const;
+const mono = { fontFamily: "var(--font-mono)" } as const;
 
+/** Two-column theme picker sized for the 320px studio rail. */
+export function ThemeGallery({ themes, selected, onSelect }: Props) {
   return (
-    <section className="rounded-lg border border-line bg-panel p-5 shadow-card">
-      <div className="flex items-center justify-between">
-        <h2 className="text-[10px] uppercase tracking-[0.2em] text-ink-muted" style={mono}>
-          Community themes
-        </h2>
-        <span className="text-[10px] text-ink-faint" style={mono}>{themes.length} built-in · 40+ soon</span>
-      </div>
-      <div className="mt-3 flex gap-3 overflow-x-auto pb-2">
-        {themes.map((t) => {
-          const active = t.id === selected;
-          return (
-            <button
-              key={t.id}
-              onClick={() => onSelect(t.id)}
-              className="shrink-0 w-44 rounded-md p-3 text-left transition-all"
-              style={{
-                background: t.bg,
-                border: `1px solid ${active ? t.accent : t.border}`,
-                boxShadow: active ? `0 0 0 1px ${t.accent}` : "none",
-              }}
+    <div className="grid grid-cols-2 gap-1.5">
+      {themes.map((theme) => {
+        const active = theme.id === selected;
+        return (
+          <button
+            key={theme.id}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onSelect(theme.id)}
+            className="sg-focus min-w-0 rounded-md px-2 py-2 text-left"
+            style={{
+              background: theme.bg,
+              color: theme.text,
+              boxShadow: active
+                ? `inset 0 0 0 1.5px ${theme.accent}`
+                : `inset 0 0 0 1px ${theme.border}`,
+            }}
+          >
+            <span className="flex items-center gap-1.5">
+              <span
+                className="size-2.5 shrink-0 rounded-full"
+                style={{ background: theme.accent }}
+              />
+              <span className="truncate text-[12px]">{theme.name}</span>
+            </span>
+            <span
+              className="mt-0.5 block text-[10px] leading-snug"
+              style={{ color: theme.muted, ...mono }}
             >
-              <div className="flex gap-1">
-                <span className="size-4 rounded" style={{ background: t.bg, outline: `1px solid ${t.border}` }} />
-                <span className="size-4 rounded" style={{ background: t.accent }} />
-                <span className="size-4 rounded" style={{ background: t.text }} />
-                <span className="size-4 rounded" style={{ background: t.gold }} />
-              </div>
-              <div className="mt-2 text-[12px]" style={{ color: t.text }}>{t.name}</div>
-              <div className="text-[10px]" style={{ color: t.muted, ...mono }}>{t.feel}</div>
-              {active && (
-                <div className="mt-1.5 text-[9px] uppercase tracking-[0.15em]" style={{ color: t.accent, ...mono }}>
-                  active
-                </div>
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </section>
+              {theme.feel}
+            </span>
+          </button>
+        );
+      })}
+    </div>
   );
 }

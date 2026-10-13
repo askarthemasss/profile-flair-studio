@@ -175,6 +175,25 @@
   animation: sg-breath 3s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
 }
 
+@utility sg-rise {
+  animation: sg-fade-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@utility sg-focus {
+  &:focus-visible {
+    outline: 2px solid var(--sg-ember-glow);
+    outline-offset: 2px;
+  }
+}
+
+/* Skip layout for SVG cards scrolled out of a panel.
+   Paint containment clips anything outside the padding box, so this stays off
+   the designed cards — their drop shadow and hover glow would be cut off. */
+@utility sg-defer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 220px;
+}
+
 /* Subtle dotted panel grid behind the studio preview canvas. */
 @utility sg-canvas {
   background-color: var(--sg-bg-1);
@@ -193,7 +212,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sg-breath {
+  .sg-breath,
+  .sg-rise {
     animation: none;
   }
   * {
