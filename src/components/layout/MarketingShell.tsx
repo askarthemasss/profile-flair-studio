@@ -1,6 +1,7 @@
 import { BRAND } from "@sigil/core/brand";
 import type { ReactNode } from "react";
 
+import { SigilMark } from "./SigilMark";
 import { SiteHeader } from "./SiteHeader";
 
 const mono = { fontFamily: "var(--font-mono)" } as const;
@@ -15,7 +16,8 @@ export function MarketingShell({ children }: { children: ReactNode }) {
           className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-3 px-5 py-6 text-[11px] text-ink-faint"
           style={mono}
         >
-          <span>
+          <span className="inline-flex items-center gap-2">
+            <SigilMark className="size-4" />
             {BRAND.name} — {BRAND.tagline}
           </span>
           <span>{BRAND.license} · open source</span>

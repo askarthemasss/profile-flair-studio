@@ -16,6 +16,7 @@ import {
 import { avatarUrl, displayName, signInWithGoogle, useSession } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { SigilMark } from "./SigilMark";
 
 const NAV = [
   { to: "/studio", label: "Studio" },
@@ -49,11 +50,11 @@ export function SiteHeader() {
   return (
     <header className="shrink-0 border-b border-line bg-obsidian/85 backdrop-blur-md">
       <div className="mx-auto grid max-w-[1120px] grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 py-3 md:grid-cols-[1fr_auto_1fr]">
-        <Link to="/" className="flex min-w-0 items-center gap-2">
+        <Link to="/" className="flex min-w-0 items-center gap-2.5">
+          <SigilMark className="size-7" />
           <span className="text-[19px] leading-none tracking-tight text-ink" style={display}>
             {BRAND.name}
           </span>
-          <span className="size-1.5 shrink-0 rounded-full bg-ember" />
         </Link>
 
         <nav className="hidden items-center justify-center gap-7 md:flex">
