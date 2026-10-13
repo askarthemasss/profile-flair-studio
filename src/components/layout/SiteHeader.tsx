@@ -16,6 +16,7 @@ import {
 import { avatarUrl, displayName, signInWithGoogle, useSession } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { SigilMark } from "./SigilMark";
 
 const NAV = [
   { to: "/studio", label: "Studio" },
@@ -54,11 +55,11 @@ export function SiteHeader({ wide = false }: { wide?: boolean }) {
           wide ? "w-full" : "mx-auto max-w-[1120px]",
         )}
       >
-        <Link to="/" className="flex min-w-0 items-center gap-2">
+        <Link to="/" className="flex min-w-0 items-center gap-2.5">
+          <SigilMark className="size-7" />
           <span className="text-[19px] leading-none tracking-tight text-ink" style={display}>
             {BRAND.name}
           </span>
-          <span className="size-1.5 shrink-0 rounded-full bg-ember" />
         </Link>
 
         <nav className="hidden items-center justify-center gap-7 md:flex">

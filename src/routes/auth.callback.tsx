@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 
 import { RouteError } from "@/components/layout/RouteError";
+import { SigilMark } from "@/components/layout/SigilMark";
 import { supabase } from "@/integrations/supabase/client";
 import { takeIntendedPath } from "@/lib/auth";
 
@@ -58,7 +59,7 @@ function AuthCallback() {
   return (
     <div className="grid min-h-screen place-items-center bg-obsidian text-ink">
       <div className="text-center">
-        <span className="sg-breath inline-block size-2 rounded-full bg-ember" />
+        <SigilMark alt="Sigil" className="sg-breath mx-auto size-12 rounded-[25%]" />
         <p className="mt-4 text-[12px] text-ink-muted" style={mono}>
           finishing sign-in…
         </p>
