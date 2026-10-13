@@ -2,11 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { BRAND } from "@sigil/core/brand";
 import { missingProfile } from "@sigil/core/build-profile";
 import { getTheme } from "@sigil/core/themes";
-import { renderCardSvg } from "@sigil/core/render/svg";
 import { normalizeUsername } from "@sigil/core/profile";
 import { useEffect, useState } from "react";
 
 import { MarketingShell } from "@/components/layout/MarketingShell";
+import { CardSvg } from "@/components/sigil/CardSvg";
 import { RouteError } from "@/components/layout/RouteError";
 import { DEMO_PROFILE, type SigilProfile } from "@/lib/studio-data";
 import { liveProfileNote, useLiveProfile } from "@/lib/use-live-profile";
@@ -94,12 +94,15 @@ function Landing() {
           </p>
 
           <div className="mt-7 max-w-md">
-            <label className="block text-[11px] text-ink-muted">GitHub username</label>
+            <label htmlFor="hero-username" className="block text-[11px] text-ink-muted">
+              GitHub username
+            </label>
             <div className="sg-ledger mt-1 flex items-center gap-2 px-1 py-2.5">
               <span className="text-ink-faint" style={mono}>
                 @
               </span>
               <input
+                id="hero-username"
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
                 placeholder={DEMO_PROFILE.username}
@@ -121,13 +124,13 @@ function Landing() {
             <Link
               to="/studio"
               search={clean ? { user: clean, theme: "obsidian" } : {}}
-              className="sg-breath rounded-md bg-ember px-5 py-2.5 text-[13px] font-semibold text-obsidian transition-transform hover:scale-[1.02]"
+              className="sg-breath sg-focus rounded-md bg-ember px-5 py-2.5 text-[13px] font-semibold text-obsidian transition-transform hover:scale-[1.02]"
             >
               Open the studio
             </Link>
             <Link
               to="/themes"
-              className="rounded-md border border-line px-5 py-2.5 text-[13px] text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
+              className="sg-focus rounded-md border border-line px-5 py-2.5 text-[13px] text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
             >
               Browse themes
             </Link>
@@ -137,13 +140,7 @@ function Landing() {
         <div className="min-w-0 space-y-3">
           {profile ? (
             HERO_KINDS.map((kind) => (
-              <div
-                key={kind}
-                className="[&_svg]:h-auto [&_svg]:w-full"
-                dangerouslySetInnerHTML={{
-                  __html: renderCardSvg({ kind, profile, theme, animate: true }),
-                }}
-              />
+              <CardSvg key={kind} kind={kind} profile={profile} theme={theme} animate />
             ))
           ) : (
             <p

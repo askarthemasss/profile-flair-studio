@@ -4,7 +4,7 @@ import { BUILTIN_THEMES, getTheme } from "@sigil/core/themes";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { PanelRight } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -31,6 +31,7 @@ import {
   type StudioState,
 } from "@/lib/studio-data";
 import { liveProfileNote, useLiveProfile } from "@/lib/use-live-profile";
+import { cn } from "@/lib/utils";
 import { CardGrid } from "./cards";
 import { ControlRail } from "./ControlRail";
 import { ExportPanel } from "./ExportPanel";
@@ -196,17 +197,20 @@ export function StudioWorkspace({
             : live.phase === "error"
               ? "GitHub quiet"
               : "loading GitHub";
-  const profile: SigilProfile | null = !wantsLive
-    ? { ...DEMO_PROFILE, username: normalized ?? DEMO_PROFILE.username }
-    : live.phase === "ready" && live.profile
-      ? live.profile
-      : live.phase === "missing" && normalized
-        ? missingProfile(normalized)
-        : null;
-  let svgProfile = profile;
-  if (!svgProfile && wantsLive && normalized) {
-    svgProfile = { ...DEMO_PROFILE, username: normalized, name: normalized };
-  }
+  const profile = useMemo((): SigilProfile | null => {
+    if (!wantsLive) {
+      if (!normalized || normalized === DEMO_PROFILE.username) return DEMO_PROFILE;
+      return { ...DEMO_PROFILE, username: normalized };
+    }
+    if (live.phase === "ready" && live.profile) return live.profile;
+    if (live.phase === "missing" && normalized) return missingProfile(normalized);
+    return null;
+  }, [wantsLive, normalized, live.phase, live.profile]);
+  const svgProfile = useMemo((): SigilProfile | null => {
+    if (profile) return profile;
+    if (wantsLive && normalized) return { ...DEMO_PROFILE, username: normalized, name: normalized };
+    return null;
+  }, [profile, wantsLive, normalized]);
   const enabledKinds = CARD_KINDS.filter((c) => state.enabled[c.id]).map((c) => c.id);
 
   const controls = (
@@ -276,7 +280,7 @@ export function StudioWorkspace({
         </p>
       </div>
       <Sheet>
-        <SheetTrigger className="flex shrink-0 items-center gap-1.5 rounded-md border border-line px-3 py-2 text-[12px] text-ink-muted transition-colors hover:border-line-strong hover:text-ink lg:hidden">
+        <SheetTrigger className="sg-focus hidden shrink-0 items-center gap-1.5 rounded-md border border-line px-3 py-2 text-[12px] text-ink-muted transition-colors hover:border-line-strong hover:text-ink md:flex lg:hidden">
           <PanelRight className="size-3.5" /> Export
         </SheetTrigger>
         <SheetContent
@@ -291,25 +295,15 @@ export function StudioWorkspace({
 
   return (
     <div className="flex h-[100dvh] flex-col overflow-hidden bg-obsidian text-ink">
-      <SiteHeader />
+      <SiteHeader wide />
 
-      {/* Desktop + tablet */}
-      <div className="hidden min-h-0 flex-1 md:flex">
-        <aside className="w-[320px] shrink-0 overflow-y-auto border-r border-line p-4">
-          {controls}
-        </aside>
-        <section className="sg-canvas min-h-0 flex-1 overflow-y-auto p-4">
-          {canvasHeader}
-          <div className="mt-4">{preview}</div>
-        </section>
-        <aside className="hidden w-[340px] shrink-0 overflow-y-auto border-l border-line p-4 lg:block">
-          {renderExport()}
-        </aside>
-      </div>
-
-      {/* Mobile */}
-      <div className="flex min-h-0 flex-1 flex-col md:hidden">
-        <div className="grid shrink-0 grid-cols-3 gap-1 border-b border-line bg-obsidian p-2">
+      {/* One set of panels. Tabs pick a panel below 768px; from there the rail and canvas stay up, and export joins at 1024px. */}
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+        <div
+          role="tablist"
+          aria-label="Studio panels"
+          className="grid shrink-0 grid-cols-3 gap-1 border-b border-line bg-obsidian p-2 md:hidden"
+        >
           {(
             [
               ["controls", "Controls"],
@@ -321,8 +315,13 @@ export function StudioWorkspace({
             return (
               <button
                 key={id}
+                type="button"
+                role="tab"
+                id={`studio-tab-${id}`}
+                aria-selected={on}
+                aria-controls={`studio-${id}`}
                 onClick={() => setTab(id)}
-                className="rounded-md px-2 py-2 text-[12px] transition-colors"
+                className="sg-focus min-h-11 rounded-md px-2 py-2 text-[12px] transition-colors"
                 style={{
                   background: on ? "var(--sg-ember)" : "transparent",
                   color: on ? "var(--sg-bg-0)" : "var(--sg-ink-1)",
@@ -334,18 +333,42 @@ export function StudioWorkspace({
             );
           })}
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto p-3">
-          {tab === "controls" && controls}
-          {tab === "preview" && (
-            <div className="space-y-3">
-              <p className="truncate text-[10.5px] text-ink-faint" style={mono}>
-                @{username} · {theme.name}
-              </p>
-              {preview}
-            </div>
+
+        <aside
+          id="studio-controls"
+          className={cn(
+            "min-h-0 w-full flex-1 overflow-y-auto p-3 md:w-[320px] md:flex-none md:shrink-0 md:border-r md:border-line md:p-4",
+            tab !== "controls" && "hidden md:block",
           )}
-          {tab === "export" && renderExport()}
-        </div>
+        >
+          {controls}
+        </aside>
+
+        <section
+          id="studio-preview"
+          className={cn(
+            "sg-canvas min-h-0 w-full flex-1 overflow-y-auto p-3 md:p-4",
+            tab !== "preview" && "hidden md:block",
+          )}
+        >
+          <p className="mb-3 truncate text-[10.5px] text-ink-faint md:hidden" style={mono}>
+            @{username} · {theme.name}
+          </p>
+          <div className="hidden md:block">{canvasHeader}</div>
+          <div className="md:mt-4">{preview}</div>
+        </section>
+
+        <aside
+          id="studio-export"
+          className={cn(
+            "min-h-0 w-full flex-1 overflow-y-auto p-3 lg:w-[340px] lg:flex-none lg:shrink-0 lg:border-l lg:border-line lg:p-4",
+            // Phone Export tab shows this panel. From 768px to 1023px it stays
+            // hidden, so a leftover Export tab cannot sit beside the sheet.
+            tab === "export" ? "hidden max-md:block lg:block" : "hidden lg:block",
+          )}
+        >
+          {renderExport()}
+        </aside>
       </div>
     </div>
   );

@@ -27,7 +27,7 @@ const NAV = [
 const mono = { fontFamily: "var(--font-mono)" } as const;
 const display = { fontFamily: "var(--font-display)" } as const;
 
-export function SiteHeader() {
+export function SiteHeader({ wide = false }: { wide?: boolean }) {
   const { session } = useSession();
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -47,8 +47,13 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="shrink-0 border-b border-line bg-obsidian/85 backdrop-blur-md">
-      <div className="mx-auto grid max-w-[1120px] grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 py-3 md:grid-cols-[1fr_auto_1fr]">
+    <header className="sticky top-0 z-40 shrink-0 border-b border-line bg-obsidian">
+      <div
+        className={cn(
+          "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 md:grid-cols-[1fr_auto_1fr] md:gap-4 md:px-5",
+          wide ? "w-full" : "mx-auto max-w-[1120px]",
+        )}
+      >
         <Link to="/" className="flex min-w-0 items-center gap-2">
           <span className="text-[19px] leading-none tracking-tight text-ink" style={display}>
             {BRAND.name}
@@ -65,7 +70,7 @@ export function SiteHeader() {
         <div className="flex items-center justify-end gap-2">
           {session ? (
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-2 rounded-md border border-line px-2 py-1.5 text-[13px] text-ink-muted transition-colors hover:border-line-strong hover:text-ink">
+              <DropdownMenuTrigger className="sg-focus flex items-center gap-2 rounded-md border border-line px-2 py-1.5 text-[13px] text-ink-muted transition-colors hover:border-line-strong hover:text-ink">
                 {avatarUrl(session) ? (
                   <img
                     src={avatarUrl(session)!}
@@ -96,10 +101,13 @@ export function SiteHeader() {
             </DropdownMenu>
           ) : (
             <button
+              type="button"
               onClick={() => void handleSignIn()}
-              className="rounded-md border border-line px-3 py-2 text-[13px] text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
+              aria-label="Sign in with Google"
+              className="sg-focus whitespace-nowrap rounded-md border border-line px-3 py-2 text-[13px] text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
             >
-              Sign in with Google
+              <span className="sm:hidden">Sign in</span>
+              <span className="hidden sm:inline">Sign in with Google</span>
             </button>
           )}
 
@@ -111,7 +119,10 @@ export function SiteHeader() {
           </span>
 
           <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger className="rounded-md border border-line p-2 text-ink-muted md:hidden">
+            <SheetTrigger
+              aria-label="Open menu"
+              className="sg-focus rounded-md border border-line p-2 text-ink-muted md:hidden"
+            >
               <Menu className="size-4" />
             </SheetTrigger>
             <SheetContent side="right" className="w-[280px] border-line bg-panel">

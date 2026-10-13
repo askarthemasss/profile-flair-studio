@@ -1,7 +1,8 @@
 import type { CardTheme } from "@sigil/core/themes";
 import { cardImagePath } from "@sigil/core/markdown";
-import { renderCardSvg } from "@sigil/core/render/svg";
 import type { CardKind, SigilProfile } from "@/lib/studio-data";
+
+import { CardSvg } from "./CardSvg";
 
 /**
  * The SVG a profile README actually loads.
@@ -47,12 +48,13 @@ export function SvgPreview({
               style={{ background: theme.bg, borderRadius: 12 }}
             />
           ) : (
-            <div
+            <CardSvg
               key={kind}
-              className="[&_svg]:h-auto [&_svg]:w-full"
-              dangerouslySetInnerHTML={{
-                __html: renderCardSvg({ kind, profile, theme, animate }),
-              }}
+              kind={kind}
+              profile={profile}
+              theme={theme}
+              animate={animate}
+              defer
             />
           ),
         )}

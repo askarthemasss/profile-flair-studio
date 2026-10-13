@@ -1,5 +1,6 @@
 import type { CardTheme } from "@sigil/core/themes";
 import { hexToRgba } from "@sigil/core/color";
+import { memo } from "react";
 import type { CardKind, SigilProfile } from "@/lib/studio-data";
 
 interface CardProps {
@@ -72,7 +73,7 @@ function StatsCard({ profile, theme, active }: CardProps) {
         </span>
       }
     >
-      <div className="flex items-baseline gap-2">
+      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <span className="text-[34px] leading-none" style={{ color: theme.accent, ...mono }}>
           {fmt(profile.contributions)}
         </span>
@@ -101,7 +102,7 @@ function StreakCard({ profile, theme, active }: CardProps) {
     <CardFrame theme={theme} title="Streak" active={active}
       right={<span className="size-2 rounded-full" style={{ background: theme.accent }} />}
     >
-      <div className="flex items-end gap-2">
+      <div className="flex flex-wrap items-end gap-x-2 gap-y-1">
         <span className="text-[38px] leading-none" style={{ color: theme.accent, ...mono }}>
           {profile.streakCurrent}
         </span>
@@ -335,6 +336,32 @@ export function renderCard(kind: CardKind, props: CardProps): React.ReactNode {
   return R ? R(props) : null;
 }
 
+const CardCell = memo(function CardCell({
+  kind,
+  profile,
+  theme,
+  animate,
+  active,
+  onActive,
+}: {
+  kind: CardKind;
+  profile: SigilProfile;
+  theme: CardTheme;
+  animate: boolean;
+  active: boolean;
+  onActive: (id: CardKind | null) => void;
+}) {
+  return (
+    <div
+      className={animate ? "sg-rise" : undefined}
+      onMouseEnter={() => onActive(kind)}
+      onMouseLeave={() => onActive(null)}
+    >
+      {renderCard(kind, { profile, theme, animate, active })}
+    </div>
+  );
+});
+
 export function CardGrid({
   kinds,
   profile,
@@ -353,14 +380,15 @@ export function CardGrid({
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {kinds.map((kind) => (
-        <div
+        <CardCell
           key={kind}
-          onMouseEnter={() => onActive(kind)}
-          onMouseLeave={() => onActive(null)}
-          style={animate ? { animation: "sg-fade-in 0.5s cubic-bezier(0.2,0.8,0.2,1) both" } : undefined}
-        >
-          {renderCard(kind, { profile, theme, animate, active: activeId === kind })}
-        </div>
+          kind={kind}
+          profile={profile}
+          theme={theme}
+          animate={animate}
+          active={activeId === kind}
+          onActive={onActive}
+        />
       ))}
     </div>
   );

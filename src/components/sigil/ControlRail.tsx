@@ -2,6 +2,8 @@ import { BRAND } from "@sigil/core/brand";
 import type { CardTheme } from "@sigil/core/themes";
 import { CARD_KINDS, type CardKind, type StudioState } from "@/lib/studio-data";
 
+import { ThemeGallery } from "./ThemeGallery";
+
 interface Props {
   state: StudioState;
   onChange: (next: StudioState) => void;
@@ -12,7 +14,6 @@ interface Props {
 
 export function ControlRail({ state, onChange, themes, usernameNote, usernameWarn }: Props) {
   const mono = { fontFamily: "var(--font-mono)" } as const;
-  const display = { fontFamily: "var(--font-display)" } as const;
 
   function toggle(kind: CardKind) {
     onChange({
@@ -34,10 +35,13 @@ export function ControlRail({ state, onChange, themes, usernameNote, usernameWar
           Forging
         </h2>
 
-        <label className="mt-4 block text-[11px] text-ink-muted">GitHub username</label>
+        <label htmlFor="studio-username" className="mt-4 block text-[11px] text-ink-muted">
+          GitHub username
+        </label>
         <div className="sg-ledger mt-1 flex items-center gap-2 px-1 py-2">
           <span className="text-ink-faint" style={mono}>@</span>
           <input
+            id="studio-username"
             value={state.username}
             onChange={(e) => setField("username", e.target.value)}
             placeholder="username"
@@ -56,20 +60,16 @@ export function ControlRail({ state, onChange, themes, usernameNote, usernameWar
           </p>
         ) : null}
 
-        <label className="mt-4 block text-[11px] text-ink-muted">Theme</label>
-        <div className="mt-1 flex items-center justify-between rounded-md border border-line bg-raised px-3 py-2 text-sm text-ink">
-          <span className="flex items-center gap-2">
-            <span
-              className="size-3 rounded-full"
-              style={{ background: themes.find((t) => t.id === state.themeId)?.accent }}
-            />
-            {themes.find((t) => t.id === state.themeId)?.name}
-          </span>
-          <span className="text-ink-faint" style={mono}>{state.themeId}</span>
-        </div>
-        <p className="mt-2 text-[10px] text-ink-faint" style={mono}>
-          pick below in the gallery
+        <p id="studio-theme" className="mt-4 text-[11px] text-ink-muted">
+          Theme
         </p>
+        <div className="mt-1" role="group" aria-labelledby="studio-theme">
+          <ThemeGallery
+            themes={themes}
+            selected={state.themeId}
+            onSelect={(id) => setField("themeId", id)}
+          />
+        </div>
       </section>
 
       <section className="rounded-lg border border-line bg-panel p-5 shadow-card">
@@ -83,17 +83,26 @@ export function ControlRail({ state, onChange, themes, usernameNote, usernameWar
             return (
               <button
                 key={c.id}
+                type="button"
+                aria-pressed={on}
                 onClick={() => toggle(c.id)}
-                className="group flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-hover-surface"
+                className="sg-focus flex min-h-10 w-full items-center justify-between rounded-md px-2 text-left text-[13px] transition-colors hover:bg-hover-surface"
               >
-                <span className="flex items-center gap-2.5">
+                <span className="flex min-w-0 items-center gap-2.5">
                   <span
-                    className="size-2 rounded-full transition-colors"
-                    style={{ background: on ? "var(--sg-ember)" : "transparent", outline: on ? "none" : "1px solid var(--sg-border-strong)" }}
+                    className="size-2 shrink-0 rounded-full transition-colors"
+                    style={{
+                      background: on ? "var(--sg-ember)" : "transparent",
+                      outline: on ? "none" : "1px solid var(--sg-border-strong)",
+                    }}
                   />
-                  <span className={on ? "text-ink" : "text-ink-faint line-through"}>{c.name}</span>
+                  <span
+                    className={on ? "truncate text-ink" : "truncate text-ink-faint line-through"}
+                  >
+                    {c.name}
+                  </span>
                 </span>
-                <span className="text-[10px] text-ink-faint opacity-0 transition-opacity group-hover:opacity-100" style={mono}>
+                <span className="shrink-0 text-[10px] text-ink-faint" style={mono}>
                   {c.id}
                 </span>
               </button>
@@ -131,8 +140,10 @@ export function ControlRail({ state, onChange, themes, usernameNote, usernameWar
               return (
                 <button
                   key={mode}
+                  type="button"
+                  aria-pressed={on}
                   onClick={() => setField("preview", mode)}
-                  className="rounded px-2 py-1.5 text-[12px] transition-colors"
+                  className="sg-focus rounded px-2 py-1.5 text-[12px] transition-colors"
                   style={{
                     background: on ? "var(--sg-ember)" : "transparent",
                     color: on ? "var(--sg-bg-0)" : "var(--sg-ink-muted)",
@@ -166,8 +177,10 @@ function ToggleRow({
 }) {
   return (
     <button
+      type="button"
+      aria-pressed={on}
       onClick={onToggle}
-      className="flex w-full items-center justify-between text-left"
+      className="sg-focus flex min-h-10 w-full items-center justify-between rounded-md text-left"
     >
       <span>
         <span className="block text-[13px] text-ink">{label}</span>
