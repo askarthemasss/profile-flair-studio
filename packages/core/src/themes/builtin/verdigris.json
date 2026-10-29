@@ -1,0 +1,32 @@
+{
+  "id": "verdigris",
+  "name": "Verdigris",
+  "author": "sigil",
+  "version": 1,
+  "mode": "dark",
+  "colors": {
+    "bg": "#0a0f0d",
+    "bgAlt": "#121c18",
+    "border": "#1e2e27",
+    "text": "#e8f5f0",
+    "textMuted": "#6b8f80",
+    "accent": "#10b981",
+    "accent2": "#34d399",
+    "success": "#10b981",
+    "warning": "#f59e0b",
+    "danger": "#ef4444"
+  },
+  "heat": [
+    "#121c18",
+    "#064e3b",
+    "#047857",
+    "#059669",
+    "#10b981"
+  ],
+  "font": "mono",
+  "radius": 12,
+  "effects": {
+    "glow": true,
+    "grain": true
+  }
+}

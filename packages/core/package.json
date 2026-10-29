@@ -1,0 +1,62 @@
+{
+  "name": "@sigil/core",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    },
+    "./types": {
+      "import": "./src/types.ts",
+      "types": "./src/types.ts"
+    },
+    "./params": {
+      "import": "./src/params.ts",
+      "types": "./src/params.ts"
+    },
+    "./brand": {
+      "import": "./src/brand.ts",
+      "types": "./src/brand.ts"
+    },
+    "./color": {
+      "import": "./src/color.ts",
+      "types": "./src/color.ts"
+    },
+    "./themes": {
+      "import": "./src/themes/index.ts",
+      "types": "./src/themes/index.ts"
+    },
+    "./svg/*": {
+      "import": "./src/svg/*.ts",
+      "types": "./src/svg/*.ts"
+    },
+    "./stats/*": {
+      "import": "./src/stats/*.ts",
+      "types": "./src/stats/*.ts"
+    },
+    "./cards/*": {
+      "import": "./src/cards/*.ts",
+      "types": "./src/cards/*.ts"
+    },
+    "./github/*": {
+      "import": "./src/github/*.ts",
+      "types": "./src/github/*.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b && tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.0"
+  }
+}

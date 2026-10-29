@@ -1,0 +1,101 @@
+@import "tailwindcss" source(none);
+@source "../";
+@import "tw-animate-css";
+@import "./tokens.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --radius-2xl: calc(var(--r-lg) + 8px);
+  --radius-3xl: calc(var(--r-lg) + 12px);
+  --radius-4xl: calc(var(--r-lg) + 16px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Obsidian Ledger named tokens */
+  --color-obsidian: var(--sg-bg-0);
+  --color-panel: var(--sg-bg-1);
+  --color-raised: var(--sg-bg-2);
+  --color-hover-surface: var(--sg-bg-3);
+  --color-ink: var(--sg-ink-0);
+  --color-ink-muted: var(--sg-ink-1);
+  --color-ink-faint: var(--sg-ink-2);
+  --color-ember: var(--sg-ember);
+  --color-ember-glow: var(--sg-ember-glow);
+  --color-gold: var(--sg-gold);
+  --color-verdigris: var(--sg-verdigris);
+  --color-crimson: var(--sg-crimson);
+  --color-azure: var(--sg-azure);
+  --color-line: var(--sg-border);
+  --color-line-strong: var(--sg-border-strong);
+
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Hanken Grotesk", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+}
+
+@keyframes sg-breath {
+  0%, 100% {
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--sg-ember) 35%, transparent),
+      0 0 22px -8px color-mix(in oklab, var(--sg-ember) 30%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--sg-ember) 65%, transparent),
+      0 0 38px -4px color-mix(in oklab, var(--sg-ember) 55%, transparent);
+  }
+}
+
+@utility sg-breath {
+  animation: sg-breath 3s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+@utility sg-ledger {
+  border-bottom: 1px solid var(--sg-border);
+  background: transparent;
+  &:focus-within {
+    border-bottom-color: var(--sg-ember);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sg-breath {
+    animation: none;
+  }
+  * {
+    scroll-behavior: auto !important;
+  }
+}
