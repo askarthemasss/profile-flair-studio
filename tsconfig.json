@@ -1,32 +1,16 @@
 {
-  "include": ["src/**/*.ts", "src/**/*.tsx", "packages/core/src/**/*.ts", "packages/core/src/**/*.tsx", "apps/render/src/**/*.ts", "vite.config.ts", "eslint.config.js"],
-  "exclude": ["src/**/*.test.ts"],
   "compilerOptions": {
     "target": "ES2022",
-    "jsx": "react-jsx",
     "module": "ESNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["vite/client"],
-
     "moduleResolution": "Bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": false,
-    "noEmit": true,
-
     "skipLibCheck": true,
-    "strict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true,
-    "noImplicitReturns": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "noUncheckedSideEffectImports": true,
-    "paths": {
-      "@/*": ["./src/*"],
-      "@sigil/core/*": ["./packages/core/src/*"]
-    }
-  }
+    "strict": true
+  },
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./apps/studio" },
+    { "path": "./apps/render" },
+    { "path": "./packages/action" }
+  ],
+  "files": []
 }

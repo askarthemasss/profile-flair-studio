@@ -7,8 +7,7 @@
  */
 export const BRAND = {
   name: "Sigil",
-  tagline:
-    "Your developer sigil. Nine living cards for your GitHub profile, one line to install.",
+  tagline: "Your developer sigil. Nine living cards for your GitHub profile, one line to install.",
   /** Short label used where the full tagline is too long (nav, footer). */
   shortTagline: "Your developer sigil.",
   license: "MIT",

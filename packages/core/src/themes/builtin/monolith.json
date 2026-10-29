@@ -1,0 +1,26 @@
+{
+  "id": "monolith",
+  "name": "Monolith",
+  "author": "sigil",
+  "version": 1,
+  "mode": "dark",
+  "colors": {
+    "bg": "#09090b",
+    "bgAlt": "#18181b",
+    "border": "#27272a",
+    "text": "#fafafa",
+    "textMuted": "#71717a",
+    "accent": "#e4e4e7",
+    "accent2": "#ffffff",
+    "success": "#22c55e",
+    "warning": "#eab308",
+    "danger": "#ef4444"
+  },
+  "heat": ["#18181b", "#3f3f46", "#71717a", "#a1a1aa", "#e4e4e7"],
+  "font": "mono",
+  "radius": 8,
+  "effects": {
+    "glow": false,
+    "grain": true
+  }
+}

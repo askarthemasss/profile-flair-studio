@@ -23,11 +23,7 @@ function parseHex(hex: string): { r: number; g: number; b: number } {
 /** WCAG relative luminance (0 = black, 1 = white) for a #rrggbb color. */
 export function relativeLuminance(hex: string): number {
   const { r, g, b } = parseHex(hex);
-  return (
-    0.2126 * srgbToLinear(r) +
-    0.7152 * srgbToLinear(g) +
-    0.0722 * srgbToLinear(b)
-  );
+  return 0.2126 * srgbToLinear(r) + 0.7152 * srgbToLinear(g) + 0.0722 * srgbToLinear(b);
 }
 
 /** WCAG contrast ratio between two #rrggbb colors. Range 1..21. */
@@ -53,29 +49,4 @@ export function passesAccentContrast(accent: string, bg: string, min = 3): boole
 export function hexToRgba(hex: string, alpha: number): string {
   const { r, g, b } = parseHex(hex);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
-/** Linear blend of two #rrggbb colors. t = 0 gives `a`, t = 1 gives `b`. */
-export function mixHex(a: string, b: string, t: number): string {
-  const x = parseHex(a);
-  const y = parseHex(b);
-  const k = Math.max(0, Math.min(1, t));
-  const ch = (p: number, q: number) =>
-    Math.round(p + (q - p) * k)
-      .toString(16)
-      .padStart(2, "0");
-  return `#${ch(x.r, y.r)}${ch(x.g, y.g)}${ch(x.b, y.b)}`;
-}
-
-/**
- * Nudge `color` toward white (dark backgrounds) or black (light backgrounds)
- * until it reaches `min` contrast against `bg`.
- */
-export function ensureContrast(color: string, bg: string, min = 3): string {
-  const target = relativeLuminance(bg) < 0.5 ? "#ffffff" : "#000000";
-  for (let step = 0; step <= 20; step++) {
-    const candidate = mixHex(color, target, step / 20);
-    if (contrastRatio(candidate, bg) >= min) return candidate;
-  }
-  return target;
 }

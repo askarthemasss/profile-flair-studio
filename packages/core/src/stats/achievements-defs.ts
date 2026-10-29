@@ -1,67 +1,100 @@
-import type { GithubSnapshot } from "../github/types";
+import type {
+  AchievementDef,
+  AchievementState,
+  AchievementTier,
+  GithubSnapshot,
+} from "../types.js";
 
-export const ACHIEVEMENT_TIERS = ["bronze", "silver", "gold", "obsidian"] as const;
-export type AchievementTier = (typeof ACHIEVEMENT_TIERS)[number];
+const TIERS: AchievementTier[] = ["bronze", "silver", "gold", "obsidian"];
 
-export interface AchievementDef {
-  id: string;
-  family: "Consistency" | "Volume" | "Collaboration" | "Impact" | "Range" | "Community";
-  name: string;
-  metric: string;
-  thresholds: readonly [number, number, number, number];
-  value: (s: GithubSnapshot) => number;
-}
-
-export const ACHIEVEMENTS: readonly AchievementDef[] = [
-  { id: "unbroken", family: "Consistency", name: "Unbroken", metric: "Longest streak", thresholds: [7, 30, 100, 365], value: (s) => s.streak.longest },
-  { id: "regular", family: "Consistency", name: "Regular", metric: "Active days", thresholds: [50, 200, 500, 1500], value: (s) => s.streak.activeDays },
-  { id: "committer", family: "Volume", name: "Committer", metric: "Commits", thresholds: [100, 1000, 5000, 15000], value: (s) => s.counts.commits },
-  { id: "merger", family: "Collaboration", name: "Merger", metric: "PRs merged", thresholds: [10, 100, 500, 1500], value: (s) => s.counts.prsMerged },
-  { id: "reviewer", family: "Collaboration", name: "Reviewer", metric: "Reviews", thresholds: [10, 100, 400, 1000], value: (s) => s.counts.reviews },
-  { id: "starlit", family: "Impact", name: "Starlit", metric: "Stars earned", thresholds: [10, 100, 1000, 10000], value: (s) => s.counts.stars },
-  { id: "polyglot", family: "Range", name: "Polyglot", metric: "Languages used", thresholds: [3, 5, 8, 12], value: (s) => s.languages.length },
-  { id: "followed", family: "Community", name: "Followed", metric: "Followers", thresholds: [10, 100, 1000, 10000], value: (s) => s.counts.followers },
+export const ACHIEVEMENT_DEFS: AchievementDef[] = [
+  {
+    id: "commit-marathoner",
+    family: "volume",
+    name: "Commit Marathoner",
+    description: "Total lifetime commits",
+    metric: (s) => s.totals.commits,
+    thresholds: [500, 2_000, 8_000, 25_000],
+  },
+  {
+    id: "streakkeeper",
+    family: "consistency",
+    name: "Streakkeeper",
+    description: "Longest contribution streak in days",
+    metric: (s) => s.streak.longest,
+    thresholds: [14, 60, 180, 365],
+  },
+  {
+    id: "pull-shark",
+    family: "collaboration",
+    name: "Pull Shark",
+    description: "Pull requests opened",
+    metric: (s) => s.totals.prsOpened,
+    thresholds: [16, 128, 512, 1024],
+  },
+  {
+    id: "code-reviewer",
+    family: "collaboration",
+    name: "Code Reviewer",
+    description: "Pull request reviews submitted",
+    metric: (s) => s.totals.reviews,
+    thresholds: [10, 50, 200, 500],
+  },
+  {
+    id: "starstruck",
+    family: "impact",
+    name: "Starstruck",
+    description: "Stars earned across owned repos",
+    metric: (s) => s.totals.starsEarned,
+    thresholds: [16, 128, 512, 4096],
+  },
+  {
+    id: "open-source-patron",
+    family: "community",
+    name: "Open Source Patron",
+    description: "Repos contributed to (not owned)",
+    metric: (s) => s.totals.contributedTo,
+    thresholds: [5, 25, 100, 300],
+  },
+  {
+    id: "polyglot",
+    family: "range",
+    name: "Polyglot",
+    description: "Number of languages used across repos",
+    metric: (s) => s.languages.length,
+    thresholds: [3, 6, 10, 15],
+  },
+  {
+    id: "networker",
+    family: "community",
+    name: "Networker",
+    description: "GitHub followers",
+    metric: (s) => s.followers,
+    thresholds: [10, 100, 500, 2000],
+  },
+  {
+    id: "galaxy-brain",
+    family: "collaboration",
+    name: "Galaxy Brain",
+    description: "Discussion answers marked as helpful",
+    metric: (s) => s.totals.discussionAnswers,
+    thresholds: [2, 8, 16, 32],
+  },
 ];
 
-/**
- * GitHub exposes no API for its own achievements. These are estimates from
- * derivable data only and must be labelled "approx." wherever shown.
- * YOLO, Quickdraw and Pair Extraordinaire are intentionally not attempted.
- */
-export const ESTIMATED_GITHUB_BADGES: readonly (Omit<AchievementDef, "family"> & { approx: true })[] = [
-  { id: "pull-shark", name: "Pull Shark", metric: "Merged PRs", thresholds: [2, 16, 128, 1024], value: (s) => s.counts.prsMerged, approx: true },
-  { id: "galaxy-brain", name: "Galaxy Brain", metric: "Accepted answers", thresholds: [2, 8, 16, 32], value: (s) => s.counts.discussionAnswers, approx: true },
-  { id: "starstruck", name: "Starstruck", metric: "Stars on one repo", thresholds: [16, 128, 512, 4096], value: (s) => s.maxRepoStars, approx: true },
-];
+export function computeAchievements(s: GithubSnapshot): AchievementState[] {
+  return ACHIEVEMENT_DEFS.map((def) => {
+    const value = def.metric(s);
+    let tier: AchievementTier | null = null;
+    let nextAt: number | null = def.thresholds[0];
 
-export interface AchievementResult {
-  id: string;
-  name: string;
-  metric: string;
-  value: number;
-  tier: AchievementTier | null;
-  next: number | null;
-  approx: boolean;
-}
+    for (let i = 0; i < TIERS.length; i++) {
+      if (value >= def.thresholds[i]!) {
+        tier = TIERS[i]!;
+        nextAt = def.thresholds[i + 1] ?? null;
+      }
+    }
 
-export function tierForValue(value: number, t: readonly number[]): AchievementTier | null {
-  let tier: AchievementTier | null = null;
-  t.forEach((min, i) => { if (value >= min) tier = ACHIEVEMENT_TIERS[i]!; });
-  return tier;
-}
-
-export function evaluateAchievements(s: GithubSnapshot): AchievementResult[] {
-  const run = (d: Omit<AchievementDef, "family">, approx: boolean): AchievementResult => {
-    const value = d.value(s);
-    return {
-      id: d.id,
-      name: approx ? `${d.name} (approx.)` : d.name,
-      metric: d.metric,
-      value,
-      tier: tierForValue(value, d.thresholds),
-      next: d.thresholds.find((t) => value < t) ?? null,
-      approx,
-    };
-  };
-  return [...ACHIEVEMENTS.map((d) => run(d, false)), ...ESTIMATED_GITHUB_BADGES.map((d) => run(d, true))];
+    return { id: def.id, tier, value, nextAt };
+  });
 }

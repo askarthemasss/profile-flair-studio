@@ -1,22 +1,39 @@
-import type { LanguageStat, RepoSummary } from "../github/types";
+import type { GithubSnapshot, LanguageStat } from "../types.js";
 
-/** Sum bytes across owned non-fork repos. Archived repos are excluded only when hideArchived. */
-export function aggregateLanguages(
-  repos: RepoSummary[],
-  options: { hideArchived?: boolean } = {},
-): LanguageStat[] {
-  const totals = new Map<string, { color: string | null; bytes: number }>();
-  for (const repo of repos) {
-    if (options.hideArchived && repo.archived) continue;
-    for (const lang of repo.languages) {
-      const t = totals.get(lang.name) ?? { color: lang.color, bytes: 0 };
-      t.bytes += lang.bytes;
-      totals.set(lang.name, t);
-    }
-  }
-  const all = [...totals].reduce((s, [, t]) => s + t.bytes, 0);
-  return [...totals]
-    .filter(([, t]) => t.bytes > 0)
-    .map(([name, t]) => ({ name, color: t.color, bytes: t.bytes, pct: all ? (100 * t.bytes) / all : 0 }))
-    .sort((a, b) => b.bytes - a.bytes);
+export interface LanguageShare {
+  name: string;
+  color: string | null;
+  bytes: number;
+  pct: number;
+}
+
+/**
+ * Derive ranked language shares from a snapshot.
+ *
+ * @param snapshot   The full GithubSnapshot
+ * @param maxLangs   Max languages to include (default 8)
+ * @param hideNames  Language names to exclude (case-insensitive)
+ */
+export function computeLanguageShares(
+  snapshot: GithubSnapshot,
+  maxLangs = 8,
+  hideNames: string[] = [],
+): LanguageShare[] {
+  const hideLower = new Set(hideNames.map((n) => n.toLowerCase()));
+
+  const filtered: LanguageStat[] = snapshot.languages.filter(
+    (l) => !hideLower.has(l.name.toLowerCase()),
+  );
+
+  const top = filtered.slice(0, maxLangs);
+  const total = top.reduce((sum, l) => sum + l.bytes, 0);
+
+  if (total === 0) return [];
+
+  return top.map((l) => ({
+    name: l.name,
+    color: l.color,
+    bytes: l.bytes,
+    pct: Math.round((l.bytes / total) * 1000) / 10,
+  }));
 }

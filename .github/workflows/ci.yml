@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main, "rewrite/**"]
+
+jobs:
+  ci:
+    name: Typecheck · Lint · Test · Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm -r typecheck
+
+      - name: Lint
+        run: pnpm --filter @sigil/studio lint
+
+      - name: Test (packages/core)
+        run: pnpm --filter @sigil/core test
+
+      - name: Build core
+        run: pnpm --filter @sigil/core build
+
+      - name: Build studio
+        run: pnpm --filter @sigil/studio build
+
+      - name: Build action
+        run: pnpm --filter @sigil/action build
+
+      - name: Validate themes
+        run: pnpm validate:themes
+
+      - name: SVG size budget
+        run: pnpm check:svg

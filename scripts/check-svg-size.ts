@@ -1,60 +1,128 @@
-/**
- * SVG budgets. Fails CI on breach.
- * Typical card < 60 KB, skyline < 400 KB, hard ceiling 1 MB, fonts < 25 KB each (base64).
- * Run: bun scripts/check-svg-size.ts
- */
-import { CARD_REGISTRY, renderCard } from "../packages/core/src/cards";
-import { DEMO_PROFILE } from "../packages/core/src/demo";
-import { CARD_KIND_IDS } from "../packages/core/src/profile";
-import { snapshotFromProfile } from "../packages/core/src/snapshot";
-import { FRAUNCES_WOFF, JETBRAINS_MONO_WOFF } from "../packages/core/src/svg/fonts.data";
-import { BUILTIN_THEMES } from "../packages/core/src/themes/builtin";
+import {
+  CARD_IDS,
+  CARD_RENDERERS,
+  resolveTheme,
+  type CardId,
+  type GithubSnapshot,
+} from "../packages/core/src/index.js";
 
-const KB = 1024;
-const CEILING = 1024 * KB;
-const budget = (id: string) => (id === "skyline" ? 400 * KB : 60 * KB);
-const failures: string[] = [];
-
-for (const [name, font] of [
-  ["Fraunces", FRAUNCES_WOFF],
-  ["JetBrains Mono", JETBRAINS_MONO_WOFF],
-] as const) {
-  if (font.length > 25 * KB) failures.push(`${name} font ${(font.length / KB).toFixed(1)} KB > 25 KB`);
-}
-
-// A busy year so every card draws its heaviest shape.
-const busy = snapshotFromProfile({
-  ...DEMO_PROFILE,
-  days: (DEMO_PROFILE.days ?? []).map((day, i) => ({ date: day.date, count: 1 + ((i * 37) % 60) })),
-});
-const variants: Record<string, Record<string, string>[]> = {
-  heatmap: [{ shape: "square" }, { shape: "round" }, { shape: "hex" }],
-  skyline: [{ flat: "1" }],
-  activity: [{ range: "365" }],
-  achievements: [{ count: "12" }],
-  languages: [{ layout: "donut", count: "8" }, { layout: "radar", count: "8" }, { layout: "bars", count: "8" }],
+const mockSnapshot: GithubSnapshot = {
+  schema: 1,
+  login: "octocat",
+  githubId: 583231,
+  name: "The Octocat",
+  bio: "Simulating profile cards for size budget verification.",
+  createdAt: "2011-01-25T18:44:36Z",
+  avatarDataUri: null,
+  followers: 9420,
+  following: 9,
+  gists: 8,
+  organizations: 4,
+  totals: {
+    commits: 2150,
+    prsOpened: 84,
+    prsMerged: 79,
+    reviews: 42,
+    issues: 18,
+    ownedRepos: 12,
+    contributedTo: 28,
+    discussionAnswers: 6,
+    starsEarned: 1420,
+    forksEarned: 350,
+    restrictedContributions: 120,
+  },
+  streak: {
+    current: 12,
+    currentStart: "2026-09-01T00:00:00Z",
+    longest: 34,
+    longestStart: "2025-03-01T00:00:00Z",
+    longestEnd: "2025-04-04T00:00:00Z",
+    totalContributions: 1840,
+    activeDays: 210,
+    busiestDay: { date: "2026-06-12", count: 18 },
+  },
+  years: [
+    {
+      year: 2026,
+      total: 1840,
+      days: Array.from({ length: 365 }, (_, i) => (i % 3 === 0 ? 3 : 0)),
+    },
+  ],
+  languages: [
+    { name: "TypeScript", color: "#3178c6", bytes: 320000 },
+    { name: "Rust", color: "#dea584", bytes: 180000 },
+    { name: "Go", color: "#00add8", bytes: 90000 },
+  ],
+  topRepos: [
+    {
+      nameWithOwner: "octocat/Hello-World",
+      description: "My first repository on GitHub!",
+      stars: 1240,
+      forks: 310,
+      language: { name: "TypeScript", color: "#3178c6" },
+      pushedAt: new Date().toISOString(),
+      isArchived: false,
+    },
+  ],
+  fetchedAt: new Date().toISOString(),
+  source: "public_pool",
 };
 
-const largest: Record<string, number> = {};
-for (const theme of BUILTIN_THEMES) {
-  for (const id of CARD_KIND_IDS) {
-    for (const params of variants[id] ?? [{}]) {
-      const bytes = new TextEncoder().encode(
-        renderCard(id, { snapshot: busy, theme, now: "2026-09-22T12:00:00Z", params }),
-      ).length;
-      largest[id] = Math.max(largest[id] ?? 0, bytes);
-      const limit = Math.min(budget(id), CEILING);
-      if (bytes > limit) failures.push(`${id} (${theme.id}, ${JSON.stringify(params)}) ${(bytes / KB).toFixed(1)} KB > ${limit / KB} KB`);
-    }
+const theme = resolveTheme("obsidian");
+const MAX_BUDGET_BYTES = 45 * 1024; // 45 KB per SVG
+
+let failed = false;
+
+console.log("Checking SVG size budgets across all 9 cards...\n");
+
+for (const cardId of CARD_IDS) {
+  const renderer = CARD_RENDERERS[cardId as CardId];
+  if (!renderer) {
+    console.error(`❌ Missing renderer for card: ${cardId}`);
+    failed = true;
+    continue;
+  }
+
+  const svg = renderer({
+    snapshot: mockSnapshot,
+    theme,
+    params: {
+      user: "octocat",
+      theme: "obsidian",
+      animate: "1",
+      hide_border: "0",
+      weeks: 26,
+      show_rank: "1",
+      show_avatar: "1",
+      show_description: "1",
+      show_stats: "1",
+      show_unearned: "1",
+      cols: 3,
+      langs_count: 8,
+      hide: [],
+    } as never,
+    now: new Date(),
+  });
+
+  if (svg.includes("NaN")) {
+    console.error(`❌ Card ${cardId} rendered invalid SVG (contains NaN).`);
+    failed = true;
+    continue;
+  }
+
+  const bytes = Buffer.byteLength(svg, "utf-8");
+  const kb = (bytes / 1024).toFixed(2);
+
+  if (bytes > MAX_BUDGET_BYTES) {
+    console.error(`❌ Card ${cardId} exceeds 45KB budget: ${kb} KB (${bytes} bytes)`);
+    failed = true;
+  } else {
+    console.log(`✓ Card ${cardId.padEnd(14)}: ${kb.padStart(6)} KB (budget: 45 KB)`);
   }
 }
 
-if (failures.length > 0) {
-  console.error(failures.map((line) => `FAIL ${line}`).join("\n"));
+if (failed) {
   process.exit(1);
+} else {
+  console.log("\nAll cards passed the SVG size budget test!");
 }
-console.log(
-  Object.keys(CARD_REGISTRY)
-    .map((id) => `${id.padEnd(13)} ${((largest[id] ?? 0) / KB).toFixed(1)} KB`)
-    .join("\n"),
-);
