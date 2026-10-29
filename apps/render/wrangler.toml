@@ -1,0 +1,17 @@
+name = "sigil-render"
+main = "src/index.ts"
+compatibility_date = "2024-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Cron Triggers — background refresh of cached cards.
+# Every 5 minutes; keeps stale-while-revalidate warm.
+[triggers]
+crons = ["*/5 * * * *"]
+
+[vars]
+ENVIRONMENT = "production"
+
+# Secrets (set via `wrangler secret put`):
+#   GITHUB_TOKEN               — GitHub token(s) for API calls (comma-separated pool)
+#   SUPABASE_URL               — Supabase project URL
+#   SUPABASE_SERVICE_ROLE_KEY  — Supabase service role key (server-side only)

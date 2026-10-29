@@ -10,17 +10,17 @@ Target user: A developer with a GitHub profile README who wants it to look disti
 
 Core value proposition:
 
-PillarMeaningReliableA card never shows an error. Stale data is served instantly and refreshed in the background.BeautifulNine cards share one design language. Themes are first-class and community-made.Zero-configWorks with only a username. Sign in with GitHub is optional and adds your own API quota.IndependentA GitHub Action commits static copies of the cards to the user's own repo, so the profile survives if Sigil goes down.
+PillarMeaningReliableA card never shows an error. Stale data is served instantly and refreshed in the background.BeautifulNine cards share one design language. Themes are first-class and community-made.Zero-configWorks with only a username. No login, no token, no setup.IndependentA GitHub Action commits static copies of the cards to the user's own repo, so the profile survives if Sigil goes down.
 
 Why this exists: Existing card tools are single-purpose, and the most popular public instance is rate-limited and unreliable. The root cause is the GitHub API limit of 5,000 GraphQL points per hour per token. Sigil's architecture is built around that limit (see Section 9).
 
 Platform: Web app (studio), edge render API, GitHub Action, public JSON API.
 
-Deployment target: Studio on Vercel. Render API on Cloudflare Workers. Database and auth on Supabase. Action published to the GitHub Marketplace.
+Deployment target: Studio on Vercel. Render API on Cloudflare Workers. Database on Supabase. Action published to the GitHub Marketplace.
 
 Locked scope decisions (do not revisit):
 
-DecisionChoiceData accessHybrid: public-only with no login, plus optional Sign in with GitHub for the user's own quota and private-contribution countsDeliveryLive image URLs plus a GitHub Action that commits static SVGs as a backupv1 scopeCards, live studio (design + copy Markdown), community theme galleryExplicitly NOT in v1Year-wrapped, public profile pages, coding clock, PNG endpoint, i18n, AI features
+DecisionChoiceData accessPublic-only. No login, no OAuth, no stored user tokens.DeliveryLive image URLs plus a GitHub Action that commits static SVGs as a backupv1 scopeCards, live studio (design + copy Markdown), community theme galleryExplicitly NOT in v1Year-wrapped, public profile pages, coding clock, PNG endpoint, i18n, AI features
 
 This project was built with [Lovable](https://lovable.dev).
 
@@ -34,11 +34,22 @@ Continue developing this project in the [Lovable editor](https://lovable.dev/pro
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Prefer working locally? You need Node.js 20+ and pnpm 9+ — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating) and [install pnpm](https://pnpm.io/installation).
 
 ```sh
 git clone <this-repository-url>
 cd <repository-name>
-npm i
-npm run dev
+pnpm install
+pnpm dev
+```
+
+Useful commands:
+
+```sh
+pnpm typecheck        # all packages
+pnpm test             # core stats tests
+pnpm lint             # studio lint
+pnpm build            # all packages
+pnpm validate:themes  # WCAG theme validation
+pnpm check:svg        # SVG size budget
 ```

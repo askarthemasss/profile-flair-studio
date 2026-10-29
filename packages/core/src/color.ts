@@ -23,11 +23,7 @@ function parseHex(hex: string): { r: number; g: number; b: number } {
 /** WCAG relative luminance (0 = black, 1 = white) for a #rrggbb color. */
 export function relativeLuminance(hex: string): number {
   const { r, g, b } = parseHex(hex);
-  return (
-    0.2126 * srgbToLinear(r) +
-    0.7152 * srgbToLinear(g) +
-    0.0722 * srgbToLinear(b)
-  );
+  return 0.2126 * srgbToLinear(r) + 0.7152 * srgbToLinear(g) + 0.0722 * srgbToLinear(b);
 }
 
 /** WCAG contrast ratio between two #rrggbb colors. Range 1..21. */

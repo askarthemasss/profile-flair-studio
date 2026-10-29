@@ -1,0 +1,20 @@
+{
+  "name": "@sigil/action",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "node esbuild.config.mjs",
+    "typecheck": "tsc --noEmit",
+    "dev": "node esbuild.config.mjs --watch"
+  },
+  "dependencies": {
+    "@sigil/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.16.5",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.8.3"
+  }
+}
