@@ -1,26 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { ThemeSchema } from "../packages/core/src/types.js";
-
-function getLuminance(hex: string): number {
-  const clean = hex.replace("#", "");
-  const r = parseInt(clean.slice(0, 2), 16) / 255;
-  const g = parseInt(clean.slice(2, 4), 16) / 255;
-  const b = parseInt(clean.slice(4, 6), 16) / 255;
-
-  const a = [r, g, b].map((v) =>
-    v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4),
-  );
-  return a[0]! * 0.2126 + a[1]! * 0.7152 + a[2]! * 0.0722;
-}
-
-function getContrast(hex1: string, hex2: string): number {
-  const l1 = getLuminance(hex1);
-  const l2 = getLuminance(hex2);
-  const lighter = Math.max(l1, l2);
-  const darker = Math.min(l1, l2);
-  return (lighter + 0.05) / (darker + 0.05);
-}
+import { passesAccentContrast, passesTextContrast } from "../packages/core/src/color.js";
 
 const themeDirs = [
   path.resolve("packages/core/src/themes/builtin"),
@@ -47,17 +28,26 @@ for (const dir of themeDirs) {
         continue;
       }
 
-      // Check contrast ratio between background and text (WCAG AA >= 4.5:1)
-      const contrast = getContrast(parsed.data.colors.bg, parsed.data.colors.text);
-      if (contrast < 4.5) {
-        console.warn(
-          `⚠️ Low contrast in ${file} between bg (${parsed.data.colors.bg}) and text (${parsed.data.colors.text}): ${contrast.toFixed(2)}:1`,
+      const { bg, text, accent } = parsed.data.colors;
+
+      if (!passesTextContrast(text, bg)) {
+        console.error(
+          `❌ ${file}: text (${text}) on background (${bg}) does not meet WCAG AA 4.5:1.`,
         );
+        hasErrors = true;
+      }
+
+      if (!passesAccentContrast(accent, bg)) {
+        console.error(
+          `❌ ${file}: accent (${accent}) on background (${bg}) does not meet WCAG AA 3:1.`,
+        );
+        hasErrors = true;
       }
 
       console.log(`✓ Theme ${file} validated successfully.`);
-    } catch (err: any) {
-      console.error(`❌ Error reading theme file ${file}:`, err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`❌ Error reading theme file ${file}: ${message}`);
       hasErrors = true;
     }
   }

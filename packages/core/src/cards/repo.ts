@@ -71,9 +71,8 @@ export const renderRepo: CardRenderer<RepoParams> = ({ snapshot, theme, params }
 
   // Description
   if (showDesc && repo.description) {
-    const truncated = repo.description.length > 80
-      ? `${repo.description.slice(0, 77)}...`
-      : repo.description;
+    const truncated =
+      repo.description.length > 80 ? `${repo.description.slice(0, 77)}...` : repo.description;
     b.text({
       x: 24,
       y: 72,
@@ -91,9 +90,7 @@ export const renderRepo: CardRenderer<RepoParams> = ({ snapshot, theme, params }
     // Primary language
     if (repo.language) {
       const langColor = repo.language.color ?? theme.colors.accent;
-      b.raw(
-        `<circle cx="${currX + 5}" cy="${footerY - 4}" r="5" fill="${escapeXml(langColor)}"/>`,
-      );
+      b.raw(`<circle cx="${currX + 5}" cy="${footerY - 4}" r="5" fill="${escapeXml(langColor)}"/>`);
       b.text({
         x: currX + 16,
         y: footerY,

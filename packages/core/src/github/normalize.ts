@@ -2,12 +2,7 @@
  * Normalize raw GitHub API responses into GithubSnapshot shape.
  * Pure — no I/O, no side effects.
  */
-import type {
-  GithubSnapshot,
-  LanguageStat,
-  RepoStat,
-  ContributionYear,
-} from "../types.js";
+import type { GithubSnapshot, LanguageStat, RepoStat, ContributionYear } from "../types.js";
 import { computeStreak } from "../stats/streak.js";
 
 /** Raw shape returned by the STATS_QUERY GraphQL response */
@@ -73,7 +68,6 @@ function aggregateLanguages(
 
 export function normalizeStatsResponse(
   raw: RawStatsResponse,
-  source: "public_pool" | "user_token",
   topRepos: RepoStat[] = [],
   years: ContributionYear[] = [],
 ): GithubSnapshot {
@@ -83,14 +77,8 @@ export function normalizeStatsResponse(
     w.contributionDays.map((d) => ({ date: d.date, count: d.contributionCount })),
   );
 
-  const starsEarned = user.repositories.nodes.reduce(
-    (sum, r) => sum + r.stargazerCount,
-    0,
-  );
-  const forksEarned = user.repositories.nodes.reduce(
-    (sum, r) => sum + r.forkCount,
-    0,
-  );
+  const starsEarned = user.repositories.nodes.reduce((sum, r) => sum + r.stargazerCount, 0);
+  const forksEarned = user.repositories.nodes.reduce((sum, r) => sum + r.forkCount, 0);
 
   return {
     schema: 1,
@@ -122,6 +110,6 @@ export function normalizeStatsResponse(
     languages: aggregateLanguages(user.repositories.nodes),
     topRepos,
     fetchedAt: new Date().toISOString(),
-    source,
+    source: "public_pool",
   };
 }

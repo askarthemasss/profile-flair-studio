@@ -16,10 +16,7 @@ export const ThemeGrid: React.FC = () => {
     if (filter !== "all" && t.theme.mode !== filter) return false;
     if (query) {
       const q = query.toLowerCase();
-      return (
-        t.theme.name.toLowerCase().includes(q) ||
-        t.theme.author.toLowerCase().includes(q)
-      );
+      return t.theme.name.toLowerCase().includes(q) || t.theme.author.toLowerCase().includes(q);
     }
     return true;
   });
@@ -50,9 +47,7 @@ export const ThemeGrid: React.FC = () => {
               key={m}
               onClick={() => setFilter(m)}
               className={`rounded px-3 py-1 font-medium capitalize transition-all ${
-                filter === m
-                  ? "bg-raised text-ember shadow-sm"
-                  : "text-ink-muted hover:text-ink"
+                filter === m ? "bg-raised text-ember shadow-sm" : "text-ink-muted hover:text-ink"
               }`}
             >
               {m}

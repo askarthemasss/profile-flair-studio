@@ -12,7 +12,6 @@ crons = ["*/5 * * * *"]
 ENVIRONMENT = "production"
 
 # Secrets (set via `wrangler secret put`):
-#   GITHUB_TOKEN       — GitHub OAuth App token for API calls
-#   SUPABASE_URL       — Supabase project URL
-#   SUPABASE_ANON_KEY  — Supabase anon key
-#   TOKEN_ENCRYPT_KEY  — AES-256-GCM key for user token encryption
+#   GITHUB_TOKEN               — GitHub token(s) for API calls (comma-separated pool)
+#   SUPABASE_URL               — Supabase project URL
+#   SUPABASE_SERVICE_ROLE_KEY  — Supabase service role key (server-side only)

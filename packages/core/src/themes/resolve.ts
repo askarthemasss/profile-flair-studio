@@ -18,11 +18,8 @@ export const DEFAULT_THEME: Theme = BUILTIN_THEMES.obsidian!;
  * @param overrides Optional partial color overrides
  * @returns Fully resolved Theme object
  */
-export function resolveTheme(
-  themeId?: string,
-  overrides?: Partial<Theme["colors"]>,
-): Theme {
-  const baseTheme = (themeId && BUILTIN_THEMES[themeId]) ? BUILTIN_THEMES[themeId] : DEFAULT_THEME;
+export function resolveTheme(themeId?: string, overrides?: Partial<Theme["colors"]>): Theme {
+  const baseTheme = themeId && BUILTIN_THEMES[themeId] ? BUILTIN_THEMES[themeId] : DEFAULT_THEME;
 
   if (!overrides || Object.keys(overrides).length === 0) {
     return baseTheme;

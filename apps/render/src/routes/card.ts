@@ -16,7 +16,6 @@ export interface RenderEnv {
   SUPABASE_URL?: string;
   SUPABASE_ANON_KEY?: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;
-  TOKEN_ENCRYPT_KEY?: string;
   ENVIRONMENT?: string;
 }
 
@@ -65,13 +64,6 @@ cardRoute.get("/c/:kind/:username", async (c) => {
     tokenPool,
     supabase,
   });
-
-  if (error === "OPTED_OUT") {
-    return new Response(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="80"><rect width="100%" height="100%" fill="#121115"/><text x="20" y="45" fill="#f87171" font-family="monospace" font-size="12">User opted out of Sigil telemetry</text></svg>`,
-      { status: 403, headers: { "Content-Type": "image/svg+xml" } },
-    );
-  }
 
   if (error || !snapshot) {
     return new Response(

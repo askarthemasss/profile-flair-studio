@@ -16,9 +16,7 @@ export const renderActivity: CardRenderer<ActivityParams> = ({ snapshot, theme, 
     .flatMap((y) => y.days);
 
   const totalDaysNeeded = numWeeks * 7;
-  const recentDays = allDays.length >= totalDaysNeeded
-    ? allDays.slice(-totalDaysNeeded)
-    : allDays;
+  const recentDays = allDays.length >= totalDaysNeeded ? allDays.slice(-totalDaysNeeded) : allDays;
 
   // Group into weekly buckets
   const weeklyTotals: number[] = [];
@@ -69,15 +67,15 @@ export const renderActivity: CardRenderer<ActivityParams> = ({ snapshot, theme, 
     });
 
     const pathData = points.reduce((acc, pt, i) => {
-      return i === 0 ? `M ${pt.x.toFixed(1)} ${pt.y.toFixed(1)}` : `${acc} L ${pt.x.toFixed(1)} ${pt.y.toFixed(1)}`;
+      return i === 0
+        ? `M ${pt.x.toFixed(1)} ${pt.y.toFixed(1)}`
+        : `${acc} L ${pt.x.toFixed(1)} ${pt.y.toFixed(1)}`;
     }, "");
 
     const areaData = `${pathData} L ${points[points.length - 1]!.x.toFixed(1)} ${baseY} L ${points[0]!.x.toFixed(1)} ${baseY} Z`;
 
     // Area fill
-    b.raw(
-      `<path d="${areaData}" fill="${escapeXml(theme.colors.accent)}" opacity="0.15"/>`,
-    );
+    b.raw(`<path d="${areaData}" fill="${escapeXml(theme.colors.accent)}" opacity="0.15"/>`);
 
     // Stroke line
     b.raw(

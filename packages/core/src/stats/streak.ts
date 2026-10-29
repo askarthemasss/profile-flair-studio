@@ -1,4 +1,4 @@
-import type { GithubSnapshot, StreakStats } from "../types.js";
+import type { StreakStats } from "../types.js";
 
 interface Day {
   date: string;
@@ -78,10 +78,7 @@ export function computeStreak(days: Day[]): StreakStats {
   }
 
   const lastDay = sorted[sorted.length - 1]!;
-  if (
-    currentRunLen > 0 &&
-    (lastDay.date === today || lastDay.date === yesterday)
-  ) {
+  if (currentRunLen > 0 && (lastDay.date === today || lastDay.date === yesterday)) {
     current = currentRunLen;
     currentStart = currentRunStart;
   }
@@ -96,9 +93,4 @@ export function computeStreak(days: Day[]): StreakStats {
     activeDays,
     busiestDay,
   };
-}
-
-/** Re-export for use in stats card renderers */
-export function streakFromSnapshot(s: GithubSnapshot): StreakStats {
-  return s.streak;
 }

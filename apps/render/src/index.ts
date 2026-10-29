@@ -4,7 +4,6 @@ import { cardRoute, type RenderEnv } from "./routes/card.js";
 import { snapshotRoute } from "./routes/snapshot.js";
 import { themesRoute } from "./routes/themes.js";
 import { healthRoute } from "./routes/health.js";
-import { connectRoute } from "./routes/connect.js";
 import { SupabaseRest } from "./db/supabase-rest.js";
 import { TokenPool } from "./pipeline/token-pool.js";
 import { getOrRefreshSnapshot } from "./pipeline/refresh-snapshot.js";
@@ -19,7 +18,6 @@ app.route("/", cardRoute);
 app.route("/", snapshotRoute);
 app.route("/", themesRoute);
 app.route("/", healthRoute);
-app.route("/", connectRoute);
 
 // 404 handler
 app.notFound((c) => {

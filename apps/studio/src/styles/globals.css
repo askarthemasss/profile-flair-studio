@@ -69,12 +69,15 @@
 }
 
 @keyframes sg-breath {
-  0%, 100% {
-    box-shadow: 0 0 0 1px color-mix(in oklab, var(--sg-ember) 35%, transparent),
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--sg-ember) 35%, transparent),
       0 0 22px -8px color-mix(in oklab, var(--sg-ember) 30%, transparent);
   }
   50% {
-    box-shadow: 0 0 0 1px color-mix(in oklab, var(--sg-ember) 65%, transparent),
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--sg-ember) 65%, transparent),
       0 0 38px -4px color-mix(in oklab, var(--sg-ember) 55%, transparent);
   }
 }

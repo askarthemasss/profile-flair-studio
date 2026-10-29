@@ -46,10 +46,6 @@ export const CardIdSchema = z.enum([
   "banner",
 ]);
 
-export type CardKind = CardId;
-export const CARD_KINDS = CARD_IDS;
-export const cardKindSchema = CardIdSchema;
-
 // ---------------------------------------------------------------------------
 // Data — what the pipeline stores in GithubSnapshot
 // ---------------------------------------------------------------------------
@@ -121,7 +117,7 @@ export interface GithubSnapshot {
   /** Top 30 by stars */
   topRepos: RepoStat[];
   fetchedAt: string;
-  source: "public_pool" | "user_token";
+  source: "public_pool";
 }
 
 // ---------------------------------------------------------------------------
@@ -152,12 +148,7 @@ export interface RankResult {
 
 export type AchievementTier = "bronze" | "silver" | "gold" | "obsidian";
 export type AchievementFamily =
-  | "consistency"
-  | "volume"
-  | "collaboration"
-  | "impact"
-  | "range"
-  | "community";
+  "consistency" | "volume" | "collaboration" | "impact" | "range" | "community";
 
 export interface AchievementDef {
   id: string;
@@ -174,12 +165,6 @@ export interface AchievementState {
   tier: AchievementTier | null;
   value: number;
   nextAt: number | null;
-}
-
-export interface EstimatedBadge {
-  id: "pull-shark" | "galaxy-brain" | "starstruck";
-  tier: 0 | 1 | 2 | 3 | 4;
-  estimated: true;
 }
 
 // ---------------------------------------------------------------------------
@@ -256,21 +241,13 @@ export interface CardRenderInput<P = Record<string, unknown>> {
 }
 
 /** Returns SVG string. Must complete in < 10 ms CPU. */
-export type CardRenderer<P = Record<string, unknown>> = (
-  input: CardRenderInput<P>,
-) => string;
+export type CardRenderer<P = Record<string, unknown>> = (input: CardRenderInput<P>) => string;
 
 // ---------------------------------------------------------------------------
 // API
 // ---------------------------------------------------------------------------
 
 export interface ApiErrorBody {
-  code: "BAD_PARAMS" | "NOT_FOUND" | "OPTED_OUT" | "UPSTREAM";
+  code: "BAD_PARAMS" | "NOT_FOUND" | "UPSTREAM";
   message: string;
-}
-
-export interface ConnectionStatus {
-  connected: boolean;
-  scopes: string[];
-  lastUsedAt: string | null;
 }

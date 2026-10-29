@@ -73,11 +73,7 @@ export const StudioPage: React.FC = () => {
                       key={card.uid}
                       className="w-full max-w-[520px] rounded-lg transition-transform hover:scale-[1.01]"
                     >
-                      <CardPreview
-                        card={card}
-                        snapshot={activeSnapshot}
-                        theme={resolvedTheme}
-                      />
+                      <CardPreview card={card} snapshot={activeSnapshot} theme={resolvedTheme} />
                     </div>
                   ))}
                 </div>

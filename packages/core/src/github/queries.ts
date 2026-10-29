@@ -15,18 +15,35 @@ export const STATS_QUERY = /* GraphQL */ `
       bio
       createdAt
       avatarUrl(size: 96)
-      followers { totalCount }
-      following { totalCount }
-      gists { totalCount }
-      organizations { totalCount }
+      followers {
+        totalCount
+      }
+      following {
+        totalCount
+      }
+      gists {
+        totalCount
+      }
+      organizations {
+        totalCount
+      }
       repositories(first: 100, ownerAffiliations: OWNER, isFork: false) {
         totalCount
         nodes {
           stargazerCount
           forkCount
-          primaryLanguage { name color }
+          primaryLanguage {
+            name
+            color
+          }
           languages(first: 10, orderBy: { field: SIZE, direction: DESC }) {
-            edges { size node { name color } }
+            edges {
+              size
+              node {
+                name
+                color
+              }
+            }
           }
         }
       }
@@ -40,7 +57,10 @@ export const STATS_QUERY = /* GraphQL */ `
         contributionCalendar {
           totalContributions
           weeks {
-            contributionDays { date contributionCount }
+            contributionDays {
+              date
+              contributionCount
+            }
           }
         }
       }
@@ -68,7 +88,10 @@ export const YEAR_CONTRIBUTIONS_QUERY = /* GraphQL */ `
         contributionCalendar {
           totalContributions
           weeks {
-            contributionDays { date contributionCount }
+            contributionDays {
+              date
+              contributionCount
+            }
           }
         }
       }
@@ -91,7 +114,10 @@ export const TOP_REPOS_QUERY = /* GraphQL */ `
           description
           stargazerCount
           forkCount
-          primaryLanguage { name color }
+          primaryLanguage {
+            name
+            color
+          }
           pushedAt
           isArchived
         }

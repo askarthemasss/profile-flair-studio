@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePresets } from "../../hooks/usePresets.js";
 import { useStudioStore } from "../../store/studio-store.js";
-import { Bookmark, Trash2, ArrowRight, Plus } from "lucide-react";
+import type { PresetItem } from "../../services/preset-service.js";
+import { Trash2, ArrowRight, Plus } from "lucide-react";
 
 export const PresetList: React.FC = () => {
   const { presets, isLoading, savePreset, deletePreset } = usePresets();
@@ -25,7 +26,7 @@ export const PresetList: React.FC = () => {
     setIsCreating(false);
   };
 
-  const handleLoad = (preset: any) => {
+  const handleLoad = (preset: PresetItem) => {
     loadPreset(preset.preset);
     navigate("/studio");
   };

@@ -122,7 +122,9 @@ export const LandingPage: React.FC = () => {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-ember/10 text-ember mb-4">
                 <Zap className="h-5 w-5" />
               </div>
-              <h3 className="font-display text-base font-semibold text-ink">Sub-10ms Edge Execution</h3>
+              <h3 className="font-display text-base font-semibold text-ink">
+                Sub-10ms Edge Execution
+              </h3>
               <p className="mt-2 text-xs text-ink-muted leading-relaxed">
                 Rendered on Cloudflare Workers using pure string ops. No headless Chrome, no canvas,
                 no puppeteer, no warm-up delays.
@@ -133,10 +135,10 @@ export const LandingPage: React.FC = () => {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-azure/10 text-azure mb-4">
                 <Code2 className="h-5 w-5" />
               </div>
-              <h3 className="font-display text-base font-semibold text-ink">Dual-Theme Dark & Light</h3>
+              <h3 className="font-display text-base font-semibold text-ink">First-Class Themes</h3>
               <p className="mt-2 text-xs text-ink-muted leading-relaxed">
-                Generate native HTML5 <code className="text-ink">&lt;picture&gt;</code> tags that automatically
-                respond to GitHub's light and dark mode viewer preferences.
+                Every card shares one design language, and themes are first-class: pick a builtin
+                theme or submit your own to the community gallery.
               </p>
             </div>
 
@@ -144,10 +146,12 @@ export const LandingPage: React.FC = () => {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-verdigris/10 text-verdigris mb-4">
                 <Shield className="h-5 w-5" />
               </div>
-              <h3 className="font-display text-base font-semibold text-ink">Autonomous GitHub Action</h3>
+              <h3 className="font-display text-base font-semibold text-ink">
+                Autonomous GitHub Action
+              </h3>
               <p className="mt-2 text-xs text-ink-muted leading-relaxed">
-                Prefer self-hosting? The bundled Node 20 GitHub Action renders the cards inside your own
-                repository with zero external server dependencies.
+                Prefer self-hosting? The bundled Node 20 GitHub Action renders the cards inside your
+                own repository with zero external server dependencies.
               </p>
             </div>
           </div>

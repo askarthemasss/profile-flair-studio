@@ -24,8 +24,8 @@ export const DocsPage: React.FC = () => {
               <span>Card Image Endpoints</span>
             </h2>
             <p className="text-xs text-ink-muted leading-relaxed">
-              Cards are delivered as native SVG images directly through Cloudflare Workers. You can embed
-              them into any Markdown, HTML, or static site.
+              Cards are delivered as native SVG images directly through Cloudflare Workers. You can
+              embed them into any Markdown, HTML, or static site.
             </p>
 
             <div className="rounded-lg border border-line bg-panel p-4 font-mono text-xs">
@@ -33,7 +33,8 @@ export const DocsPage: React.FC = () => {
               <div className="mt-2 text-ink-muted">
                 Available kinds:{" "}
                 <span className="text-ink">
-                  overview, streak, languages, heatmap, skyline, activity, achievements, repo, banner
+                  overview, streak, languages, heatmap, skyline, activity, achievements, repo,
+                  banner
                 </span>
               </div>
             </div>
@@ -61,13 +62,17 @@ export const DocsPage: React.FC = () => {
                     <td className="p-3 text-ember">theme</td>
                     <td className="p-3">string</td>
                     <td className="p-3">"obsidian"</td>
-                    <td className="p-3 font-sans">Theme identifier (obsidian, monolith, verdigris, etc.)</td>
+                    <td className="p-3 font-sans">
+                      Theme identifier (obsidian, monolith, verdigris, etc.)
+                    </td>
                   </tr>
                   <tr>
                     <td className="p-3 text-ember">animate</td>
                     <td className="p-3">0 | 1</td>
                     <td className="p-3">1</td>
-                    <td className="p-3 font-sans">Enable or disable CSS animations and hover transitions</td>
+                    <td className="p-3 font-sans">
+                      Enable or disable CSS animations and hover transitions
+                    </td>
                   </tr>
                   <tr>
                     <td className="p-3 text-ember">hide_border</td>
@@ -98,23 +103,23 @@ export const DocsPage: React.FC = () => {
             </div>
           </section>
 
-          {/* Section 3: Dual Theme Example */}
+          {/* Section 3: Embed Example */}
           <section className="flex flex-col gap-4">
             <h2 className="font-display text-xl font-semibold text-ink flex items-center gap-2">
               <Code className="h-5 w-5 text-ember" />
-              <span>Dual-Theme Dark / Light Mode Embed</span>
+              <span>Embedding a Card</span>
             </h2>
             <p className="text-xs text-ink-muted leading-relaxed">
-              Use HTML <code className="text-ink">&lt;picture&gt;</code> elements to automatically render
-              dark mode or light mode cards based on the visitor's system theme:
+              Drop a themed card into any Markdown or HTML file. Available builtin themes:{" "}
+              <code className="text-ink">obsidian</code>, <code className="text-ink">monolith</code>
+              , and <code className="text-ink">verdigris</code>.
             </p>
 
             <pre className="overflow-x-auto rounded-lg border border-line bg-obsidian p-4 font-mono text-xs text-ink-muted leading-relaxed">
-              {`<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://sigil.dev/c/overview/veera-siddhan?theme=obsidian">
-  <source media="(prefers-color-scheme: light)" srcset="https://sigil.dev/c/overview/veera-siddhan?theme=paper">
-  <img alt="GitHub Overview" src="https://sigil.dev/c/overview/veera-siddhan?theme=obsidian">
-</picture>`}
+              {`<img
+  alt="GitHub Overview"
+  src="https://sigil.dev/c/overview/veera-siddhan?theme=obsidian"
+/>`}
             </pre>
           </section>
         </div>

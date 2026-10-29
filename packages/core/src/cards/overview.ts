@@ -11,8 +11,21 @@ export const renderOverview: CardRenderer<OverviewParams> = ({ snapshot, theme, 
   const b = new SvgBuilder({ width: 495, height: 195, theme, animate, radius: r }).open();
 
   // Title
-  b.text({ x: 24, y: 38, content: snapshot.name ?? snapshot.login, fontSize: 16, fontWeight: 600, fill: theme.colors.text });
-  b.text({ x: 24, y: 56, content: `@${snapshot.login}`, fontSize: 11, fill: theme.colors.textMuted });
+  b.text({
+    x: 24,
+    y: 38,
+    content: snapshot.name ?? snapshot.login,
+    fontSize: 16,
+    fontWeight: 600,
+    fill: theme.colors.text,
+  });
+  b.text({
+    x: 24,
+    y: 56,
+    content: `@${snapshot.login}`,
+    fontSize: 11,
+    fill: theme.colors.textMuted,
+  });
 
   // Stats grid
   const stats: [string, string | number][] = [
@@ -30,14 +43,36 @@ export const renderOverview: CardRenderer<OverviewParams> = ({ snapshot, theme, 
     const row = Math.floor(i / 3);
     const x = 24 + col * colW;
     const y = 90 + row * 44;
-    b.text({ x, y, content: String(value), fontSize: 18, fontWeight: 600, fill: theme.colors.accent });
+    b.text({
+      x,
+      y,
+      content: String(value),
+      fontSize: 18,
+      fontWeight: 600,
+      fill: theme.colors.accent,
+    });
     b.text({ x, y: y + 16, content: label, fontSize: 10, fill: theme.colors.textMuted });
   });
 
   // Rank badge (right side)
   if (params.show_rank === "1") {
-    b.text({ x: 455, y: 108, content: rank.tier.toUpperCase(), fontSize: 11, fontWeight: 700, fill: theme.colors.accent2, anchor: "middle" });
-    b.text({ x: 455, y: 120, content: "rank", fontSize: 9, fill: theme.colors.textMuted, anchor: "middle" });
+    b.text({
+      x: 455,
+      y: 108,
+      content: rank.tier.toUpperCase(),
+      fontSize: 11,
+      fontWeight: 700,
+      fill: theme.colors.accent2,
+      anchor: "middle",
+    });
+    b.text({
+      x: 455,
+      y: 120,
+      content: "rank",
+      fontSize: 9,
+      fill: theme.colors.textMuted,
+      anchor: "middle",
+    });
   }
 
   return b.build();

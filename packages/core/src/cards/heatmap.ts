@@ -5,7 +5,7 @@ import { escapeXml } from "../svg/escape.js";
 
 const CELL = 11;
 const GAP = 2;
-const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export const renderHeatmap: CardRenderer<HeatmapParams> = ({ snapshot, theme, params, now }) => {
   const animate = params.animate === "1";
@@ -31,7 +31,14 @@ export const renderHeatmap: CardRenderer<HeatmapParams> = ({ snapshot, theme, pa
   const width = gridW + 48;
 
   const b = new SvgBuilder({ width, height, theme, animate, radius: r }).open();
-  b.text({ x: 24, y: 28, content: "Contribution Heatmap", fontSize: 13, fontWeight: 600, fill: theme.colors.text });
+  b.text({
+    x: 24,
+    y: 28,
+    content: "Contribution Heatmap",
+    fontSize: 13,
+    fontWeight: 600,
+    fill: theme.colors.text,
+  });
 
   const startY = params.show_month_labels === "1" ? 48 : 36;
 
@@ -42,8 +49,11 @@ export const renderHeatmap: CardRenderer<HeatmapParams> = ({ snapshot, theme, pa
     const x = 24 + week * (CELL + GAP);
     const y = startY + dow * (CELL + GAP);
     const intensity = day.count === 0 ? 0 : Math.min(4, Math.ceil(day.count / 3));
-    const fill = intensity === 0 ? theme.colors.bgAlt : theme.heat[intensity - 1] ?? theme.heat[3];
-    b.raw(`<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="2" fill="${escapeXml(fill)}" data-date="${day.date}" data-count="${day.count}"/>`);
+    const fill =
+      intensity === 0 ? theme.colors.bgAlt : (theme.heat[intensity - 1] ?? theme.heat[3]);
+    b.raw(
+      `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="2" fill="${escapeXml(fill)}" data-date="${day.date}" data-count="${day.count}"/>`,
+    );
   });
 
   // Month labels
@@ -54,7 +64,13 @@ export const renderHeatmap: CardRenderer<HeatmapParams> = ({ snapshot, theme, pa
       const month = new Date(day.date).getMonth();
       if (month !== lastMonth && idx % 7 === 0) {
         lastMonth = month;
-        b.text({ x: 24 + week * (CELL + GAP), y: startY - 6, content: MONTHS[month] ?? "", fontSize: 9, fill: theme.colors.textMuted });
+        b.text({
+          x: 24 + week * (CELL + GAP),
+          y: startY - 6,
+          content: MONTHS[month] ?? "",
+          fontSize: 9,
+          fill: theme.colors.textMuted,
+        });
       }
     });
   }

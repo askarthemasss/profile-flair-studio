@@ -9,12 +9,7 @@
 
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import {
-  STATS_QUERY,
-  CardIdSchema,
-  CARD_IDS,
-  type CardId,
-} from "@sigil/core";
+import { STATS_QUERY, CardIdSchema, CARD_IDS, type CardId } from "@sigil/core";
 
 // ---------------------------------------------------------------------------
 // Read Action inputs

@@ -4,9 +4,8 @@ import { LandingPage } from "./pages/landing.js";
 import { StudioPage } from "./pages/studio.js";
 import { ThemesPage } from "./pages/themes.js";
 import { DocsPage } from "./pages/docs.js";
-import { DashboardPage } from "./pages/dashboard.js";
+import { PresetsPage } from "./pages/presets.js";
 import { StatusPage } from "./pages/status.js";
-import { AuthCallbackPage } from "./pages/auth-callback.js";
 
 export function App() {
   return (
@@ -15,9 +14,8 @@ export function App() {
       <Route path="/studio" element={<StudioPage />} />
       <Route path="/themes" element={<ThemesPage />} />
       <Route path="/docs" element={<DocsPage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/presets" element={<PresetsPage />} />
       <Route path="/status" element={<StatusPage />} />
-      <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

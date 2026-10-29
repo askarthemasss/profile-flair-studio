@@ -14,24 +14,15 @@ interface RefreshOptions {
   login: string;
   tokenPool: TokenPool;
   supabase?: SupabaseRest;
-  userToken?: string;
   forceRefresh?: boolean;
 }
 
 export async function getOrRefreshSnapshot(
   opts: RefreshOptions,
-): Promise<{ snapshot: GithubSnapshot | null; error: "OPTED_OUT" | "NOT_FOUND" | "UPSTREAM" | null }> {
-  const { login, tokenPool, supabase, userToken, forceRefresh } = opts;
+): Promise<{ snapshot: GithubSnapshot | null; error: "NOT_FOUND" | "UPSTREAM" | null }> {
+  const { login, tokenPool, supabase, forceRefresh } = opts;
 
-  // 1. Check if user opted out
-  if (supabase) {
-    const optOut = await supabase.get("opt_outs", `login=eq.${encodeURIComponent(login)}&select=login`);
-    if (optOut && optOut.length > 0) {
-      return { snapshot: null, error: "OPTED_OUT" };
-    }
-  }
-
-  // 2. Check cached snapshot in Supabase if not forced
+  // 1. Check cached snapshot in Supabase if not forced
   if (supabase && !forceRefresh) {
     const cached = await supabase.get<any>(
       "snapshots",
@@ -47,13 +38,13 @@ export async function getOrRefreshSnapshot(
     }
   }
 
-  // 3. Resolve token
-  const token = userToken || tokenPool.getToken();
+  // 2. Resolve token
+  const token = tokenPool.getToken();
   if (!token) {
     return { snapshot: null, error: "UPSTREAM" };
   }
 
-  // 4. Fetch raw stats and top repos in parallel
+  // 3. Fetch raw stats and top repos in parallel
   const [statsRes, reposRes] = await Promise.all([
     executeGithubGraphQL<RawStatsResponse>(STATS_QUERY, { login, includePrs: true }, token),
     executeGithubGraphQL<{ user: { repositories: { nodes: any[] } } }>(
@@ -72,27 +63,30 @@ export async function getOrRefreshSnapshot(
     description: n.description,
     stars: n.stargazerCount,
     forks: n.forkCount,
-    language: n.primaryLanguage ? { name: n.primaryLanguage.name, color: n.primaryLanguage.color } : null,
+    language: n.primaryLanguage
+      ? { name: n.primaryLanguage.name, color: n.primaryLanguage.color }
+      : null,
     pushedAt: n.pushedAt,
     isArchived: Boolean(n.isArchived),
   }));
 
-  const source = userToken ? "user_token" : "public_pool";
-  const snapshot = normalizeStatsResponse(statsRes.data, source, topRepos);
+  const snapshot = normalizeStatsResponse(statsRes.data, topRepos);
 
-  // 5. Fetch and embed avatar data URI
+  // 4. Fetch and embed avatar data URI
   if (statsRes.data.user.avatarUrl) {
     const avatarDataUri = await fetchAvatarDataUri(statsRes.data.user.avatarUrl);
     snapshot.avatarDataUri = avatarDataUri;
   }
 
-  // 6. Cache to Supabase in background
+  // 5. Cache to Supabase in background
   if (supabase) {
-    supabase.upsert("snapshots", {
-      login,
-      data: snapshot,
-      fetched_at: new Date().toISOString(),
-    }).catch(() => {});
+    supabase
+      .upsert("snapshots", {
+        login,
+        data: snapshot,
+        fetched_at: new Date().toISOString(),
+      })
+      .catch(() => {});
   }
 
   return { snapshot, error: null };

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useStudioStore } from "../../store/studio-store.js";
 import { ENV } from "../../lib/env.js";
 import type { ExportFormat } from "../../types.js";
-import { Copy, Check, Code, FileText, Globe } from "lucide-react";
+import { Copy, Check, Code, FileText, Globe, type LucideIcon } from "lucide-react";
 
 export const ExportPanel: React.FC = () => {
   const { user, theme, overrides, cards, exportFormat, setExportFormat } = useStudioStore();
@@ -28,19 +28,7 @@ export const ExportPanel: React.FC = () => {
     switch (fmt) {
       case "markdown":
         return cards
-          .map(
-            (c) =>
-              `[![${user}'s ${c.card}](${getCardUrl(c.card, c.params)})](${profileUrl})`,
-          )
-          .join("\n\n");
-
-      case "markdown-picture":
-        return cards
-          .map((c) => {
-            const darkUrl = getCardUrl(c.card, { ...c.params, theme: "obsidian" });
-            const lightUrl = getCardUrl(c.card, { ...c.params, theme: "paper" });
-            return `<picture>\n  <source media="(prefers-color-scheme: dark)" srcset="${darkUrl}">\n  <source media="(prefers-color-scheme: light)" srcset="${lightUrl}">\n  <img alt="${user}'s ${c.card}" src="${darkUrl}">\n</picture>`;
-          })
+          .map((c) => `[![${user}'s ${c.card}](${getCardUrl(c.card, c.params)})](${profileUrl})`)
           .join("\n\n");
 
       case "html":
@@ -71,8 +59,7 @@ export const ExportPanel: React.FC = () => {
     }
   };
 
-  const formats: { id: ExportFormat; label: string; icon: any }[] = [
-    { id: "markdown-picture", label: "Dual Theme Picture", icon: FileText },
+  const formats: { id: ExportFormat; label: string; icon: LucideIcon }[] = [
     { id: "markdown", label: "Markdown", icon: FileText },
     { id: "html", label: "HTML", icon: Code },
     { id: "url", label: "Raw URLs", icon: Globe },

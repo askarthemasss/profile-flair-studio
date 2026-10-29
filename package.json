@@ -12,9 +12,12 @@
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "validate:themes": "tsx scripts/validate-themes.ts",
+    "check:svg": "tsx scripts/check-svg-size.ts"
   },
   "devDependencies": {
-    "prettier": "^3.7.3"
+    "prettier": "^3.7.3",
+    "tsx": "^4.20.0"
   }
 }

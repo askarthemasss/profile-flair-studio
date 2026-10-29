@@ -28,7 +28,7 @@ export const useStudioStore = create<ExtendedStudioState>()(
       overrides: {},
       cards: DEFAULT_CARDS,
       selectedUid: DEFAULT_CARDS[0]!.uid,
-      exportFormat: "markdown-picture",
+      exportFormat: "markdown",
 
       setUser: (user) => set({ user }),
       setTheme: (theme) => set({ theme }),
@@ -102,7 +102,7 @@ export const useStudioStore = create<ExtendedStudioState>()(
           overrides: {},
           cards: DEFAULT_CARDS,
           selectedUid: DEFAULT_CARDS[0]!.uid,
-          exportFormat: "markdown-picture",
+          exportFormat: "markdown",
         }),
     }),
     {

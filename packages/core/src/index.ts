@@ -14,9 +14,7 @@ export * from "./stats/languages.js";
 // SVG builder and helpers
 export * from "./svg/builder.js";
 export * from "./svg/escape.js";
-export * from "./svg/defs.js";
 export * from "./svg/animations.js";
-export * from "./svg/fonts.generated.js";
 
 // Themes
 export * from "./themes/index.js";
@@ -58,4 +56,3 @@ export const CARD_RENDERERS: Record<CardId, CardRenderer<any>> = {
   repo: renderRepo,
   banner: renderBanner,
 };
-

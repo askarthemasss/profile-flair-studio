@@ -23,9 +23,7 @@ export const ControlPanel: React.FC = () => {
   return (
     <div className="flex flex-col gap-5 rounded-lg border border-line bg-panel p-4 shadow-card">
       <div className="flex items-center justify-between border-b border-line pb-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-ink">
-          Pack Settings
-        </h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-ink">Pack Settings</h2>
         <button
           onClick={reset}
           className="flex items-center gap-1 text-[11px] text-ink-muted hover:text-ember transition-colors"
@@ -160,12 +158,9 @@ export const ControlPanel: React.FC = () => {
                 min={1}
                 max={15}
                 value={selectedCard.params.langs_count ?? "8"}
-                onChange={(e) =>
-                  updateParams(selectedCard.uid, { langs_count: e.target.value })
-                }
+                onChange={(e) => updateParams(selectedCard.uid, { langs_count: e.target.value })}
                 className="w-16 rounded border border-line bg-raised px-2 py-1 font-mono text-xs text-ink"
-              >
-              </input>
+              ></input>
             </div>
           )}
 
@@ -203,9 +198,7 @@ export const ControlPanel: React.FC = () => {
               <span>Show Unearned Badges</span>
               <select
                 value={selectedCard.params.show_unearned ?? "1"}
-                onChange={(e) =>
-                  updateParams(selectedCard.uid, { show_unearned: e.target.value })
-                }
+                onChange={(e) => updateParams(selectedCard.uid, { show_unearned: e.target.value })}
                 className="rounded border border-line bg-raised px-2 py-1 text-xs text-ink"
               >
                 <option value="1">Show Locked</option>

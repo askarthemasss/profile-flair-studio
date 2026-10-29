@@ -4,8 +4,7 @@ import { useStudioStore } from "../../store/studio-store.js";
 import { Plus, Trash2, ArrowUp, ArrowDown, GripVertical } from "lucide-react";
 
 export const PackList: React.FC = () => {
-  const { cards, selectedUid, setSelectedUid, addCard, removeCard, moveCard } =
-    useStudioStore();
+  const { cards, selectedUid, setSelectedUid, addCard, removeCard, moveCard } = useStudioStore();
 
   const handleAdd = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value as CardId;

@@ -16,13 +16,7 @@
     "warning": "#fbbf24",
     "danger": "#f87171"
   },
-  "heat": [
-    "#16151a",
-    "#3d1f14",
-    "#7c2d12",
-    "#c2410c",
-    "#ff6a2b"
-  ],
+  "heat": ["#16151a", "#3d1f14", "#7c2d12", "#c2410c", "#ff6a2b"],
   "font": "mono",
   "radius": 12,
   "effects": {

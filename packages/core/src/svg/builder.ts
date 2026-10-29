@@ -13,18 +13,6 @@ export interface CardDimensions {
   height: number;
 }
 
-export const CARD_WIDTHS: Record<string, number> = {
-  overview: 495,
-  streak: 495,
-  languages: 300,
-  heatmap: 495,
-  skyline: 495,
-  activity: 495,
-  achievements: 495,
-  repo: 400,
-  banner: 495,
-};
-
 export const DEFAULT_HEIGHT = 195;
 
 export class SvgBuilder {

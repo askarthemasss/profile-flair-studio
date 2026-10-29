@@ -9,8 +9,9 @@ export function getDemoSnapshot(login: string): GithubSnapshot {
   // 365 days of contributions
   const days: number[] = Array.from({ length: 365 }, (_, i) => {
     // Generate realistic contribution cadence
-    const weekday = (i % 7);
-    if (weekday === 0 || weekday === 6) return Math.random() > 0.6 ? Math.floor(Math.random() * 4) : 0;
+    const weekday = i % 7;
+    if (weekday === 0 || weekday === 6)
+      return Math.random() > 0.6 ? Math.floor(Math.random() * 4) : 0;
     return Math.random() > 0.2 ? Math.floor(Math.random() * 8) + 1 : 0;
   });
   const total = days.reduce((a, b) => a + b, 0);

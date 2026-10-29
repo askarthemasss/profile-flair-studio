@@ -44,8 +44,8 @@ jobs:
       - name: Build action
         run: pnpm --filter @sigil/action build
 
-      - name: SVG size budget check
-        run: |
-          # Fail if any generated SVG exceeds 50 KB.
-          find . -path "*/dist/*.svg" -size +50k -exec echo "::error::SVG too large: {}" \; -exec false \;
+      - name: Validate themes
+        run: pnpm validate:themes
 
+      - name: SVG size budget
+        run: pnpm check:svg

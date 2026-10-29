@@ -4,10 +4,25 @@ import { Activity, CheckCircle2, Server, Cpu, Database } from "lucide-react";
 
 export const StatusPage: React.FC = () => {
   const systems = [
-    { name: "Cloudflare Workers Edge API", status: "Operational", latency: "6ms CPU", icon: Server },
+    {
+      name: "Cloudflare Workers Edge API",
+      status: "Operational",
+      latency: "6ms CPU",
+      icon: Server,
+    },
     { name: "Core SVG Rendering Engine", status: "Operational", latency: "3ms CPU", icon: Cpu },
-    { name: "GitHub GraphQL Token Pool", status: "Operational", latency: "4,820 / 5,000", icon: Activity },
-    { name: "Supabase PostgREST & Vault", status: "Operational", latency: "Normal", icon: Database },
+    {
+      name: "GitHub GraphQL Token Pool",
+      status: "Operational",
+      latency: "4,820 / 5,000",
+      icon: Activity,
+    },
+    {
+      name: "Supabase PostgREST Cache",
+      status: "Operational",
+      latency: "Normal",
+      icon: Database,
+    },
   ];
 
   return (

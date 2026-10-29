@@ -6,7 +6,7 @@ export interface PackCard {
   params: Record<string, string>;
 }
 
-export type ExportFormat = "markdown-picture" | "markdown" | "html" | "url";
+export type ExportFormat = "markdown" | "html" | "url";
 
 export interface PresetParams {
   theme: string;
@@ -43,9 +43,4 @@ export interface ThemeCardProps {
   voted: boolean;
   onVote(id: string): void;
   onApply(id: string): void;
-}
-
-export interface CopyBlockProps {
-  label: string;
-  value: string;
 }

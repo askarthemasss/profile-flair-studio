@@ -1,18 +1,16 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { BRAND } from "@sigil/core";
-import { useConnection } from "../../hooks/useConnection.js";
-import { Github, ShieldCheck, Sparkles } from "lucide-react";
+import { Github } from "lucide-react";
 
 export const Header: React.FC = () => {
   const location = useLocation();
-  const { status, connect } = useConnection();
 
   const navLinks = [
     { name: "Studio", path: "/studio" },
     { name: "Themes", path: "/themes" },
     { name: "Docs", path: "/docs" },
-    { name: "Dashboard", path: "/dashboard" },
+    { name: "Presets", path: "/presets" },
     { name: "Status", path: "/status" },
   ];
 
@@ -56,23 +54,8 @@ export const Header: React.FC = () => {
           </nav>
         </div>
 
-        {/* Right action / status */}
+        {/* Right action */}
         <div className="flex items-center gap-3">
-          {status.connected ? (
-            <div className="flex items-center gap-1.5 rounded-full border border-verdigris/30 bg-verdigris/10 px-2.5 py-1 text-[11px] font-medium text-verdigris">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              <span>Token Connected</span>
-            </div>
-          ) : (
-            <button
-              onClick={() => connect()}
-              className="flex items-center gap-1.5 rounded-md border border-line bg-raised px-2.5 py-1.5 text-xs font-medium text-ink transition-colors hover:border-ember hover:text-ember"
-            >
-              <Github className="h-3.5 w-3.5" />
-              <span>Connect GitHub</span>
-            </button>
-          )}
-
           <a
             href="https://github.com/askarthemasss/profile-flair-studio"
             target="_blank"

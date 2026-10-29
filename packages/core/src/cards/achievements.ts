@@ -24,10 +24,12 @@ export const renderAchievements: CardRenderer<AchievementsParams> = ({
   const states = computeAchievements(snapshot);
   const defMap = new Map(ACHIEVEMENT_DEFS.map((d) => [d.id, d]));
 
-  let items = states.map((s) => ({
-    state: s,
-    def: defMap.get(s.id)!,
-  })).filter((item) => Boolean(item.def));
+  let items = states
+    .map((s) => ({
+      state: s,
+      def: defMap.get(s.id)!,
+    }))
+    .filter((item) => Boolean(item.def));
 
   if (!showUnearned) {
     items = items.filter((item) => item.state.tier !== null);
@@ -73,7 +75,7 @@ export const renderAchievements: CardRenderer<AchievementsParams> = ({
     const y = startY + row * rowH;
 
     const tier = item.state.tier;
-    const badgeColor = tier ? TIER_COLORS[tier] ?? theme.colors.accent : theme.colors.textMuted;
+    const badgeColor = tier ? (TIER_COLORS[tier] ?? theme.colors.accent) : theme.colors.textMuted;
     const isUnlocked = tier !== null;
 
     // Badge circle

@@ -17,7 +17,7 @@ const TIER_THRESHOLDS: Record<RankTier, number> = {
   initiate: 0,
   apprentice: 0.08,
   journeyman: 0.18,
-  adept: 0.30,
+  adept: 0.3,
   artisan: 0.44,
   virtuoso: 0.58,
   master: 0.72,
@@ -27,10 +27,10 @@ const TIER_THRESHOLDS: Record<RankTier, number> = {
 
 const WEIGHTS = {
   commits: 0.25,
-  starsEarned: 0.20,
+  starsEarned: 0.2,
   prsOpened: 0.15,
-  followers: 0.10,
-  reviews: 0.10,
+  followers: 0.1,
+  reviews: 0.1,
   issues: 0.08,
   streak: 0.07,
   ownedRepos: 0.05,
@@ -63,13 +63,10 @@ export function computeRank(s: GithubSnapshot): RankResult {
     ownedRepos: s.totals.ownedRepos,
   };
 
-  const score = (Object.keys(WEIGHTS) as Array<keyof typeof WEIGHTS>).reduce(
-    (acc, key) => {
-      const value = Math.min(raw[key], CAPS[key]);
-      return acc + WEIGHTS[key] * (value / CAPS[key]);
-    },
-    0,
-  );
+  const score = (Object.keys(WEIGHTS) as Array<keyof typeof WEIGHTS>).reduce((acc, key) => {
+    const value = Math.min(raw[key], CAPS[key]);
+    return acc + WEIGHTS[key] * (value / CAPS[key]);
+  }, 0);
 
   // Sigmoid-stretch to spread the middle range
   const stretched = sigmoid((score - 0.3) * 8);
@@ -86,9 +83,7 @@ export function computeRank(s: GithubSnapshot): RankResult {
     }
   }
 
-  const toNext = nextTier
-    ? Math.max(0, TIER_THRESHOLDS[nextTier] - stretched)
-    : 0;
+  const toNext = nextTier ? Math.max(0, TIER_THRESHOLDS[nextTier] - stretched) : 0;
 
   return { score: stretched, tier, nextTier, toNext };
 }

@@ -13,7 +13,14 @@ export const renderLanguages: CardRenderer<LanguagesParams> = ({ snapshot, theme
   const height = 48 + shares.length * rowH + 16;
 
   const b = new SvgBuilder({ width: 300, height, theme, animate, radius: r }).open();
-  b.text({ x: 24, y: 30, content: "Top Languages", fontSize: 13, fontWeight: 600, fill: theme.colors.text });
+  b.text({
+    x: 24,
+    y: 30,
+    content: "Top Languages",
+    fontSize: 13,
+    fontWeight: 600,
+    fill: theme.colors.text,
+  });
 
   // Bar chart across top
   const barY = 44;
@@ -24,7 +31,9 @@ export const renderLanguages: CardRenderer<LanguagesParams> = ({ snapshot, theme
   let offsetX = 24;
   for (const lang of shares) {
     const w = Math.round((lang.pct / 100) * barW);
-    b.raw(`<rect x="${offsetX}" y="${barY}" width="${w}" height="${barH}" fill="${escapeXml(lang.color ?? theme.colors.accent)}" />`);
+    b.raw(
+      `<rect x="${offsetX}" y="${barY}" width="${w}" height="${barH}" fill="${escapeXml(lang.color ?? theme.colors.accent)}" />`,
+    );
     offsetX += w;
   }
 
@@ -34,7 +43,14 @@ export const renderLanguages: CardRenderer<LanguagesParams> = ({ snapshot, theme
     const dotColor = escapeXml(lang.color ?? theme.colors.accent);
     b.raw(`<circle cx="30" cy="${y - 4}" r="5" fill="${dotColor}"/>`);
     b.text({ x: 42, y, content: lang.name, fontSize: 11, fill: theme.colors.text });
-    b.text({ x: 276, y, content: `${lang.pct}%`, fontSize: 10, fill: theme.colors.textMuted, anchor: "end" });
+    b.text({
+      x: 276,
+      y,
+      content: `${lang.pct}%`,
+      fontSize: 10,
+      fill: theme.colors.textMuted,
+      anchor: "end",
+    });
   });
 
   return b.build();

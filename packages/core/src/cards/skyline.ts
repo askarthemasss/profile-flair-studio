@@ -34,8 +34,22 @@ export const renderSkyline: CardRenderer<SkylineParams> = ({ snapshot, theme, pa
   const height = MAX_H + 72;
 
   const b = new SvgBuilder({ width, height, theme, animate, radius: r }).open();
-  b.text({ x: 24, y: 28, content: `${year} Skyline`, fontSize: 13, fontWeight: 600, fill: theme.colors.text });
-  b.text({ x: width - 24, y: 28, content: `${yearData?.total ?? 0} contributions`, fontSize: 10, fill: theme.colors.textMuted, anchor: "end" });
+  b.text({
+    x: 24,
+    y: 28,
+    content: `${year} Skyline`,
+    fontSize: 13,
+    fontWeight: 600,
+    fill: theme.colors.text,
+  });
+  b.text({
+    x: width - 24,
+    y: 28,
+    content: `${yearData?.total ?? 0} contributions`,
+    fontSize: 10,
+    fill: theme.colors.textMuted,
+    anchor: "end",
+  });
 
   const baseY = height - 24;
 
@@ -44,8 +58,10 @@ export const renderSkyline: CardRenderer<SkylineParams> = ({ snapshot, theme, pa
     const x = 24 + i * (BAR_W + BAR_GAP);
     const y = baseY - barH;
     const intensity = val === 0 ? 0 : Math.min(3, Math.floor((val / maxVal) * 4));
-    const fill = val === 0 ? theme.colors.bgAlt : theme.heat[intensity] ?? theme.colors.accent;
-    b.raw(`<rect x="${x}" y="${y}" width="${BAR_W}" height="${barH}" rx="1" fill="${escapeXml(fill)}"/>`);
+    const fill = val === 0 ? theme.colors.bgAlt : (theme.heat[intensity] ?? theme.colors.accent);
+    b.raw(
+      `<rect x="${x}" y="${y}" width="${BAR_W}" height="${barH}" rx="1" fill="${escapeXml(fill)}"/>`,
+    );
   });
 
   return b.build();

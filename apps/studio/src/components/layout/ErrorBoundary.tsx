@@ -40,9 +40,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-crimson/10 text-crimson">
               <AlertTriangle className="h-6 w-6" />
             </div>
-            <h2 className="font-display text-xl font-semibold text-ink">
-              Something went wrong
-            </h2>
+            <h2 className="font-display text-xl font-semibold text-ink">Something went wrong</h2>
             <p className="mt-2 text-xs font-mono text-ink-muted break-words">
               {this.state.error?.message || "An unexpected error occurred."}
             </p>

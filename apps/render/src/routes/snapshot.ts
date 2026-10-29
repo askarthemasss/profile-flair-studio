@@ -27,14 +27,6 @@ snapshotRoute.get("/snapshot/:username", async (c) => {
     forceRefresh: force,
   });
 
-  if (error === "OPTED_OUT") {
-    const body: ApiErrorBody = {
-      code: "OPTED_OUT",
-      message: "User opted out of Sigil telemetry",
-    };
-    return c.json(body, 403);
-  }
-
   if (error || !snapshot) {
     const body: ApiErrorBody = {
       code: error ?? "NOT_FOUND",

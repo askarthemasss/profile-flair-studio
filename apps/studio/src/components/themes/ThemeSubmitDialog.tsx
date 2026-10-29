@@ -58,8 +58,9 @@ export const ThemeSubmitDialog: React.FC<Props> = ({ open, onClose }) => {
           setResult(null);
         }, 2000);
       }
-    } catch (err: any) {
-      setResult({ success: false, message: err.message || "Failed to submit theme." });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to submit theme.";
+      setResult({ success: false, message });
     }
   };
 
@@ -108,18 +109,24 @@ export const ThemeSubmitDialog: React.FC<Props> = ({ open, onClose }) => {
                   {...register("name")}
                   className="mt-1 w-full rounded border border-line bg-raised px-2.5 py-1.5 text-xs text-ink"
                 />
-                {errors.name && <span className="text-[10px] text-crimson">{errors.name.message}</span>}
+                {errors.name && (
+                  <span className="text-[10px] text-crimson">{errors.name.message}</span>
+                )}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-medium text-ink-muted">Author (GitHub login)</label>
+                <label className="text-[11px] font-medium text-ink-muted">
+                  Author (GitHub login)
+                </label>
                 <input
                   {...register("author")}
                   className="mt-1 w-full rounded border border-line bg-raised px-2.5 py-1.5 font-mono text-xs text-ink"
                 />
-                {errors.author && <span className="text-[10px] text-crimson">{errors.author.message}</span>}
+                {errors.author && (
+                  <span className="text-[10px] text-crimson">{errors.author.message}</span>
+                )}
               </div>
 
               <div>

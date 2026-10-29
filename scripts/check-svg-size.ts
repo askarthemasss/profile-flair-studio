@@ -86,9 +86,29 @@ for (const cardId of CARD_IDS) {
   const svg = renderer({
     snapshot: mockSnapshot,
     theme,
-    params: { user: "octocat", theme: "obsidian", animate: "1", hide_border: "0" },
+    params: {
+      user: "octocat",
+      theme: "obsidian",
+      animate: "1",
+      hide_border: "0",
+      weeks: 26,
+      show_rank: "1",
+      show_avatar: "1",
+      show_description: "1",
+      show_stats: "1",
+      show_unearned: "1",
+      cols: 3,
+      langs_count: 8,
+      hide: [],
+    } as never,
     now: new Date(),
   });
+
+  if (svg.includes("NaN")) {
+    console.error(`❌ Card ${cardId} rendered invalid SVG (contains NaN).`);
+    failed = true;
+    continue;
+  }
 
   const bytes = Buffer.byteLength(svg, "utf-8");
   const kb = (bytes / 1024).toFixed(2);

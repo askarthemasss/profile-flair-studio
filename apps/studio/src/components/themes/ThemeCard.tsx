@@ -2,13 +2,7 @@ import React from "react";
 import type { ThemeCardProps } from "../../types.js";
 import { Heart, Check, ArrowRight } from "lucide-react";
 
-export const ThemeCard: React.FC<ThemeCardProps> = ({
-  theme,
-  votes,
-  voted,
-  onVote,
-  onApply,
-}) => {
+export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, votes, voted, onVote, onApply }) => {
   return (
     <div className="flex flex-col justify-between rounded-xl border border-line bg-panel p-4 shadow-card transition-all hover:border-line-strong hover:shadow-elevated">
       <div>
@@ -21,10 +15,7 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({
           }}
         >
           <div className="flex items-center justify-between">
-            <span
-              className="font-mono text-xs font-semibold"
-              style={{ color: theme.colors.text }}
-            >
+            <span className="font-mono text-xs font-semibold" style={{ color: theme.colors.text }}>
               {theme.name}
             </span>
             <span
@@ -63,9 +54,7 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({
         <button
           onClick={() => onVote(theme.id)}
           className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-            voted
-              ? "bg-crimson/10 text-crimson"
-              : "text-ink-muted hover:bg-raised hover:text-ink"
+            voted ? "bg-crimson/10 text-crimson" : "text-ink-muted hover:bg-raised hover:text-ink"
           }`}
           title="Vote for this theme"
         >
