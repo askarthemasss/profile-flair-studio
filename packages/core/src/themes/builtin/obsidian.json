@@ -1,0 +1,26 @@
+{
+  "id": "obsidian",
+  "name": "Obsidian",
+  "author": "sigil",
+  "version": 1,
+  "mode": "dark",
+  "colors": {
+    "bg": "#0b0a0c",
+    "bgAlt": "#16151a",
+    "border": "#2e2a33",
+    "text": "#f3efe8",
+    "textMuted": "#7c766d",
+    "accent": "#ff6a2b",
+    "accent2": "#ffb04a",
+    "success": "#34d399",
+    "warning": "#fbbf24",
+    "danger": "#f87171"
+  },
+  "heat": ["#16151a", "#3d1f14", "#7c2d12", "#c2410c", "#ff6a2b"],
+  "font": "mono",
+  "radius": 12,
+  "effects": {
+    "glow": true,
+    "grain": true
+  }
+}

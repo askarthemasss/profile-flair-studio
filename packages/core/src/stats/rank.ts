@@ -1,60 +1,89 @@
-/**
- * Sigil rank: log-scaled, weighted, transparent.
- * n = min(1, log10(1 + x) / log10(1 + ceiling)); score = 100 * Σ weight · n.
- * All constants live here. Tune after seeing real distributions.
- */
-export const RANK = {
-  metrics: {
-    commits: { weight: 0.2, ceiling: 15_000 },
-    prsMerged: { weight: 0.2, ceiling: 1_500 },
-    stars: { weight: 0.2, ceiling: 20_000 },
-    reviews: { weight: 0.15, ceiling: 1_000 },
-    followers: { weight: 0.1, ceiling: 10_000 },
-    issues: { weight: 0.05, ceiling: 500 },
-    contributedTo: { weight: 0.05, ceiling: 200 },
-    longestStreak: { weight: 0.05, ceiling: 365 },
-  },
-  tiers: [
-    { tier: "initiate", min: 0 },
-    { tier: "apprentice", min: 10 },
-    { tier: "journeyman", min: 20 },
-    { tier: "adept", min: 30 },
-    { tier: "artisan", min: 40 },
-    { tier: "virtuoso", min: 50 },
-    { tier: "master", min: 60 },
-    { tier: "grandmaster", min: 70 },
-    { tier: "legend", min: 85 },
-  ],
+import type { GithubSnapshot, RankResult, RankTier } from "../types.js";
+
+const TIERS: RankTier[] = [
+  "initiate",
+  "apprentice",
+  "journeyman",
+  "adept",
+  "artisan",
+  "virtuoso",
+  "master",
+  "grandmaster",
+  "legend",
+];
+
+/** Score thresholds (0–1) to reach each tier */
+const TIER_THRESHOLDS: Record<RankTier, number> = {
+  initiate: 0,
+  apprentice: 0.08,
+  journeyman: 0.18,
+  adept: 0.3,
+  artisan: 0.44,
+  virtuoso: 0.58,
+  master: 0.72,
+  grandmaster: 0.86,
+  legend: 0.96,
+};
+
+const WEIGHTS = {
+  commits: 0.25,
+  starsEarned: 0.2,
+  prsOpened: 0.15,
+  followers: 0.1,
+  reviews: 0.1,
+  issues: 0.08,
+  streak: 0.07,
+  ownedRepos: 0.05,
 } as const;
 
-export type RankMetric = keyof typeof RANK.metrics;
-export type RankTier = (typeof RANK.tiers)[number]["tier"];
-export type RankInput = Record<RankMetric, number>;
+const CAPS = {
+  commits: 15_000,
+  starsEarned: 10_000,
+  prsOpened: 1_000,
+  followers: 5_000,
+  reviews: 500,
+  issues: 500,
+  streak: 365,
+  ownedRepos: 200,
+} as const;
 
-export function normalizeMetric(x: number, ceiling: number): number {
-  const v = Math.max(0, Number.isFinite(x) ? x : 0);
-  return Math.min(1, Math.log10(1 + v) / Math.log10(1 + ceiling));
+function sigmoid(x: number): number {
+  return 1 / (1 + Math.exp(-x));
 }
 
-export function computeRank(input: RankInput): {
-  score: number;
-  tier: RankTier;
-  breakdown: Record<RankMetric, number>;
-} {
-  const breakdown = {} as Record<RankMetric, number>;
-  let score = 0;
-  for (const key of Object.keys(RANK.metrics) as RankMetric[]) {
-    const { weight, ceiling } = RANK.metrics[key];
-    const part = 100 * weight * normalizeMetric(input[key], ceiling);
-    breakdown[key] = part;
-    score += part;
-  }
-  score = Math.round(score * 10) / 10;
-  return { score, tier: tierFor(score), breakdown };
-}
+export function computeRank(s: GithubSnapshot): RankResult {
+  const raw = {
+    commits: s.totals.commits,
+    starsEarned: s.totals.starsEarned,
+    prsOpened: s.totals.prsOpened,
+    followers: s.followers,
+    reviews: s.totals.reviews,
+    issues: s.totals.issues,
+    streak: s.streak.longest,
+    ownedRepos: s.totals.ownedRepos,
+  };
 
-export function tierFor(score: number): RankTier {
+  const score = (Object.keys(WEIGHTS) as Array<keyof typeof WEIGHTS>).reduce((acc, key) => {
+    const value = Math.min(raw[key], CAPS[key]);
+    return acc + WEIGHTS[key] * (value / CAPS[key]);
+  }, 0);
+
+  // Sigmoid-stretch to spread the middle range
+  const stretched = sigmoid((score - 0.3) * 8);
+
   let tier: RankTier = "initiate";
-  for (const t of RANK.tiers) if (score >= t.min) tier = t.tier;
-  return tier;
+  let nextTier: RankTier | null = null;
+
+  for (let i = TIERS.length - 1; i >= 0; i--) {
+    const t = TIERS[i]!;
+    if (stretched >= TIER_THRESHOLDS[t]) {
+      tier = t;
+      nextTier = TIERS[i + 1] ?? null;
+      break;
+    }
+  }
+
+  const toNext = nextTier ? Math.max(0, TIER_THRESHOLDS[nextTier] - stretched) : 0;
+
+  return { score: stretched, tier, nextTier, toNext };
 }

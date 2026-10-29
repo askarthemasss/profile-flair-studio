@@ -1,62 +1,131 @@
-import { z } from "zod";
-import { esc } from "../svg/esc";
-import { wrapText } from "../svg/format";
-import { keyframes } from "../svg/animations";
-import { defineCard } from "./types";
-import { mono } from "./shared";
+import type { CardRenderer } from "../types.js";
+import type { BannerParams } from "../params.js";
+import { SvgBuilder } from "../svg/builder.js";
+import { escapeXml } from "../svg/escape.js";
 
-export const banner = defineCard({
-  id: "banner",
-  size: { w: 1200, h: 280 },
-  paramsSchema: z.object({
-    tagline: z.string().max(60).optional(),
-    align: z.enum(["left", "center"]).default("left"),
-  }),
-  meta: {
-    name: "Banner",
-    description: "Your name large in Fraunces, a tagline, a rank chip, and slow floating embers.",
-    defaults: { tagline: "", align: "left" },
-  },
-  render: ({ snapshot, params, animate }) => {
-    const center = params.align === "center";
-    const x = center ? 600 : 72;
-    const anchor = center ? "middle" : "start";
-    const name = wrapText(snapshot.name || snapshot.login, 26, 1)[0] ?? "";
-    const tagline = wrapText(params.tagline || snapshot.bio || "", 60, 1)[0] ?? "";
-    const chip = `Top ${Math.max(1, Math.round(snapshot.rank.percent))}% · ${snapshot.rank.tier}`;
-    const chipW = chip.length * 7.8 + 28;
-    const chipX = center ? 600 - chipW / 2 : x;
+export const renderBanner: CardRenderer<BannerParams> = ({ snapshot, theme, params }) => {
+  const animate = params.animate === "1";
+  const r = params.radius ?? theme.radius;
+  const showAvatar = params.show_avatar === "1";
+  const tagline = params.tagline ?? snapshot.bio ?? "Software Developer on GitHub";
 
-    const particles = Array.from({ length: 8 }, (_, i) => {
-      const px = center ? 90 + ((i * 149) % 1020) : 700 + ((i * 131) % 440);
-      const py = 60 + ((i * 53) % 170);
-      const size = 1.6 + (i % 3) * 0.9;
-      return `<circle cx="${px}" cy="${py}" r="${size}" class="${i % 2 ? "gl" : "ac"} pt" style="--d:${(4 + (i % 4) * 1.3).toFixed(1)}s;--dl:-${(i * 0.7).toFixed(1)}s;--fy:-${10 + (i % 3) * 6}px"/>`;
-    }).join("");
+  const width = 495;
+  const height = 195;
+  const b = new SvgBuilder({ width, height, theme, animate, radius: r }).open();
 
-    return {
-      title: `${snapshot.name || snapshot.login} — banner`,
-      desc: `${snapshot.name || snapshot.login}${tagline ? `: ${tagline}` : ""}. ${chip}.`,
-      defs: `<radialGradient id="__ID__-glow" cx="${center ? 0.5 : 0.82}" cy="0.5" r="0.5"><stop offset="0" stop-color="var(--ac)" stop-opacity=".16"/><stop offset="1" stop-color="var(--ac)" stop-opacity="0"/></radialGradient>`,
-      body: `<rect x="1" y="1" width="1198" height="278" rx="12" fill="url(#__ID__-glow)"/>${particles}${mono(
-        x,
-        78,
-        `@${snapshot.login}`,
-        "mu",
-        14,
-        anchor,
-      )}<text x="${x}" y="150" class="sf tx" font-size="68" text-anchor="${anchor}">${esc(name)}</text>${
-        tagline ? mono(x, 190, tagline, "mu", 18, anchor) : ""
-      }<rect x="${chipX}" y="212" width="${chipW.toFixed(1)}" height="28" rx="14" fill="none" stroke="var(--gd)"/>${mono(
-        chipX + chipW / 2,
-        231,
-        chip,
-        "gd",
-        13,
-        "middle",
-      )}`,
-      css: `.pt{opacity:.6}${animate ? ".pt{animation:sg-float var(--d) ease-in-out infinite;animation-delay:var(--dl)}" : ""}`,
-      keyframes: keyframes("float"),
-    };
-  },
-});
+  // Subtle top accent line
+  b.raw(`<rect x="0" y="0" width="${width}" height="4" fill="${escapeXml(theme.colors.accent)}"/>`);
+
+  let textStartX = 24;
+
+  // Avatar
+  if (showAvatar) {
+    const avatarSize = 56;
+    const avatarX = 24;
+    const avatarY = 28;
+
+    if (snapshot.avatarDataUri) {
+      b.raw(
+        `<clipPath id="avatar-clip"><circle cx="${avatarX + avatarSize / 2}" cy="${
+          avatarY + avatarSize / 2
+        }" r="${avatarSize / 2}"/></clipPath>`,
+      );
+      b.raw(
+        `<image href="${escapeXml(
+          snapshot.avatarDataUri,
+        )}" x="${avatarX}" y="${avatarY}" width="${avatarSize}" height="${avatarSize}" clip-path="url(#avatar-clip)"/>`,
+      );
+      b.raw(
+        `<circle cx="${avatarX + avatarSize / 2}" cy="${
+          avatarY + avatarSize / 2
+        }" r="${avatarSize / 2}" fill="none" stroke="${escapeXml(
+          theme.colors.border,
+        )}" stroke-width="1.5"/>`,
+      );
+    } else {
+      // Fallback monogram avatar
+      const initial = (snapshot.name ?? snapshot.login).charAt(0).toUpperCase();
+      b.raw(
+        `<circle cx="${avatarX + avatarSize / 2}" cy="${
+          avatarY + avatarSize / 2
+        }" r="${avatarSize / 2}" fill="${escapeXml(theme.colors.bgAlt)}" stroke="${escapeXml(
+          theme.colors.accent,
+        )}" stroke-width="1.5"/>`,
+      );
+      b.text({
+        x: avatarX + avatarSize / 2,
+        y: avatarY + avatarSize / 2 + 6,
+        content: initial,
+        fontSize: 22,
+        fontWeight: 700,
+        fill: theme.colors.accent,
+        anchor: "middle",
+      });
+    }
+
+    textStartX = 94;
+  }
+
+  // Name & Handle
+  b.text({
+    x: textStartX,
+    y: 44,
+    content: snapshot.name ?? snapshot.login,
+    fontSize: 16,
+    fontWeight: 600,
+    fill: theme.colors.text,
+  });
+
+  b.text({
+    x: textStartX,
+    y: 62,
+    content: `@${snapshot.login}`,
+    fontSize: 11,
+    fill: theme.colors.textMuted,
+  });
+
+  // Tagline / Bio
+  const clampedTagline = tagline.length > 75 ? `${tagline.slice(0, 72)}...` : tagline;
+  b.text({
+    x: 24,
+    y: 106,
+    content: clampedTagline,
+    fontSize: 12,
+    fill: theme.colors.text,
+  });
+
+  // Quick stats strip
+  const pillY = 136;
+  const stats = [
+    { label: "Followers", val: snapshot.followers.toLocaleString() },
+    { label: "Stars", val: snapshot.totals.starsEarned.toLocaleString() },
+    { label: "Repos", val: snapshot.totals.ownedRepos.toString() },
+  ];
+
+  let pillX = 24;
+  stats.forEach(({ label, val }) => {
+    b.raw(
+      `<rect x="${pillX}" y="${pillY}" width="105" height="34" rx="6" fill="${escapeXml(
+        theme.colors.bgAlt,
+      )}" stroke="${escapeXml(theme.colors.border)}" stroke-width="1"/>`,
+    );
+    b.text({
+      x: pillX + 10,
+      y: pillY + 16,
+      content: val,
+      fontSize: 12,
+      fontWeight: 600,
+      fill: theme.colors.accent,
+    });
+    b.text({
+      x: pillX + 10,
+      y: pillY + 28,
+      content: label,
+      fontSize: 9,
+      fill: theme.colors.textMuted,
+    });
+    pillX += 115;
+  });
+
+  return b.build();
+};

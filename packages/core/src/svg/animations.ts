@@ -1,31 +1,48 @@
-/**
- * CSS keyframes for cards. All motion is CSS (or SMIL) — never JavaScript.
- * Keyframes are parameter-free so identical names always mean identical rules,
- * even when several cards share one HTML page. Tune them with CSS variables.
- */
-export const KEYFRAMES = {
-  /** Stroke draws in. Pair with pathLength="1"; set --len to the visible dash length. */
-  draw: "@keyframes sg-draw{from{stroke-dashoffset:var(--len,1)}to{stroke-dashoffset:0}}",
-  /** Soft ember glow. */
-  pulse: "@keyframes sg-pulse{0%,100%{opacity:1}50%{opacity:.45}}",
-  /** Candle-like flicker. */
-  flicker:
-    "@keyframes sg-flicker{0%,100%{transform:scale(1,1)}25%{transform:scale(.96,1.05)}50%{transform:scale(1.03,.97)}75%{transform:scale(.98,1.03)}}",
-  fade: "@keyframes sg-fade{from{opacity:0}to{opacity:1}}",
-  /** Rise from `--rise` px below. */
-  rise: "@keyframes sg-rise{from{opacity:0;transform:translateY(var(--rise,10px))}to{opacity:1;transform:none}}",
-  shimmer: "@keyframes sg-shimmer{0%,70%,100%{opacity:0}80%{opacity:.55}}",
-  /** Float up and back by `--fy` px. */
-  float: "@keyframes sg-float{0%,100%{transform:translateY(0);opacity:.35}50%{transform:translateY(var(--fy,-14px));opacity:.9}}",
-} as const;
+import type { Theme } from "../types.js";
 
-export type KeyframeName = keyof typeof KEYFRAMES;
-
-export function keyframes(...names: KeyframeName[]): string {
-  return [...new Set(names)].map((name) => KEYFRAMES[name]).join("");
+/** Standard card animation keyframes (injected once per SVG). */
+export function animationDefs(animate: boolean): string {
+  if (!animate) return "";
+  return `
+  <defs>
+    <style>
+      @keyframes sg-fade-in {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes sg-breath {
+        0%, 100% { opacity: 0.75; }
+        50%       { opacity: 1; }
+      }
+      @keyframes sg-count-up {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+      .sg-fade  { animation: sg-fade-in 0.5s cubic-bezier(0.2,0.8,0.2,1) both; }
+      .sg-breath{ animation: sg-breath 3s ease-in-out infinite; }
+    </style>
+  </defs>`;
 }
 
-/** `animation` shorthand for a stagger driven by the `--c` custom property. */
-export function stagger(name: KeyframeName, ms: number, stepMs: number): string {
-  return `animation:sg-${name} ${ms}ms cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--c,0) * ${stepMs}ms)`;
+/** Glow filter definition — used when theme.effects.glow is true. */
+export function glowFilterDef(theme: Theme, id = "sg-glow"): string {
+  if (!theme.effects.glow) return "";
+  return `
+  <filter id="${id}" x="-20%" y="-20%" width="140%" height="140%">
+    <feGaussianBlur stdDeviation="3" result="blur"/>
+    <feColorMatrix type="matrix"
+      values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="glow"/>
+    <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>`;
+}
+
+/** Grain texture filter — used when theme.effects.grain is true. */
+export function grainFilterDef(id = "sg-grain"): string {
+  return `
+  <filter id="${id}">
+    <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feBlend in="SourceGraphic" mode="overlay" result="blend"/>
+    <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+  </filter>`;
 }

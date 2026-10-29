@@ -1,119 +1,79 @@
-import { z } from "zod";
-import { formatNumber, monthName } from "../svg/format";
-import { keyframes, stagger } from "../svg/animations";
-import { defineCard } from "./types";
-import { countsByDate, dayMs, DAY_MS, isoDay, levelScale } from "./data";
-import { mono, r, title } from "./shared";
+import type { CardRenderer } from "../types.js";
+import type { HeatmapParams } from "../params.js";
+import { SvgBuilder } from "../svg/builder.js";
+import { escapeXml } from "../svg/escape.js";
 
-export interface CalendarCell {
-  col: number;
-  row: number;
-  date: string;
-  count: number;
-  level: number;
-}
+const CELL = 11;
+const GAP = 2;
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-/** 53 × 7 calendar ending on `end` (or Dec 31 of `year`), weeks start Sunday. */
-export function calendarGrid(
-  days: { date: string; count: number }[],
-  today: string,
-  year?: number,
-): { cells: CalendarCell[]; total: number } {
-  const end = year ? `${year}-12-31` : today;
-  const endMs = dayMs(end);
-  const limit = Math.min(endMs, dayMs(today));
-  const first = endMs - new Date(endMs).getUTCDay() * DAY_MS - 52 * 7 * DAY_MS;
-  const floor = year ? dayMs(`${year}-01-01`) : first;
-  const map = countsByDate(days);
-  const raw: Omit<CalendarCell, "level">[] = [];
-  for (let col = 0; col < 53; col++) {
-    for (let row = 0; row < 7; row++) {
-      const ms = first + (col * 7 + row) * DAY_MS;
-      if (ms > endMs || ms < floor) continue;
-      const date = isoDay(ms);
-      raw.push({ col, row, date, count: ms > limit ? 0 : (map.get(date) ?? 0) });
-    }
-  }
-  const level = levelScale(raw.map((cell) => cell.count));
-  return {
-    cells: raw.map((cell) => ({ ...cell, level: level(cell.count) })),
-    total: raw.reduce((sum, cell) => sum + cell.count, 0),
-  };
-}
+export const renderHeatmap: CardRenderer<HeatmapParams> = ({ snapshot, theme, params, now }) => {
+  const animate = params.animate === "1";
+  const weeks = params.weeks;
+  const r = params.radius ?? theme.radius;
 
-const CELL = 10;
-const STEP = 12;
-const X0 = 48;
-const Y0 = 58;
+  // Collect last `weeks` weeks of contribution days
+  const allDays = snapshot.years
+    .flatMap((y) =>
+      y.days.map((count, i) => {
+        const d = new Date(y.year, 0, 1 + i);
+        return { date: d.toISOString().slice(0, 10), count };
+      }),
+    )
+    .sort((a, b) => a.date.localeCompare(b.date));
 
-function shapeAt(shape: string, x: number, y: number, cls: string): string {
-  if (shape === "round") return `<circle cx="${x + 5}" cy="${y + 5}" r="5" class="${cls}"/>`;
-  if (shape === "hex") {
-    const pts = Array.from({ length: 6 }, (_, i) => {
-      const a = (Math.PI / 3) * i + Math.PI / 6;
-      return `${r(x + 5 + 5.6 * Math.cos(a))},${r(y + 5 + 5.6 * Math.sin(a))}`;
-    });
-    return `<polygon points="${pts.join(" ")}" class="${cls}"/>`;
-  }
-  return `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="2" class="${cls}"/>`;
-}
+  const totalCells = weeks * 7;
+  const cells = allDays.slice(-totalCells);
 
-export const heatmap = defineCard({
-  id: "heatmap",
-  size: { w: 720, h: 170 },
-  paramsSchema: z.object({
-    shape: z.enum(["square", "round", "hex"]).default("square"),
-    year: z.coerce.number().int().min(2008).max(2100).optional(),
-  }),
-  meta: {
-    name: "Contribution heatmap",
-    description: "A 53 × 7 contribution calendar with month labels and a five-step legend.",
-    defaults: { shape: "square", year: "" },
-  },
-  render: ({ snapshot, params, now, animate }) => {
-    const { cells, total } = calendarGrid(snapshot.days, now.slice(0, 10), params.year);
-    const columns = new Map<number, string[]>();
-    const months: string[] = [];
+  const gridW = weeks * (CELL + GAP) - GAP;
+  const gridH = 7 * (CELL + GAP) - GAP;
+  const height = gridH + 48 + (params.show_month_labels === "1" ? 20 : 0);
+  const width = gridW + 48;
+
+  const b = new SvgBuilder({ width, height, theme, animate, radius: r }).open();
+  b.text({
+    x: 24,
+    y: 28,
+    content: "Contribution Heatmap",
+    fontSize: 13,
+    fontWeight: 600,
+    fill: theme.colors.text,
+  });
+
+  const startY = params.show_month_labels === "1" ? 48 : 36;
+
+  // Render cells
+  cells.forEach((day, idx) => {
+    const week = Math.floor(idx / 7);
+    const dow = idx % 7;
+    const x = 24 + week * (CELL + GAP);
+    const y = startY + dow * (CELL + GAP);
+    const intensity = day.count === 0 ? 0 : Math.min(4, Math.ceil(day.count / 3));
+    const fill =
+      intensity === 0 ? theme.colors.bgAlt : (theme.heat[intensity - 1] ?? theme.heat[3]);
+    b.raw(
+      `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="2" fill="${escapeXml(fill)}" data-date="${day.date}" data-count="${day.count}"/>`,
+    );
+  });
+
+  // Month labels
+  if (params.show_month_labels === "1") {
     let lastMonth = -1;
-    let lastLabelCol = -9;
-    for (const cell of cells) {
-      const x = X0 + cell.col * STEP;
-      const y = Y0 + cell.row * STEP;
-      const list = columns.get(cell.col) ?? [];
-      list.push(shapeAt(params.shape, x, y, `h${cell.level}`));
-      columns.set(cell.col, list);
-      const month = new Date(dayMs(cell.date)).getUTCMonth();
-      if (cell.row === 0 && month !== lastMonth) {
-        if (cell.col < 51 && cell.col - lastLabelCol >= 3) {
-          months.push(mono(x, Y0 - 8, monthName(month), "mu", 9));
-          lastLabelCol = cell.col;
-        }
+    cells.forEach((day, idx) => {
+      const week = Math.floor(idx / 7);
+      const month = new Date(day.date).getMonth();
+      if (month !== lastMonth && idx % 7 === 0) {
         lastMonth = month;
+        b.text({
+          x: 24 + week * (CELL + GAP),
+          y: startY - 6,
+          content: MONTHS[month] ?? "",
+          fontSize: 9,
+          fill: theme.colors.textMuted,
+        });
       }
-    }
-    const grid = [...columns.entries()]
-      .map(([col, shapes]) => `<g class="cl" style="--c:${col}">${shapes.join("")}</g>`)
-      .join("");
-    const legend = [0, 1, 2, 3, 4].map((level) => shapeAt(params.shape, 600 + level * 14, 150, `h${level}`)).join("");
-    const span = params.year ? String(params.year) : "the last year";
+    });
+  }
 
-    return {
-      title: `@${snapshot.login} — contribution heatmap`,
-      desc: `${total} contributions in ${span}.`,
-      body: `${title("Contributions", 24, 30)}${mono(696, 30, `${formatNumber(total)} in ${span}`, "mu", 11, "end")}${months.join(
-        "",
-      )}${["Mon", "Wed", "Fri"].map((d, i) => mono(20, Y0 + (i * 2 + 1) * STEP + 9, d, "mu", 9)).join("")}${grid}${mono(
-        594,
-        159,
-        "Less",
-        "mu",
-        9,
-        "end",
-      )}${legend}${mono(674, 159, "More", "mu", 9)}${
-        total === 0 ? mono(48, 159, "No contributions yet — the first square is waiting", "mu", 10) : ""
-      }`,
-      css: animate ? `.cl{${stagger("fade", 500, 18)}}` : "",
-      keyframes: keyframes("fade"),
-    };
-  },
-});
+  return b.build();
+};
