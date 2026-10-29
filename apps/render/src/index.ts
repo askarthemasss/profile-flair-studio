@@ -5,7 +5,7 @@ import { snapshotRoute } from "./routes/snapshot.js";
 import { themesRoute } from "./routes/themes.js";
 import { healthRoute } from "./routes/health.js";
 import { SupabaseRest } from "./db/supabase-rest.js";
-import { TokenPool } from "./pipeline/token-pool.js";
+import { getTokenPool } from "./pipeline/token-pool.js";
 import { getOrRefreshSnapshot } from "./pipeline/refresh-snapshot.js";
 
 const app = new Hono<{ Bindings: RenderEnv }>();
@@ -38,7 +38,7 @@ async function scheduled(event: ScheduledEvent, env: RenderEnv, ctx: ExecutionCo
         "select=login&order=fetched_at.asc&limit=5",
       );
       if (stale && stale.length > 0) {
-        const tokenPool = new TokenPool(env.GITHUB_TOKEN_POOL ?? env.GITHUB_TOKEN);
+        const tokenPool = getTokenPool(env.GITHUB_TOKEN_POOL ?? env.GITHUB_TOKEN);
         for (const row of stale) {
           ctx.waitUntil(
             getOrRefreshSnapshot({ login: row.login, tokenPool, supabase, forceRefresh: true }),

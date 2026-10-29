@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { ApiErrorBody } from "@sigil/core";
 import { getOrRefreshSnapshot } from "../pipeline/refresh-snapshot.js";
-import { TokenPool } from "../pipeline/token-pool.js";
+import { getTokenPool } from "../pipeline/token-pool.js";
 import { SupabaseRest } from "../db/supabase-rest.js";
 import type { RenderEnv } from "./card.js";
 
@@ -11,7 +11,7 @@ snapshotRoute.get("/snapshot/:username", async (c) => {
   const username = c.req.param("username");
   const force = c.req.query("force") === "1";
 
-  const tokenPool = new TokenPool(c.env.GITHUB_TOKEN_POOL || c.env.GITHUB_TOKEN);
+  const tokenPool = getTokenPool(c.env.GITHUB_TOKEN_POOL || c.env.GITHUB_TOKEN);
   const supabase =
     c.env.SUPABASE_URL && (c.env.SUPABASE_SERVICE_ROLE_KEY || c.env.SUPABASE_ANON_KEY)
       ? new SupabaseRest({
@@ -27,12 +27,20 @@ snapshotRoute.get("/snapshot/:username", async (c) => {
     forceRefresh: force,
   });
 
-  if (error || !snapshot) {
+  if (error === "NOT_FOUND") {
     const body: ApiErrorBody = {
-      code: error ?? "NOT_FOUND",
-      message: "Failed to fetch GitHub snapshot for user",
+      code: "NOT_FOUND",
+      message: "GitHub user not found",
     };
     return c.json(body, 404);
+  }
+
+  if (error === "UPSTREAM" || !snapshot) {
+    const body: ApiErrorBody = {
+      code: "UPSTREAM",
+      message: "GitHub is temporarily unavailable, try again shortly",
+    };
+    return c.json(body, 503, { "Retry-After": "60" });
   }
 
   return c.json(snapshot, 200, {

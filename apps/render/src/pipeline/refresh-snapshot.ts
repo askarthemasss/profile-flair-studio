@@ -17,12 +17,18 @@ interface RefreshOptions {
   forceRefresh?: boolean;
 }
 
+/** Snapshots younger than this are served without hitting GitHub. */
+const FRESH_TTL_MS = 1000 * 60 * 60 * 4;
+
 export async function getOrRefreshSnapshot(
   opts: RefreshOptions,
 ): Promise<{ snapshot: GithubSnapshot | null; error: "NOT_FOUND" | "UPSTREAM" | null }> {
   const { login, tokenPool, supabase, forceRefresh } = opts;
 
-  // 1. Check cached snapshot in Supabase if not forced
+  // 1. Look up the cached snapshot. Fresh entries short-circuit; stale ones are
+  // kept as a fallback so an upstream outage does not take the cards down.
+  let staleSnapshot: GithubSnapshot | null = null;
+
   if (supabase && !forceRefresh) {
     const cached = await supabase.get<any>(
       "snapshots",
@@ -31,17 +37,21 @@ export async function getOrRefreshSnapshot(
     if (cached && cached.length > 0 && cached[0]?.data) {
       const fetchedAt = new Date(cached[0].fetched_at).getTime();
       const ageMs = Date.now() - fetchedAt;
-      // Fresh for 4 hours
-      if (ageMs < 1000 * 60 * 60 * 4) {
+
+      if (ageMs < FRESH_TTL_MS) {
         return { snapshot: cached[0].data as GithubSnapshot, error: null };
       }
+
+      staleSnapshot = cached[0].data as GithubSnapshot;
     }
   }
 
   // 2. Resolve token
   const token = tokenPool.getToken();
   if (!token) {
-    return { snapshot: null, error: "UPSTREAM" };
+    return staleSnapshot
+      ? { snapshot: staleSnapshot, error: null }
+      : { snapshot: null, error: "UPSTREAM" };
   }
 
   // 3. Fetch raw stats and top repos in parallel
@@ -55,7 +65,14 @@ export async function getOrRefreshSnapshot(
   ]);
 
   if (!statsRes.data?.user) {
-    return { snapshot: null, error: statsRes.error ? "UPSTREAM" : "NOT_FOUND" };
+    // A real "no such user" answer has no transport error attached. Anything
+    // else (rate limit, 5xx, network) is transient, so prefer stale data.
+    if (!statsRes.error) {
+      return { snapshot: null, error: "NOT_FOUND" };
+    }
+    return staleSnapshot
+      ? { snapshot: staleSnapshot, error: null }
+      : { snapshot: null, error: "UPSTREAM" };
   }
 
   const topRepos: RepoStat[] = (reposRes.data?.user?.repositories?.nodes ?? []).map((n) => ({
