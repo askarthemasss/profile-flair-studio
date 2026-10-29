@@ -27,7 +27,8 @@ jobs:
         run: pnpm --filter @sigil/core build
 
       - name: Deploy to Cloudflare Workers
-        run: pnpm --filter @sigil/render deploy
+        if: env.CLOUDFLARE_API_TOKEN != ''
+        run: pnpm --filter @sigil/render run deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
