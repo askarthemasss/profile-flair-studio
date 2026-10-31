@@ -23,9 +23,10 @@ export interface DemoContributions {
 export function buildDemoContributions(now: Date): DemoContributions {
   const year = now.getUTCFullYear();
   const yearStart = Date.UTC(year, 0, 1);
-  const dayOfYear = Math.floor((now.getTime() - yearStart) / DAY_MS) + 1;
+  const daysInYear = Math.floor((Date.UTC(year + 1, 0, 1) - yearStart) / DAY_MS);
+  const dayOfYear = Math.min(Math.floor((now.getTime() - yearStart) / DAY_MS) + 1, daysInYear);
 
-  const days: number[] = Array.from({ length: 365 }, (_, i) => {
+  const days: number[] = Array.from({ length: daysInYear }, (_, i) => {
     // Future days in the year have not happened yet
     if (i >= dayOfYear) return 0;
     // Generate a realistic contribution cadence
