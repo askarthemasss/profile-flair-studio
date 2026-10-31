@@ -19,8 +19,9 @@ export interface DemoContributions {
  * Builds the demo contribution year and the streak statistics derived from it.
  *
  * Days are indexed by day of the current year, matching how the heatmap card
- * reads `years[].days`. Future days stay empty and a short streak is kept alive
- * through `now`, so the demo's "current streak" never looks expired.
+ * reads `years[].days`. The array ends on `now` (like a real contribution
+ * calendar) and a short streak is kept alive through `now`, so the demo's
+ * "current streak" never looks expired.
  */
 export function buildDemoContributions(now: Date): DemoContributions {
   // Use the local calendar year: the cards read `now.getFullYear()` and build
@@ -32,9 +33,10 @@ export function buildDemoContributions(now: Date): DemoContributions {
   const today = Date.UTC(year, now.getMonth(), now.getDate());
   const dayOfYear = Math.min(Math.floor((today - yearStart) / DAY_MS) + 1, daysInYear);
 
-  const days: number[] = Array.from({ length: daysInYear }, (_, i) => {
-    // Future days in the year have not happened yet
-    if (i >= dayOfYear) return 0;
+  // Only include days up to today: the heatmap takes the last `weeks * 7`
+  // entries, so padding through Dec 31 would fill the grid with future zeros
+  // and push the real current weeks out of view.
+  const days: number[] = Array.from({ length: dayOfYear }, (_, i) => {
     // Generate a realistic contribution cadence
     const weekday = i % 7;
     if (weekday === 0 || weekday === 6)
