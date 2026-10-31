@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="Sigil">
+  <!-- Sigil mark: a chiselled ember S struck on obsidian, ringed in gold. -->
+  <defs>
+    <linearGradient id="obsidian" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1A161C"/>
+      <stop offset="1" stop-color="#0B0A0C"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="32" cy="30" r="26" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF6A2B" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#FF6A2B" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ember" x1="18" y1="14" x2="46" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD08A"/>
+      <stop offset="0.45" stop-color="#FF7A33"/>
+      <stop offset="1" stop-color="#D2441A"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#obsidian)"/>
+  <circle cx="32" cy="32" r="26.2" fill="url(#glow)"/>
+  <circle cx="32" cy="32" r="26" stroke="#E8C36A" stroke-opacity="0.7" stroke-width="1.25"/>
+  <path
+    d="M27 15H42V21.5H29V28.5H42V45.5L38.5 49H23V42.5H36V35.5H23V18.5Z"
+    fill="url(#ember)"
+    stroke="url(#ember)"
+    stroke-width="2.5"
+    stroke-linejoin="round"
+  />
+</svg>
