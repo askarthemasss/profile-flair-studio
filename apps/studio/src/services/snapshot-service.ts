@@ -11,8 +11,8 @@ import { buildDemoContributions } from "./demo-contributions.js";
  */
 export function getDemoSnapshot(login: string): GithubSnapshot {
   const now = new Date();
-  const currentYear = now.getUTCFullYear();
   const {
+    year: currentYear,
     days,
     total,
     activeDays,

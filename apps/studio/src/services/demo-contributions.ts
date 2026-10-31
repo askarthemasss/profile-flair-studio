@@ -1,6 +1,8 @@
 const DAY_MS = 86_400_000;
 
 export interface DemoContributions {
+  /** Calendar year the days belong to. */
+  year: number;
   /** Contribution counts indexed by day of year (0 = Jan 1). */
   days: number[];
   total: number;
@@ -21,10 +23,14 @@ export interface DemoContributions {
  * through `now`, so the demo's "current streak" never looks expired.
  */
 export function buildDemoContributions(now: Date): DemoContributions {
-  const year = now.getUTCFullYear();
+  // Use the local calendar year: the cards read `now.getFullYear()` and build
+  // day-of-year dates with `new Date(year, 0, 1 + i)`, so a UTC year would
+  // mismatch around New Year and render an empty skyline.
+  const year = now.getFullYear();
   const yearStart = Date.UTC(year, 0, 1);
   const daysInYear = Math.floor((Date.UTC(year + 1, 0, 1) - yearStart) / DAY_MS);
-  const dayOfYear = Math.min(Math.floor((now.getTime() - yearStart) / DAY_MS) + 1, daysInYear);
+  const today = Date.UTC(year, now.getMonth(), now.getDate());
+  const dayOfYear = Math.min(Math.floor((today - yearStart) / DAY_MS) + 1, daysInYear);
 
   const days: number[] = Array.from({ length: daysInYear }, (_, i) => {
     // Future days in the year have not happened yet
@@ -63,6 +69,7 @@ export function buildDemoContributions(now: Date): DemoContributions {
   }
 
   return {
+    year,
     days,
     total: days.reduce((a, b) => a + b, 0),
     activeDays: days.filter((d) => d > 0).length,
