@@ -20,9 +20,14 @@ export const Header: React.FC = () => {
         {/* Brand */}
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-90">
-            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-ember text-xs font-bold text-obsidian shadow-glow">
-              Σ
-            </span>
+            <img
+              src="/logo.svg"
+              alt=""
+              width={28}
+              height={28}
+              draggable={false}
+              className="h-7 w-7 shrink-0"
+            />
             <span className="font-display text-base font-semibold tracking-wider text-ink uppercase">
               {BRAND.name}
             </span>
