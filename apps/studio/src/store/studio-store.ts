@@ -23,7 +23,7 @@ interface ExtendedStudioState extends StudioState {
 export const useStudioStore = create<ExtendedStudioState>()(
   persist(
     (set) => ({
-      user: "veera-siddhan",
+      user: "torvalds",
       theme: "obsidian",
       overrides: {},
       cards: DEFAULT_CARDS,
@@ -97,7 +97,7 @@ export const useStudioStore = create<ExtendedStudioState>()(
       setExportFormat: (exportFormat) => set({ exportFormat }),
       reset: () =>
         set({
-          user: "veera-siddhan",
+          user: "torvalds",
           theme: "obsidian",
           overrides: {},
           cards: DEFAULT_CARDS,

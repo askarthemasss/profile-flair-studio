@@ -118,7 +118,7 @@ export const DocsPage: React.FC = () => {
             <pre className="overflow-x-auto rounded-lg border border-line bg-obsidian p-4 font-mono text-xs text-ink-muted leading-relaxed">
               {`<img
   alt="GitHub Overview"
-  src="https://sigil.dev/c/overview/veera-siddhan?theme=obsidian"
+  src="https://sigil.dev/c/overview/torvalds?theme=obsidian"
 />`}
             </pre>
           </section>
