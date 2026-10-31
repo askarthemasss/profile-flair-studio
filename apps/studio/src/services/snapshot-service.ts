@@ -1,20 +1,28 @@
 import type { GithubSnapshot } from "@sigil/core";
 import { ENV } from "../lib/env.js";
+import { buildDemoContributions } from "./demo-contributions.js";
 
 /**
  * Creates a mock snapshot for previewing or when the API is unreachable.
+ *
+ * Contribution days, streaks, and the busiest day all come from the same
+ * generated year, so the numbers agree with the heatmap and never report an
+ * expired streak as current.
  */
 export function getDemoSnapshot(login: string): GithubSnapshot {
-  const currentYear = new Date().getFullYear();
-  // 365 days of contributions
-  const days: number[] = Array.from({ length: 365 }, (_, i) => {
-    // Generate realistic contribution cadence
-    const weekday = i % 7;
-    if (weekday === 0 || weekday === 6)
-      return Math.random() > 0.6 ? Math.floor(Math.random() * 4) : 0;
-    return Math.random() > 0.2 ? Math.floor(Math.random() * 8) + 1 : 0;
-  });
-  const total = days.reduce((a, b) => a + b, 0);
+  const now = new Date();
+  const {
+    year: currentYear,
+    days,
+    total,
+    activeDays,
+    current,
+    currentStart,
+    longest,
+    longestStart,
+    longestEnd,
+    busiestDay,
+  } = buildDemoContributions(now);
 
   return {
     schema: 1,
@@ -42,14 +50,14 @@ export function getDemoSnapshot(login: string): GithubSnapshot {
       restrictedContributions: 0,
     },
     streak: {
-      current: 102,
-      currentStart: "2026-06-30T00:00:00Z",
-      longest: 102,
-      longestStart: "2026-06-30T00:00:00Z",
-      longestEnd: "2026-10-09T00:00:00Z",
+      current,
+      currentStart,
+      longest,
+      longestStart,
+      longestEnd,
       totalContributions: total,
-      activeDays: 248,
-      busiestDay: { date: "2026-06-18", count: 24 },
+      activeDays,
+      busiestDay,
     },
     years: [{ year: currentYear, total, days }],
     languages: [
@@ -85,7 +93,7 @@ export function getDemoSnapshot(login: string): GithubSnapshot {
         isArchived: false,
       },
     ],
-    fetchedAt: new Date().toISOString(),
+    fetchedAt: now.toISOString(),
     source: "public_pool",
   };
 }
