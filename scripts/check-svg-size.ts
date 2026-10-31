@@ -1,5 +1,6 @@
 import {
   CARD_IDS,
+  CARD_PARAM_SCHEMAS,
   CARD_RENDERERS,
   resolveTheme,
   type CardId,
@@ -83,24 +84,14 @@ for (const cardId of CARD_IDS) {
     continue;
   }
 
+  // Render with only the username so this check also covers each card's
+  // default params (the same path the render route uses).
+  const params = CARD_PARAM_SCHEMAS[cardId as CardId].parse({ user: "octocat" });
+
   const svg = renderer({
     snapshot: mockSnapshot,
     theme,
-    params: {
-      user: "octocat",
-      theme: "obsidian",
-      animate: "1",
-      hide_border: "0",
-      weeks: 26,
-      show_rank: "1",
-      show_avatar: "1",
-      show_description: "1",
-      show_stats: "1",
-      show_unearned: "1",
-      cols: 3,
-      langs_count: 8,
-      hide: [],
-    } as never,
+    params,
     now: new Date(),
   });
 

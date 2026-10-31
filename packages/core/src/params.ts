@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CommonParamsSchema } from "./types.js";
+import { CommonParamsSchema, type CardId } from "./types.js";
 
 // ---------------------------------------------------------------------------
 // Per-card param schemas (extend CommonParamsSchema)
@@ -23,7 +23,14 @@ export const LanguagesParamsSchema = CommonParamsSchema.extend({
   hide: z
     .string()
     .optional()
-    .transform((v) => v?.split(",").map((s) => s.trim()) ?? []),
+    .transform((v) =>
+      v
+        ? v
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
+    ),
   size_weight: z.coerce.number().min(0).max(1).default(0.5),
   count_weight: z.coerce.number().min(0).max(1).default(0.5),
 });
@@ -57,6 +64,22 @@ export const BannerParamsSchema = CommonParamsSchema.extend({
   show_avatar: z.enum(["0", "1"]).default("1"),
   tagline: z.string().max(120).optional(),
 });
+
+/**
+ * Schema for each card kind. The render route validates with the matching
+ * schema so defaults, numeric coercion, and list transforms actually apply.
+ */
+export const CARD_PARAM_SCHEMAS = {
+  overview: OverviewParamsSchema,
+  streak: StreakParamsSchema,
+  languages: LanguagesParamsSchema,
+  heatmap: HeatmapParamsSchema,
+  skyline: SkylineParamsSchema,
+  activity: ActivityParamsSchema,
+  achievements: AchievementsParamsSchema,
+  repo: RepoParamsSchema,
+  banner: BannerParamsSchema,
+} as const satisfies Record<CardId, z.ZodTypeAny>;
 
 export type OverviewParams = typeof OverviewParamsSchema._type;
 export type StreakParams = typeof StreakParamsSchema._type;

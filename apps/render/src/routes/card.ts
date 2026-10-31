@@ -1,10 +1,11 @@
 import { Hono } from "hono";
 import {
   CARD_IDS,
+  CARD_PARAM_SCHEMAS,
   CARD_RENDERERS,
-  CommonParamsSchema,
   resolveTheme,
   type CardId,
+  type Theme,
 } from "@sigil/core";
 import { getOrRefreshSnapshot } from "../pipeline/refresh-snapshot.js";
 import { getTokenPool } from "../pipeline/token-pool.js";
@@ -47,9 +48,10 @@ cardRoute.get("/c/:kind/:username", async (c) => {
     return c.json({ error: "Unknown card kind", valid: CARD_IDS }, 400);
   }
 
-  // Parse query params using CommonParamsSchema
+  // Parse query params with the schema for this card kind, so defaults and
+  // coercions (weeks, cols, hide lists) apply before rendering.
   const searchParams = Object.fromEntries(new URL(c.req.url).searchParams);
-  const parsedParams = CommonParamsSchema.safeParse({
+  const parsedParams = CARD_PARAM_SCHEMAS[kindParam].safeParse({
     user: username,
     ...searchParams,
   });
@@ -94,22 +96,19 @@ cardRoute.get("/c/:kind/:username", async (c) => {
   }
 
   // --- Resolve Theme with Hex Overrides ---
-  const overrides: Record<string, string> = {};
+  const overrides: Partial<Theme["colors"]> = {};
   if (parsedParams.data.bg) overrides.bg = `#${parsedParams.data.bg}`;
   if (parsedParams.data.text) overrides.text = `#${parsedParams.data.text}`;
   if (parsedParams.data.accent) overrides.accent = `#${parsedParams.data.accent}`;
 
-  const theme = resolveTheme(parsedParams.data.theme, overrides as any);
+  const theme = resolveTheme(parsedParams.data.theme, overrides);
 
   // --- Render SVG via pure string operations (< 10ms CPU budget) ---
   const renderer = CARD_RENDERERS[kindParam];
   const svg = renderer({
     snapshot,
     theme,
-    params: {
-      ...parsedParams.data,
-      ...searchParams,
-    },
+    params: parsedParams.data,
     now: new Date(),
   });
 
