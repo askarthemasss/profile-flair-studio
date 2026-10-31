@@ -14,7 +14,7 @@ export const StudioPage: React.FC = () => {
   const { user, theme, overrides, cards } = useStudioStore();
   const { data: snapshot, isLoading } = useSnapshot(user);
 
-  const activeSnapshot = snapshot ?? getDemoSnapshot(user || "veera-siddhan");
+  const activeSnapshot = snapshot ?? getDemoSnapshot(user || "torvalds");
   const resolvedTheme = resolveTheme(theme, overrides);
 
   return (

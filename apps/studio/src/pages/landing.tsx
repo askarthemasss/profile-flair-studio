@@ -7,7 +7,7 @@ import { BUILTIN_THEMES } from "@sigil/core";
 import { ArrowRight, Zap, Shield, Sparkles, Code2, Heart, CheckCircle2 } from "lucide-react";
 
 export const LandingPage: React.FC = () => {
-  const demoSnapshot = getDemoSnapshot("veera-siddhan");
+  const demoSnapshot = getDemoSnapshot("torvalds");
   const obsidianTheme = BUILTIN_THEMES.obsidian!;
 
   return (
@@ -83,7 +83,7 @@ export const LandingPage: React.FC = () => {
                     <span className="h-2.5 w-2.5 rounded-full bg-verdigris/80" />
                   </div>
                   <span className="font-mono text-[10px] text-ink-faint">
-                    sigil.dev/c/overview/veera-siddhan
+                    sigil.dev/c/overview/torvalds
                   </span>
                 </div>
 
