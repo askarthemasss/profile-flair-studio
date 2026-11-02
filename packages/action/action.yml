@@ -7,7 +7,7 @@ author: "Sigil (MIT)"
 
 inputs:
   github-token:
-    description: "GitHub token with repo write access (use secrets.GITHUB_TOKEN)"
+    description: "Token used for GitHub GraphQL reads (use secrets.GITHUB_TOKEN)"
     required: true
   username:
     description: "GitHub username to generate cards for"
@@ -27,7 +27,7 @@ inputs:
 
 outputs:
   files-written:
-    description: "Number of SVG files committed"
+    description: "Number of SVG files written"
 
 runs:
   using: "node20"
