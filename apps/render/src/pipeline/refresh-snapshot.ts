@@ -141,9 +141,16 @@ async function refreshSnapshot({
     // A real "no such user" answer has no transport error attached. Anything
     // else (rate limit, 5xx, network) is transient, so the caller may still
     // serve stale data.
-    return statsRes.error
-      ? { snapshot: null, error: "UPSTREAM" }
-      : { snapshot: null, error: "NOT_FOUND" };
+    if (statsRes.error) {
+      return { snapshot: null, error: "UPSTREAM" };
+    }
+
+    // The account was deleted or renamed. Drop the cached copy so later
+    // requests return 404 instead of serving the old profile forever.
+    if (supabase) {
+      await supabase.delete("snapshots", `login=eq.${encodeURIComponent(login)}`);
+    }
+    return { snapshot: null, error: "NOT_FOUND" };
   }
 
   const topRepos: RepoStat[] = (reposRes.data?.user?.repositories?.nodes ?? []).map((n) => ({
