@@ -49,7 +49,9 @@ snapshotRoute.get("/snapshot/:username", async (c) => {
   }
 
   return c.json(snapshot, 200, {
-    "Cache-Control": "public, max-age=1800, stale-while-revalidate=86400",
+    // Same reasoning as the card route: a stale body may belong to a deleted
+    // account, so do not let any cache outlive the refresh that evicts it.
+    "Cache-Control": stale ? "no-store" : "public, max-age=1800, stale-while-revalidate=86400",
     ...(stale ? { "X-Sigil-Stale": "1" } : {}),
   });
 });

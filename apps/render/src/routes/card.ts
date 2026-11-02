@@ -121,7 +121,11 @@ cardRoute.get("/c/:kind/:username", async (c) => {
   const response = new Response(svg, {
     headers: {
       "Content-Type": "image/svg+xml; charset=utf-8",
-      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=86400",
+      // A stale render may belong to a since-deleted account, and the refresh
+      // that evicts it runs after this response. Keep it out of every cache so
+      // the eviction takes effect on the next request instead of in five
+      // minutes.
+      "Cache-Control": stale ? "no-store" : "public, s-maxage=300, stale-while-revalidate=86400",
       "X-Sigil-Kind": kindParam,
       "X-Sigil-Theme": theme.id,
       "X-Sigil-Mode": theme.mode,
@@ -129,8 +133,11 @@ cardRoute.get("/c/:kind/:username", async (c) => {
     },
   });
 
-  // Asynchronously store in Cloudflare Edge cache
-  c.executionCtx.waitUntil(cache.put(cacheKey, response.clone()));
+  // Asynchronously store in Cloudflare Edge cache. Stale renders are skipped
+  // for the same reason as the header above.
+  if (!stale) {
+    c.executionCtx.waitUntil(cache.put(cacheKey, response.clone()));
+  }
 
   return response;
 });
