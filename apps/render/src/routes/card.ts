@@ -79,11 +79,17 @@ cardRoute.get("/c/:kind/:username", async (c) => {
       : undefined;
 
   // --- Retrieve Snapshot ---
-  const { snapshot, error } = await getOrRefreshSnapshot({
+  const { snapshot, error, stale, revalidate } = await getOrRefreshSnapshot({
     login: username,
     tokenPool,
     supabase,
   });
+
+  // A stale snapshot is already served; keep the isolate alive so the refresh
+  // can finish and land in Supabase.
+  if (revalidate) {
+    c.executionCtx.waitUntil(revalidate);
+  }
 
   if (error === "NOT_FOUND") {
     return errorCard("User not found on GitHub", 404);
@@ -119,6 +125,7 @@ cardRoute.get("/c/:kind/:username", async (c) => {
       "X-Sigil-Kind": kindParam,
       "X-Sigil-Theme": theme.id,
       "X-Sigil-Mode": theme.mode,
+      ...(stale ? { "X-Sigil-Stale": "1" } : {}),
     },
   });
 

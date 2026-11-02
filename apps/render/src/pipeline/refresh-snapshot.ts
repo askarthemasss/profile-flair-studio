@@ -23,8 +23,26 @@ interface RefreshOptions {
   forceRefresh?: boolean;
 }
 
+interface RefreshResult {
+  snapshot: GithubSnapshot | null;
+  error: "NOT_FOUND" | "UPSTREAM" | null;
+}
+
+export interface SnapshotResult extends RefreshResult {
+  /** True when a cached snapshot was served past its TTL. */
+  stale?: boolean;
+  /** Refresh that was started for a stale snapshot; hand it to `waitUntil`. */
+  revalidate?: Promise<void>;
+}
+
 /** Snapshots younger than this are served without hitting GitHub. */
 const FRESH_TTL_MS = 1000 * 60 * 60 * 4;
+
+/**
+ * In-flight refreshes, keyed by lowercased login. A burst of card requests for
+ * one user shares a single GitHub round trip instead of one per request.
+ */
+const inFlight = new Map<string, Promise<RefreshResult>>();
 
 /** Inclusive date range GitHub's contributionsCollection expects. */
 function yearRange(year: number): { from: string; to: string } {
@@ -34,13 +52,23 @@ function yearRange(year: number): { from: string; to: string } {
   };
 }
 
-export async function getOrRefreshSnapshot(
-  opts: RefreshOptions,
-): Promise<{ snapshot: GithubSnapshot | null; error: "NOT_FOUND" | "UPSTREAM" | null }> {
-  const { login, tokenPool, supabase, forceRefresh } = opts;
+function refreshOnce(opts: RefreshOptions): Promise<RefreshResult> {
+  const key = opts.login.toLowerCase();
+  const running = inFlight.get(key);
+  if (running) return running;
+
+  const promise = refreshSnapshot(opts).finally(() => {
+    if (inFlight.get(key) === promise) inFlight.delete(key);
+  });
+  inFlight.set(key, promise);
+  return promise;
+}
+
+export async function getOrRefreshSnapshot(opts: RefreshOptions): Promise<SnapshotResult> {
+  const { login, supabase, forceRefresh } = opts;
 
   // 1. Look up the cached snapshot. Fresh entries short-circuit; stale ones are
-  // kept as a fallback so an upstream outage does not take the cards down.
+  // served immediately while a refresh runs in the background.
   let staleSnapshot: GithubSnapshot | null = null;
 
   if (supabase && !forceRefresh) {
@@ -60,15 +88,36 @@ export async function getOrRefreshSnapshot(
     }
   }
 
-  // 2. Resolve token
-  const token = tokenPool.getToken();
-  if (!token) {
-    return staleSnapshot
-      ? { snapshot: staleSnapshot, error: null }
-      : { snapshot: null, error: "UPSTREAM" };
+  if (staleSnapshot) {
+    // Never make a reader wait on GitHub for a snapshot we already have. The
+    // caller hands `revalidate` to `waitUntil` so the isolate stays alive long
+    // enough to persist the refreshed copy.
+    return {
+      snapshot: staleSnapshot,
+      error: null,
+      stale: true,
+      revalidate: refreshOnce(opts)
+        .then(() => undefined)
+        .catch(() => undefined),
+    };
   }
 
-  // 3. Fetch raw stats, top repos, the year list, and the current year's
+  // 2. Nothing cached: this request has to pay for the fetch.
+  return refreshOnce(opts);
+}
+
+async function refreshSnapshot({
+  login,
+  tokenPool,
+  supabase,
+}: RefreshOptions): Promise<RefreshResult> {
+  // 1. Resolve token
+  const token = tokenPool.getToken();
+  if (!token) {
+    return { snapshot: null, error: "UPSTREAM" };
+  }
+
+  // 2. Fetch raw stats, top repos, the year list, and the current year's
   // calendar in parallel. The current year is always needed (skyline defaults
   // to it), so asking for it now avoids an extra round trip.
   const now = new Date();
@@ -90,13 +139,11 @@ export async function getOrRefreshSnapshot(
 
   if (!statsRes.data?.user) {
     // A real "no such user" answer has no transport error attached. Anything
-    // else (rate limit, 5xx, network) is transient, so prefer stale data.
-    if (!statsRes.error) {
-      return { snapshot: null, error: "NOT_FOUND" };
-    }
-    return staleSnapshot
-      ? { snapshot: staleSnapshot, error: null }
-      : { snapshot: null, error: "UPSTREAM" };
+    // else (rate limit, 5xx, network) is transient, so the caller may still
+    // serve stale data.
+    return statsRes.error
+      ? { snapshot: null, error: "UPSTREAM" }
+      : { snapshot: null, error: "NOT_FOUND" };
   }
 
   const topRepos: RepoStat[] = (reposRes.data?.user?.repositories?.nodes ?? []).map((n) => ({
@@ -142,21 +189,20 @@ export async function getOrRefreshSnapshot(
 
   const snapshot = normalizeStatsResponse(statsRes.data, topRepos, years);
 
-  // 4. Fetch and embed avatar data URI
+  // 3. Fetch and embed avatar data URI
   if (statsRes.data.user.avatarUrl) {
     const avatarDataUri = await fetchAvatarDataUri(statsRes.data.user.avatarUrl);
     snapshot.avatarDataUri = avatarDataUri;
   }
 
-  // 5. Cache to Supabase in background
+  // 4. Persist before resolving, so a `waitUntil`-ed refresh is not cancelled
+  // mid-write when the response has already been sent.
   if (supabase) {
-    supabase
-      .upsert("snapshots", {
-        login,
-        data: snapshot,
-        fetched_at: new Date().toISOString(),
-      })
-      .catch(() => {});
+    await supabase.upsert("snapshots", {
+      login,
+      data: snapshot,
+      fetched_at: new Date().toISOString(),
+    });
   }
 
   return { snapshot, error: null };
