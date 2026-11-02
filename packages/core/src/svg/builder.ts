@@ -15,6 +15,16 @@ export interface CardDimensions {
 
 export const DEFAULT_HEIGHT = 195;
 
+/**
+ * Font stacks for SVG output. Cards are usually embedded as `<img>`, where web
+ * fonts do not load, so every stack is system fonts only.
+ */
+const FONT_STACKS: Record<Theme["font"], string> = {
+  mono: "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace",
+  sans: "ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
+  serif: "ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif",
+};
+
 export class SvgBuilder {
   private readonly parts: string[] = [];
   private readonly w: number;
@@ -22,6 +32,7 @@ export class SvgBuilder {
   private readonly theme: Theme;
   private readonly animate: boolean;
   private readonly radius: number;
+  private readonly border: boolean;
 
   constructor(opts: {
     width?: number;
@@ -29,17 +40,20 @@ export class SvgBuilder {
     theme: Theme;
     animate?: boolean;
     radius?: number;
+    /** Draw the card outline; `hide_border=1` turns it off. */
+    border?: boolean;
   }) {
     this.w = opts.width ?? 495;
     this.h = opts.height ?? DEFAULT_HEIGHT;
     this.theme = opts.theme;
     this.animate = opts.animate ?? true;
     this.radius = opts.radius ?? opts.theme.radius;
+    this.border = opts.border ?? true;
   }
 
   /** Open the SVG root element. */
   open(): this {
-    const { w, h, theme, radius } = this;
+    const { w, h, theme, radius, border } = this;
     this.parts.push(
       `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">`,
     );
@@ -49,7 +63,9 @@ export class SvgBuilder {
 
     // Card background
     this.parts.push(
-      `<rect width="${w}" height="${h}" rx="${radius}" fill="${escapeXml(theme.colors.bg)}" stroke="${escapeXml(theme.colors.border)}" stroke-width="1"/>`,
+      `<rect width="${w}" height="${h}" rx="${radius}" fill="${escapeXml(theme.colors.bg)}"${
+        border ? ` stroke="${escapeXml(theme.colors.border)}" stroke-width="1"` : ""
+      }/>`,
     );
     return this;
   }
@@ -80,7 +96,7 @@ export class SvgBuilder {
       fill = this.theme.colors.text,
       fontSize = 13,
       fontWeight = "normal",
-      fontFamily = "monospace",
+      fontFamily = FONT_STACKS[this.theme.font],
       opacity,
       anchor = "start",
       cls,

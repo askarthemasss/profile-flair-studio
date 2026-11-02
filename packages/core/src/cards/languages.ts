@@ -12,7 +12,14 @@ export const renderLanguages: CardRenderer<LanguagesParams> = ({ snapshot, theme
   const rowH = 22;
   const height = 48 + shares.length * rowH + 16;
 
-  const b = new SvgBuilder({ width: 300, height, theme, animate, radius: r }).open();
+  const b = new SvgBuilder({
+    width: 300,
+    height,
+    theme,
+    animate,
+    radius: r,
+    border: params.hide_border !== "1",
+  }).open();
   b.text({
     x: 24,
     y: 30,

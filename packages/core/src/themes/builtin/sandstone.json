@@ -1,0 +1,26 @@
+{
+  "id": "sandstone",
+  "name": "Sandstone",
+  "author": "sigil",
+  "version": 1,
+  "mode": "light",
+  "colors": {
+    "bg": "#f4ede1",
+    "bgAlt": "#ebe0cd",
+    "border": "#d6c5a8",
+    "text": "#2b2118",
+    "textMuted": "#7a6a55",
+    "accent": "#9a3412",
+    "accent2": "#c2410c",
+    "success": "#15803d",
+    "warning": "#a16207",
+    "danger": "#b91c1c"
+  },
+  "heat": ["#ebe0cd", "#e7c9a9", "#d9a678", "#c2793f", "#9a3412"],
+  "font": "sans",
+  "radius": 12,
+  "effects": {
+    "glow": false,
+    "grain": true
+  }
+}

@@ -11,7 +11,14 @@ export const renderBanner: CardRenderer<BannerParams> = ({ snapshot, theme, para
 
   const width = 495;
   const height = 195;
-  const b = new SvgBuilder({ width, height, theme, animate, radius: r }).open();
+  const b = new SvgBuilder({
+    width,
+    height,
+    theme,
+    animate,
+    radius: r,
+    border: params.hide_border !== "1",
+  }).open();
 
   // Subtle top accent line
   b.raw(`<rect x="0" y="0" width="${width}" height="4" fill="${escapeXml(theme.colors.accent)}"/>`);

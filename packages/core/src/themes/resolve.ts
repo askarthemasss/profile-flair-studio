@@ -2,11 +2,17 @@ import type { Theme } from "../types.js";
 import obsidianJson from "./builtin/obsidian.json";
 import monolithJson from "./builtin/monolith.json";
 import verdigrisJson from "./builtin/verdigris.json";
+import paperJson from "./builtin/paper.json";
+import tidepoolJson from "./builtin/tidepool.json";
+import sandstoneJson from "./builtin/sandstone.json";
 
 export const BUILTIN_THEMES: Record<string, Theme> = {
   obsidian: obsidianJson as Theme,
   monolith: monolithJson as Theme,
   verdigris: verdigrisJson as Theme,
+  paper: paperJson as Theme,
+  tidepool: tidepoolJson as Theme,
+  sandstone: sandstoneJson as Theme,
 };
 
 export const DEFAULT_THEME: Theme = BUILTIN_THEMES.obsidian!;

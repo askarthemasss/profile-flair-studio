@@ -8,7 +8,14 @@ export const renderOverview: CardRenderer<OverviewParams> = ({ snapshot, theme, 
   const animate = params.animate === "1";
   const r = params.radius ?? theme.radius;
 
-  const b = new SvgBuilder({ width: 495, height: 195, theme, animate, radius: r }).open();
+  const b = new SvgBuilder({
+    width: 495,
+    height: 195,
+    theme,
+    animate,
+    radius: r,
+    border: params.hide_border !== "1",
+  }).open();
 
   // Title
   b.text({

@@ -30,7 +30,14 @@ export const renderHeatmap: CardRenderer<HeatmapParams> = ({ snapshot, theme, pa
   const height = gridH + 48 + (params.show_month_labels === "1" ? 20 : 0);
   const width = gridW + 48;
 
-  const b = new SvgBuilder({ width, height, theme, animate, radius: r }).open();
+  const b = new SvgBuilder({
+    width,
+    height,
+    theme,
+    animate,
+    radius: r,
+    border: params.hide_border !== "1",
+  }).open();
   b.text({
     x: 24,
     y: 28,
