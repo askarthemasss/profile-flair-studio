@@ -20,12 +20,17 @@ snapshotRoute.get("/snapshot/:username", async (c) => {
         })
       : undefined;
 
-  const { snapshot, error } = await getOrRefreshSnapshot({
+  const { snapshot, error, stale, revalidate } = await getOrRefreshSnapshot({
     login: username,
     tokenPool,
     supabase,
     forceRefresh: force,
   });
+
+  // Serve the cached snapshot now; the refresh keeps running after the reply.
+  if (revalidate) {
+    c.executionCtx.waitUntil(revalidate);
+  }
 
   if (error === "NOT_FOUND") {
     const body: ApiErrorBody = {
@@ -44,6 +49,9 @@ snapshotRoute.get("/snapshot/:username", async (c) => {
   }
 
   return c.json(snapshot, 200, {
-    "Cache-Control": "public, max-age=1800, stale-while-revalidate=86400",
+    // Same reasoning as the card route: a stale body may belong to a deleted
+    // account, so do not let any cache outlive the refresh that evicts it.
+    "Cache-Control": stale ? "no-store" : "public, max-age=1800, stale-while-revalidate=86400",
+    ...(stale ? { "X-Sigil-Stale": "1" } : {}),
   });
 });
