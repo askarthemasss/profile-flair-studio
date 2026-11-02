@@ -28,7 +28,7 @@ const __dirname = dirname(__filename);
     "node:module",
   ],
   minify: true,
-  sourcemap: true,
+  sourcemap: false,
   logLevel: "info",
 });
 

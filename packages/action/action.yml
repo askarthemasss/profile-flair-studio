@@ -1,6 +1,6 @@
 name: "Sigil — Static SVG Backup"
 description: >
-  Fetches your GitHub stats using your own token and commits static SVG copies
+  Fetches your GitHub stats using your own token and writes static SVG copies
   of all nine Sigil cards to your repository. Your profile survives even if
   sigil.dev goes down.
 author: "Sigil (MIT)"
@@ -23,7 +23,7 @@ inputs:
   cards:
     description: "Comma-separated list of card kinds to generate (default: all nine)"
     required: false
-    default: "stats,streak,languages,heatmap,skyline,activity,achievements,repo,banner"
+    default: "overview,streak,languages,heatmap,skyline,activity,achievements,repo,banner"
 
 outputs:
   files-written:
