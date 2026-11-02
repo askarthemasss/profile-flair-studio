@@ -1,9 +1,15 @@
-import type { GithubSnapshot, RepoStat } from "@sigil/core";
+import type { ContributionYear, GithubSnapshot, RepoStat } from "@sigil/core";
 import {
+  CONTRIBUTION_YEARS_QUERY,
   STATS_QUERY,
   TOP_REPOS_QUERY,
+  YEAR_CONTRIBUTIONS_QUERY,
+  buildContributionYear,
   normalizeStatsResponse,
+  selectContributionYears,
   type RawStatsResponse,
+  type RawYearResponse,
+  type RawYearsResponse,
 } from "@sigil/core";
 import { executeGithubGraphQL } from "./github-client.js";
 import { fetchAvatarDataUri } from "./avatar.js";
@@ -19,6 +25,14 @@ interface RefreshOptions {
 
 /** Snapshots younger than this are served without hitting GitHub. */
 const FRESH_TTL_MS = 1000 * 60 * 60 * 4;
+
+/** Inclusive date range GitHub's contributionsCollection expects. */
+function yearRange(year: number): { from: string; to: string } {
+  return {
+    from: `${year}-01-01T00:00:00Z`,
+    to: `${year}-12-31T23:59:59Z`,
+  };
+}
 
 export async function getOrRefreshSnapshot(
   opts: RefreshOptions,
@@ -54,12 +68,22 @@ export async function getOrRefreshSnapshot(
       : { snapshot: null, error: "UPSTREAM" };
   }
 
-  // 3. Fetch raw stats and top repos in parallel
-  const [statsRes, reposRes] = await Promise.all([
+  // 3. Fetch raw stats, top repos, the year list, and the current year's
+  // calendar in parallel. The current year is always needed (skyline defaults
+  // to it), so asking for it now avoids an extra round trip.
+  const now = new Date();
+  const currentYear = now.getUTCFullYear();
+  const [statsRes, reposRes, yearsRes, currentYearRes] = await Promise.all([
     executeGithubGraphQL<RawStatsResponse>(STATS_QUERY, { login, includePrs: true }, token),
     executeGithubGraphQL<{ user: { repositories: { nodes: any[] } } }>(
       TOP_REPOS_QUERY,
       { login },
+      token,
+    ),
+    executeGithubGraphQL<RawYearsResponse>(CONTRIBUTION_YEARS_QUERY, { login }, token),
+    executeGithubGraphQL<RawYearResponse>(
+      YEAR_CONTRIBUTIONS_QUERY,
+      { login, ...yearRange(currentYear) },
       token,
     ),
   ]);
@@ -87,7 +111,36 @@ export async function getOrRefreshSnapshot(
     isArchived: Boolean(n.isArchived),
   }));
 
-  const snapshot = normalizeStatsResponse(statsRes.data, topRepos);
+  // Older years are only fetched when they exist; failures degrade to fewer
+  // years instead of failing the whole snapshot.
+  const olderYears = selectContributionYears(
+    yearsRes.data?.user?.contributionsCollection?.contributionYears ?? [],
+    now,
+  ).filter((year) => year !== currentYear);
+
+  const olderResults = await Promise.all(
+    olderYears.map((year) =>
+      executeGithubGraphQL<RawYearResponse>(
+        YEAR_CONTRIBUTIONS_QUERY,
+        { login, ...yearRange(year) },
+        token,
+      ),
+    ),
+  );
+
+  const years: ContributionYear[] = [];
+  const yearCalendars = [
+    { year: currentYear, result: currentYearRes },
+    ...olderYears.map((year, i) => ({ year, result: olderResults[i] })),
+  ];
+  for (const { year, result } of yearCalendars) {
+    const calendar = result?.data?.user?.contributionsCollection?.contributionCalendar;
+    if (!calendar) continue;
+    const contributionYear = buildContributionYear(year, calendar, now);
+    if (contributionYear) years.push(contributionYear);
+  }
+
+  const snapshot = normalizeStatsResponse(statsRes.data, topRepos, years);
 
   // 4. Fetch and embed avatar data URI
   if (statsRes.data.user.avatarUrl) {

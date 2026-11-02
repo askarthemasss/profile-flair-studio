@@ -66,6 +66,87 @@ function aggregateLanguages(
     .sort((a, b) => b.bytes - a.bytes);
 }
 
+const DAY_MS = 86_400_000;
+
+export interface RawContributionCalendar {
+  totalContributions: number;
+  weeks: Array<{
+    contributionDays: Array<{ date: string; contributionCount: number }>;
+  }>;
+}
+
+/** Raw shape returned by CONTRIBUTION_YEARS_QUERY. */
+export interface RawYearsResponse {
+  user: { contributionsCollection: { contributionYears: number[] } } | null;
+}
+
+/** Raw shape returned by YEAR_CONTRIBUTIONS_QUERY. */
+export interface RawYearResponse {
+  user: {
+    contributionsCollection: { contributionCalendar: RawContributionCalendar };
+  } | null;
+}
+
+/**
+ * Converts one year's contribution calendar into the `days[]` shape the cards
+ * read: `days[i]` is the count for Jan 1 + i.
+ *
+ * Trailing days are trimmed for the current year so the heatmap window ends on
+ * the last real day instead of padding into the future.
+ */
+export function buildContributionYear(
+  year: number,
+  calendar: RawContributionCalendar,
+  now: Date = new Date(),
+): ContributionYear | null {
+  const yearStart = Date.UTC(year, 0, 1);
+  const daysInYear = Math.floor((Date.UTC(year + 1, 0, 1) - yearStart) / DAY_MS);
+  const days = new Array<number>(daysInYear).fill(0);
+
+  let lastIndex = -1;
+  let total = 0;
+  for (const week of calendar.weeks) {
+    for (const day of week.contributionDays) {
+      const [y, m, d] = day.date.split("-").map(Number);
+      const index = Math.floor((Date.UTC(y!, m! - 1, d!) - yearStart) / DAY_MS);
+      if (index < 0 || index >= daysInYear) continue;
+      days[index] = day.contributionCount;
+      total += day.contributionCount;
+      if (index > lastIndex) lastIndex = index;
+    }
+  }
+
+  if (lastIndex < 0) return null;
+
+  const isCurrentYear = year === now.getUTCFullYear();
+  const todayIndex = Math.floor(
+    (Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - yearStart) / DAY_MS,
+  );
+  const length = isCurrentYear ? Math.min(lastIndex + 1, todayIndex + 1) : daysInYear;
+
+  return { year, total, days: days.slice(0, Math.max(length, 0)) };
+}
+
+/**
+ * Picks the most recent years to fetch, always including the current year so
+ * the skyline's default (`now.getFullYear()`) has data.
+ */
+export function selectContributionYears(
+  years: number[],
+  now: Date = new Date(),
+  limit = 3,
+): number[] {
+  const current = now.getUTCFullYear();
+  const unique = new Set(
+    years.filter((year) => Number.isInteger(year) && year > 0 && year <= current),
+  );
+  unique.add(current);
+  return [...unique]
+    .sort((a, b) => b - a)
+    .slice(0, Math.max(limit, 1))
+    .sort((a, b) => a - b);
+}
+
 export function normalizeStatsResponse(
   raw: RawStatsResponse,
   topRepos: RepoStat[] = [],

@@ -12,11 +12,11 @@ A lean task list, not a log. Check before reporting work complete.
 - GitHub Action skeleton (fetch + write files)
 - CI: typecheck, lint, tests, builds, WCAG theme validation, SVG size budget
 - Per-card param schemas wired into the render route, so defaults, numeric coercion, and `hide` lists apply (`check:svg` renders with defaults)
+- Contribution years populated in the refresh pipeline: the current year plus the two most recent, converted to `days[]` for heatmap, skyline, and activity
 
 ## Open
 
 - GitHub Action: replace placeholder SVG generation with `@sigil/core` renderers, fix the default card list, publish bundled `dist/`
-- Populate contribution years so heatmap, skyline, and activity cards render real data
 - Implement stale-while-revalidate so stale snapshots are served instantly instead of an error card
 - Add the remaining builtin themes (`paper`, `tidepool`, `sandstone`) or trim the gallery
 - Public JSON API documentation and versioning
