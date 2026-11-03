@@ -18,7 +18,7 @@ export const StatusPage: React.FC = () => {
       icon: Activity,
     },
     {
-      name: "Supabase PostgREST Cache",
+      name: "Cloudflare Edge Snapshot Cache",
       status: "Operational",
       latency: "Normal",
       icon: Database,

@@ -9,13 +9,11 @@ Edge API that renders SVG cards and serves normalized snapshots.
 
 Every route is also available under `/v1`. See `apps/studio/src/pages/docs.tsx` for the public docs.
 
+There is no database. GitHub responses are normalized in memory and cached in the per-colo Cloudflare Cache API for 4 hours, with stale-while-revalidate: an expired entry is served immediately and refreshed in the background.
+
 ## Deploy
 
-### 1. Supabase
-
-Create a project, then run `supabase/migrations/0001_init.sql` in the SQL editor (or `supabase db push`). It creates the `snapshots` table used as the shared cache.
-
-### 2. Cloudflare credentials
+### 1. Cloudflare credentials
 
 Create a Cloudflare API token from the **Edit Cloudflare Workers** template, then copy your account ID.
 
@@ -30,11 +28,11 @@ Without `CLOUDFLARE_API_TOKEN` the deploy step is skipped, which is why `main` c
 
 If the very first deploy fails with an authorization error, the token cannot create a new Worker: either create an empty `sigil-render` Worker once in the dashboard, or grant the token Workers Admin for that first run.
 
-### 3. Deploy
+### 2. Deploy
 
-The first deploy must happen before the secrets in step 4, because `wrangler secret put` targets an existing Worker.
+The first deploy must happen before the secret in step 3, because `wrangler secret put` targets an existing Worker.
 
-Either push to `main` (with the secrets from step 2 in place) or deploy locally after `wrangler login`:
+Either push to `main` (with the secrets from step 1 in place) or deploy locally after `wrangler login`:
 
 ```bash
 pnpm --filter @sigil/render deploy
@@ -46,21 +44,19 @@ The Worker name is `sigil-render`, so by default it lands at:
 https://sigil-render.<your-subdomain>.workers.dev
 ```
 
-### 4. Worker secrets
+### 3. GitHub token
 
-`wrangler deploy` does not set secrets. With the Worker now deployed, run each once from `apps/render`:
+`wrangler deploy` does not set secrets. With the Worker now deployed, run once from `apps/render`:
 
 ```bash
-pnpm exec wrangler secret put GITHUB_TOKEN               # classic PAT with public_repo read, or a fine-grained token with public read
-pnpm exec wrangler secret put SUPABASE_URL               # https://<project>.supabase.co
-pnpm exec wrangler secret put SUPABASE_SERVICE_ROLE_KEY  # server-side only
+pnpm exec wrangler secret put GITHUB_TOKEN
 ```
 
-Each command creates a new Worker version, so the secrets are live immediately. `GITHUB_TOKEN` may be a comma-separated pool; the Worker round-robins across it.
+Use a classic PAT with `public_repo` read, or a fine-grained token with public read. It may be a comma-separated pool; the Worker round-robins across it. The secret is live immediately (the command creates a new version).
 
 Check it with `curl https://sigil-render.<your-subdomain>.workers.dev/health`, then try a card.
 
-### 5. Point the studio at it
+### 4. Point the studio at it
 
 `apps/studio` reads `VITE_RENDER_API_URL` at build time. Set it in the Vercel project (Settings → Environment Variables) to the Worker URL above, then redeploy the studio. Without it the studio runs on demo data and the export panel warns that the copied URLs are not live.
 
@@ -73,3 +69,31 @@ routes = [{ pattern = "cards.example.com", custom_domain = true }]
 ```
 
 then set `VITE_RENDER_API_URL` to that origin. Note that `sigil.dev` is currently parked on Afternic nameservers and is not controlled by this project; do not point embeds at it unless you own the domain.
+
+A custom domain also unlocks the shared Cache API layer described below. `workers.dev` still works, with a smaller cache.
+
+## Cache behavior
+
+| What                    | Where                              | TTL                                    |
+| ----------------------- | ---------------------------------- | -------------------------------------- |
+| Normalized snapshot     | Cloudflare Cache API               | 4 hours fresh, 7 days retained         |
+| Normalized snapshot     | In-isolate memory, max 500 entries | 7 days                                 |
+| Rendered SVG            | Cloudflare Cache API               | 5 min (`stale-while-revalidate=86400`) |
+| Stale snapshot response | Not cached                         | `no-store`                             |
+
+Snapshots go to both layers on every write, and reads fall back to memory when the Cache API misses or is unavailable. Refreshes are deduped per login within an isolate, and the stale copy is served immediately while the refresh runs in `waitUntil`.
+
+### `workers.dev` versus a custom domain
+
+Cloudflare's [Cache API docs](https://developers.cloudflare.com/workers/runtime-apis/cache/) state that cache operations only work for Workers deployed to a custom domain (or Pages). On the default `*.workers.dev` URL, `cache.match()` always misses and `cache.put()` has no effect.
+
+The Worker therefore keeps working on `workers.dev`, just with the smaller cache:
+
+| Deployment      | Snapshot reuse                                                                                                                        |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `*.workers.dev` | Per-isolate memory only: a warm isolate reuses a snapshot for up to 7 days; a new isolate fetches GitHub once, then dedupes the burst |
+| Custom domain   | Per-colo Cache API plus memory: survives isolate restarts and serves stale copies across requests in that colo                        |
+
+For production traffic, attach a domain you own. Even without one, the in-isolate layer plus per-login dedupe keeps GitHub traffic far below one request per card view. `apps/render/src/pipeline/edge-cache.ts` treats the Cache API as optional, so no configuration is needed to run on `workers.dev`.
+
+A cold colo (or a cold isolate on `workers.dev`) pays one GitHub round trip.

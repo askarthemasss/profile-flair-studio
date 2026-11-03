@@ -3,15 +3,11 @@ main = "src/index.ts"
 compatibility_date = "2024-09-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Cron Triggers — background refresh of cached cards.
-# Every 5 minutes; keeps stale-while-revalidate warm.
-[triggers]
-crons = ["*/5 * * * *"]
-
 [vars]
 ENVIRONMENT = "production"
 
 # Secrets (set via `wrangler secret put`):
-#   GITHUB_TOKEN               — GitHub token(s) for API calls (comma-separated pool)
-#   SUPABASE_URL               — Supabase project URL
-#   SUPABASE_SERVICE_ROLE_KEY  — Supabase service role key (server-side only)
+#   GITHUB_TOKEN — GitHub token(s) for API calls (comma-separated pool)
+#
+# There is no database. Snapshots are cached in the per-colo Cloudflare Cache
+# API and refreshed on demand by stale-while-revalidate.
