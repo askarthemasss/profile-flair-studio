@@ -17,7 +17,8 @@ A lean task list, not a log. Check before reporting work complete.
 - Six builtin themes (obsidian, monolith, verdigris, paper, tidepool, sandstone), all passing WCAG AA validation
 - `theme.font` drives the SVG font stack and `hide_border=1` removes the card outline
 - Versioned JSON API: `/v1` aliases for every route, `X-Sigil-Api-Version`, `schema`-versioned snapshots, and a docs section
+- Studio no longer defaults to the dead `sigil.dev` host: without `VITE_RENDER_API_URL` it stays on demo data and the export panel says so
 
 ## Open
 
-- Deploy the render Worker and point the studio at it (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `GITHUB_TOKEN`, `SUPABASE_*`)
+- Deploy the render Worker and point the studio at it: needs `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, Worker secrets (`GITHUB_TOKEN`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`), and `VITE_RENDER_API_URL`; steps in `apps/render/README.md`

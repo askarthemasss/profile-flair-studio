@@ -99,7 +99,7 @@ export function getDemoSnapshot(login: string): GithubSnapshot {
 }
 
 export async function fetchSnapshot(login: string): Promise<GithubSnapshot> {
-  if (!login) return getDemoSnapshot("torvalds");
+  if (!login || !ENV.HAS_RENDER_API) return getDemoSnapshot(login || "torvalds");
 
   try {
     const res = await fetch(`${ENV.RENDER_API_URL}/snapshot/${encodeURIComponent(login)}`, {
