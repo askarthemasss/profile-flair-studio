@@ -1,5 +1,6 @@
 import React from "react";
 import { AppShell } from "../components/layout/AppShell.js";
+import { renderOrigin } from "../lib/render-url.js";
 import { BookOpen, Terminal, Layers, Code, Check, Database } from "lucide-react";
 
 export const DocsPage: React.FC = () => {
@@ -120,7 +121,7 @@ export const DocsPage: React.FC = () => {
             <pre className="overflow-x-auto rounded-lg border border-line bg-obsidian p-4 font-mono text-xs text-ink-muted leading-relaxed">
               {`<img
   alt="GitHub Overview"
-  src="https://sigil.dev/c/overview/torvalds?theme=obsidian"
+  src="${renderOrigin()}/c/overview/torvalds?theme=obsidian"
 />`}
             </pre>
           </section>
@@ -173,7 +174,7 @@ export const DocsPage: React.FC = () => {
             </div>
 
             <pre className="overflow-x-auto rounded-lg border border-line bg-obsidian p-4 font-mono text-xs text-ink-muted leading-relaxed">
-              {`curl -s https://sigil.dev/v1/snapshot/torvalds | jq '{schema, login, years: (.years | length)}'
+              {`curl -s ${renderOrigin()}/v1/snapshot/torvalds | jq '{schema, login, years: (.years | length)}'
 
 {
   "schema": 1,

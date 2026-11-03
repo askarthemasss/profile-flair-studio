@@ -11,8 +11,6 @@ export const BRAND = {
   /** Short label used where the full tagline is too long (nav, footer). */
   shortTagline: "Your developer sigil.",
   license: "MIT",
-  /** Base URL used to build live image URLs and the copy-Markdown snippet. */
-  baseUrl: "https://sigil.dev",
 } as const;
 
 export type Brand = typeof BRAND;
