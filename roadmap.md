@@ -18,6 +18,7 @@ A lean task list, not a log. Check before reporting work complete.
 - Versioned JSON API: `/v1` aliases for every route, `X-Sigil-Api-Version`, `schema`-versioned snapshots, and a docs section
 - Studio no longer defaults to the dead `sigil.dev` host: without `VITE_RENDER_API_URL` it stays on demo data and the export panel says so
 - Removed the database: no Supabase client, migrations, env vars, or cron refresh; snapshots live in the per-colo Cloudflare Cache API with an in-isolate fallback for `workers.dev`, where the Cache API is a no-op
+- Studio docs, landing preview, and export snippets now derive the Worker origin from `VITE_RENDER_API_URL` (with an obvious placeholder when unset) instead of the unowned `sigil.dev` host; the unused `BRAND.baseUrl` was dropped
 
 ## Open
 

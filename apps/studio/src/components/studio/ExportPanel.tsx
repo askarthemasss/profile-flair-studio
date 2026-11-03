@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useStudioStore } from "../../store/studio-store.js";
 import { ENV } from "../../lib/env.js";
+import { renderOrigin } from "../../lib/render-url.js";
 import type { ExportFormat } from "../../types.js";
 import { Copy, Check, Code, FileText, Globe, type LucideIcon } from "lucide-react";
 
@@ -9,9 +10,9 @@ export const ExportPanel: React.FC = () => {
   const [copied, setCopied] = useState(false);
 
   const getCardUrl = (cardId: string, params: Record<string, string>) => {
-    // Without a configured Worker the snippet still needs a valid base. Use the
-    // studio origin so the generated code is well-formed, and warn in the UI.
-    const url = new URL(`${ENV.RENDER_API_URL || window.location.origin}/c/${cardId}/${user}`);
+    // Without a configured Worker this still resolves to an explicit
+    // placeholder host, and the panel warns that the URLs are not live.
+    const url = new URL(`${renderOrigin()}/c/${cardId}/${user}`);
     url.searchParams.set("theme", theme);
     Object.entries(params).forEach(([k, v]) => {
       if (v) url.searchParams.set(k, v);

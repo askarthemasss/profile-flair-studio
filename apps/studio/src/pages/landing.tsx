@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { AppShell } from "../components/layout/AppShell.js";
 import { CardPreview } from "../components/studio/CardPreview.js";
 import { getDemoSnapshot } from "../services/snapshot-service.js";
+import { renderHost } from "../lib/render-url.js";
 import { BUILTIN_THEMES } from "@sigil/core";
 import { ArrowRight, Zap, Shield, Sparkles, Code2, Heart, CheckCircle2 } from "lucide-react";
 
@@ -83,7 +84,7 @@ export const LandingPage: React.FC = () => {
                     <span className="h-2.5 w-2.5 rounded-full bg-verdigris/80" />
                   </div>
                   <span className="font-mono text-[10px] text-ink-faint">
-                    sigil.dev/c/overview/torvalds
+                    {renderHost()}/c/overview/torvalds
                   </span>
                 </div>
 
