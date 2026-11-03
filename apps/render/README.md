@@ -17,7 +17,7 @@ Create a project, then run `supabase/migrations/0001_init.sql` in the SQL editor
 
 ### 2. Cloudflare credentials
 
-Create a Cloudflare API token with **Workers Scripts: Edit** and copy your account ID.
+Create a Cloudflare API token from the **Edit Cloudflare Workers** template, then copy your account ID.
 
 Add both as GitHub repository secrets so `.github/workflows/deploy.yml` can deploy on push to `main`:
 
@@ -28,19 +28,13 @@ Add both as GitHub repository secrets so `.github/workflows/deploy.yml` can depl
 
 Without `CLOUDFLARE_API_TOKEN` the deploy step is skipped, which is why `main` can be green while no Worker exists.
 
-### 3. Worker secrets
+If the very first deploy fails with an authorization error, the token cannot create a new Worker: either create an empty `sigil-render` Worker once in the dashboard, or grant the token Workers Admin for that first run.
 
-`wrangler deploy` does not set secrets. From `apps/render`, run each once:
+### 3. Deploy
 
-```bash
-pnpm exec wrangler secret put GITHUB_TOKEN               # classic PAT with public_repo read, or a fine-grained token with public read
-pnpm exec wrangler secret put SUPABASE_URL               # https://<project>.supabase.co
-pnpm exec wrangler secret put SUPABASE_SERVICE_ROLE_KEY  # server-side only
-```
+The first deploy must happen before the secrets in step 4, because `wrangler secret put` targets an existing Worker.
 
-`GITHUB_TOKEN` may be a comma-separated pool; the Worker round-robins across it.
-
-### 4. Deploy
+Either push to `main` (with the secrets from step 2 in place) or deploy locally after `wrangler login`:
 
 ```bash
 pnpm --filter @sigil/render deploy
@@ -51,6 +45,20 @@ The Worker name is `sigil-render`, so by default it lands at:
 ```
 https://sigil-render.<your-subdomain>.workers.dev
 ```
+
+### 4. Worker secrets
+
+`wrangler deploy` does not set secrets. With the Worker now deployed, run each once from `apps/render`:
+
+```bash
+pnpm exec wrangler secret put GITHUB_TOKEN               # classic PAT with public_repo read, or a fine-grained token with public read
+pnpm exec wrangler secret put SUPABASE_URL               # https://<project>.supabase.co
+pnpm exec wrangler secret put SUPABASE_SERVICE_ROLE_KEY  # server-side only
+```
+
+Each command creates a new Worker version, so the secrets are live immediately. `GITHUB_TOKEN` may be a comma-separated pool; the Worker round-robins across it.
+
+Check it with `curl https://sigil-render.<your-subdomain>.workers.dev/health`, then try a card.
 
 ### 5. Point the studio at it
 
