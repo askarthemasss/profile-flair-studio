@@ -70,12 +70,30 @@ routes = [{ pattern = "cards.example.com", custom_domain = true }]
 
 then set `VITE_RENDER_API_URL` to that origin. Note that `sigil.dev` is currently parked on Afternic nameservers and is not controlled by this project; do not point embeds at it unless you own the domain.
 
+A custom domain also unlocks the shared Cache API layer described below. `workers.dev` still works, with a smaller cache.
+
 ## Cache behavior
 
-| What                    | Where                      | TTL                                    |
-| ----------------------- | -------------------------- | -------------------------------------- |
-| Rendered SVG            | Cloudflare Cache API + CDN | 5 min (`stale-while-revalidate=86400`) |
-| Normalized snapshot     | Cloudflare Cache API       | 4 hours fresh, 7 days retained         |
-| Stale snapshot response | Not cached                 | `no-store`                             |
+| What                    | Where                              | TTL                                    |
+| ----------------------- | ---------------------------------- | -------------------------------------- |
+| Normalized snapshot     | Cloudflare Cache API               | 4 hours fresh, 7 days retained         |
+| Normalized snapshot     | In-isolate memory, max 500 entries | 7 days                                 |
+| Rendered SVG            | Cloudflare Cache API               | 5 min (`stale-while-revalidate=86400`) |
+| Stale snapshot response | Not cached                         | `no-store`                             |
 
-The cache is per-colo, so a cold colo pays one GitHub round trip. Refreshes are deduped per login within an isolate.
+Snapshots go to both layers on every write, and reads fall back to memory when the Cache API misses or is unavailable. Refreshes are deduped per login within an isolate, and the stale copy is served immediately while the refresh runs in `waitUntil`.
+
+### `workers.dev` versus a custom domain
+
+Cloudflare's [Cache API docs](https://developers.cloudflare.com/workers/runtime-apis/cache/) state that cache operations only work for Workers deployed to a custom domain (or Pages). On the default `*.workers.dev` URL, `cache.match()` always misses and `cache.put()` has no effect.
+
+The Worker therefore keeps working on `workers.dev`, just with the smaller cache:
+
+| Deployment      | Snapshot reuse                                                                                                                        |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `*.workers.dev` | Per-isolate memory only: a warm isolate reuses a snapshot for up to 7 days; a new isolate fetches GitHub once, then dedupes the burst |
+| Custom domain   | Per-colo Cache API plus memory: survives isolate restarts and serves stale copies across requests in that colo                        |
+
+For production traffic, attach a domain you own. Even without one, the in-isolate layer plus per-login dedupe keeps GitHub traffic far below one request per card view. `apps/render/src/pipeline/edge-cache.ts` treats the Cache API as optional, so no configuration is needed to run on `workers.dev`.
+
+A cold colo (or a cold isolate on `workers.dev`) pays one GitHub round trip.

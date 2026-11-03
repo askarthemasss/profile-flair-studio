@@ -9,7 +9,7 @@ import {
 } from "@sigil/core";
 import { getOrRefreshSnapshot } from "../pipeline/refresh-snapshot.js";
 import { getTokenPool } from "../pipeline/token-pool.js";
-import { createEdgeSnapshotCache } from "../pipeline/edge-cache.js";
+import { createEdgeSnapshotCache, getDefaultCache } from "../pipeline/edge-cache.js";
 
 export interface RenderEnv {
   GITHUB_TOKEN?: string;
@@ -57,12 +57,16 @@ cardRoute.get("/c/:kind/:username", async (c) => {
     return c.json({ error: "Invalid query params", issues: parsedParams.error.issues }, 400);
   }
 
-  // --- Check Cloudflare Workers Cache API ---
-  const cache = caches.default;
+  // --- Check the colo-local Cloudflare Cache API ---
+  // `undefined` on `*.workers.dev`, where Cache API operations are no-ops. The
+  // snapshot cache still works there through its in-isolate layer.
+  const cache = getDefaultCache();
   const cacheKey = new Request(c.req.url);
-  const cached = await cache.match(cacheKey);
-  if (cached) {
-    return cached;
+  if (cache) {
+    const cached = await cache.match(cacheKey);
+    if (cached) {
+      return cached;
+    }
   }
 
   // --- Prepare Token Pool & edge snapshot cache ---
@@ -124,9 +128,10 @@ cardRoute.get("/c/:kind/:username", async (c) => {
     },
   });
 
-  // Asynchronously store in Cloudflare Edge cache. Stale renders are skipped
-  // for the same reason as the header above.
-  if (!stale) {
+  // Asynchronously store in the Cloudflare cache. Stale renders are skipped for
+  // the same reason as the header above, and the Cache API is skipped entirely
+  // where it is a no-op (`*.workers.dev`).
+  if (!stale && cache) {
     c.executionCtx.waitUntil(cache.put(cacheKey, response.clone()));
   }
 

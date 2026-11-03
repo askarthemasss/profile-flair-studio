@@ -12,7 +12,7 @@ snapshotRoute.get("/snapshot/:username", async (c) => {
   const force = c.req.query("force") === "1";
 
   const tokenPool = getTokenPool(c.env.GITHUB_TOKEN_POOL || c.env.GITHUB_TOKEN);
-  const snapshotCache = createEdgeSnapshotCache(caches.default);
+  const snapshotCache = createEdgeSnapshotCache();
 
   const { snapshot, error, stale, revalidate } = await getOrRefreshSnapshot({
     login: username,
