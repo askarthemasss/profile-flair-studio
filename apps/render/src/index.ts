@@ -7,17 +7,29 @@ import { healthRoute } from "./routes/health.js";
 import { SupabaseRest } from "./db/supabase-rest.js";
 import { getTokenPool } from "./pipeline/token-pool.js";
 import { getOrRefreshSnapshot } from "./pipeline/refresh-snapshot.js";
+import { API_VERSION } from "./version.js";
 
 const app = new Hono<{ Bindings: RenderEnv }>();
 
 // Enable CORS for studio SPA
 app.use("*", cors());
 
-// Mount routes
+// Every response advertises the API version so clients can pin against it.
+app.use("*", async (c, next) => {
+  await next();
+  c.header("X-Sigil-Api-Version", API_VERSION);
+});
+
+// Mount routes. `/v1` is the stable surface; the unversioned paths are kept as
+// aliases so existing embeds keep working.
 app.route("/", cardRoute);
 app.route("/", snapshotRoute);
 app.route("/", themesRoute);
 app.route("/", healthRoute);
+app.route("/v1", cardRoute);
+app.route("/v1", snapshotRoute);
+app.route("/v1", themesRoute);
+app.route("/v1", healthRoute);
 
 // 404 handler
 app.notFound((c) => {
