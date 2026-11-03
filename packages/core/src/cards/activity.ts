@@ -31,7 +31,14 @@ export const renderActivity: CardRenderer<ActivityParams> = ({ snapshot, theme, 
 
   const width = 495;
   const height = 195;
-  const b = new SvgBuilder({ width, height, theme, animate, radius: r }).open();
+  const b = new SvgBuilder({
+    width,
+    height,
+    theme,
+    animate,
+    radius: r,
+    border: params.hide_border !== "1",
+  }).open();
 
   // Header
   b.text({

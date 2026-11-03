@@ -34,7 +34,14 @@ export const renderRepo: CardRenderer<RepoParams> = ({ snapshot, theme, params }
 
   const width = 400;
   const height = 195;
-  const b = new SvgBuilder({ width, height, theme, animate, radius: r }).open();
+  const b = new SvgBuilder({
+    width,
+    height,
+    theme,
+    animate,
+    radius: r,
+    border: params.hide_border !== "1",
+  }).open();
 
   // Book/Repo icon (SVG path)
   b.raw(

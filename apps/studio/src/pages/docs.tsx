@@ -63,7 +63,7 @@ export const DocsPage: React.FC = () => {
                     <td className="p-3">string</td>
                     <td className="p-3">"obsidian"</td>
                     <td className="p-3 font-sans">
-                      Theme identifier (obsidian, monolith, verdigris, etc.)
+                      Theme identifier (obsidian, monolith, verdigris, paper, tidepool, sandstone)
                     </td>
                   </tr>
                   <tr>
@@ -112,7 +112,9 @@ export const DocsPage: React.FC = () => {
             <p className="text-xs text-ink-muted leading-relaxed">
               Drop a themed card into any Markdown or HTML file. Available builtin themes:{" "}
               <code className="text-ink">obsidian</code>, <code className="text-ink">monolith</code>
-              , and <code className="text-ink">verdigris</code>.
+              , <code className="text-ink">verdigris</code>, <code className="text-ink">paper</code>
+              , <code className="text-ink">tidepool</code>, and{" "}
+              <code className="text-ink">sandstone</code>.
             </p>
 
             <pre className="overflow-x-auto rounded-lg border border-line bg-obsidian p-4 font-mono text-xs text-ink-muted leading-relaxed">

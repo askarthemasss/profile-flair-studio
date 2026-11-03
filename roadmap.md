@@ -9,15 +9,15 @@ A lean task list, not a log. Check before reporting work complete.
 - Studio pages: landing, live studio, theme gallery, docs, preset library, status
 - Edge render API on Cloudflare Workers: `/c/:kind/:user`, `/snapshot/:user`, `/themes`, `/health`, Supabase snapshot cache, cron refresh
 - Supabase migration for the snapshot cache
-- GitHub Action skeleton (fetch + write files)
 - CI: typecheck, lint, tests, builds, WCAG theme validation, SVG size budget
 - Per-card param schemas wired into the render route, so defaults, numeric coercion, and `hide` lists apply (`check:svg` renders with defaults)
 - Contribution years populated in the refresh pipeline: the current year plus the two most recent, converted to `days[]` for heatmap, skyline, and activity
 - GitHub Action renders the real cards with `@sigil/core`, defaults to the nine valid kinds, and ships a committed bundle (`packages/action/dist/index.js`)
 - Stale-while-revalidate: stale snapshots are served immediately, refreshed via `waitUntil`, and deduped per login
+- Six builtin themes (obsidian, monolith, verdigris, paper, tidepool, sandstone), all passing WCAG AA validation
+- `theme.font` drives the SVG font stack and `hide_border=1` removes the card outline
 
 ## Open
 
-- Add the remaining builtin themes (`paper`, `tidepool`, `sandstone`) or trim the gallery
 - Public JSON API documentation and versioning
-- Implement or remove unused theme fields (`font`, `effects`) and `hide_border`
+- Deploy the render Worker and point the studio at it (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `GITHUB_TOKEN`, `SUPABASE_*`)

@@ -1,0 +1,26 @@
+{
+  "id": "paper",
+  "name": "Paper",
+  "author": "sigil",
+  "version": 1,
+  "mode": "light",
+  "colors": {
+    "bg": "#f7f4ec",
+    "bgAlt": "#efeade",
+    "border": "#d8d0bf",
+    "text": "#17140f",
+    "textMuted": "#6d6455",
+    "accent": "#1e40af",
+    "accent2": "#2563eb",
+    "success": "#15803d",
+    "warning": "#b45309",
+    "danger": "#b91c1c"
+  },
+  "heat": ["#efeade", "#c7d2fe", "#818cf8", "#4f46e5", "#1e40af"],
+  "font": "serif",
+  "radius": 8,
+  "effects": {
+    "glow": false,
+    "grain": true
+  }
+}

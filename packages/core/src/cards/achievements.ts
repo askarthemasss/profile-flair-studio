@@ -40,7 +40,14 @@ export const renderAchievements: CardRenderer<AchievementsParams> = ({
 
   const width = 495;
   const height = 195;
-  const b = new SvgBuilder({ width, height, theme, animate, radius: r }).open();
+  const b = new SvgBuilder({
+    width,
+    height,
+    theme,
+    animate,
+    radius: r,
+    border: params.hide_border !== "1",
+  }).open();
 
   // Header
   const earnedCount = states.filter((s) => s.tier !== null).length;

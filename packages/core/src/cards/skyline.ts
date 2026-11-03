@@ -33,7 +33,14 @@ export const renderSkyline: CardRenderer<SkylineParams> = ({ snapshot, theme, pa
   const width = gridW + 48;
   const height = MAX_H + 72;
 
-  const b = new SvgBuilder({ width, height, theme, animate, radius: r }).open();
+  const b = new SvgBuilder({
+    width,
+    height,
+    theme,
+    animate,
+    radius: r,
+    border: params.hide_border !== "1",
+  }).open();
   b.text({
     x: 24,
     y: 28,
