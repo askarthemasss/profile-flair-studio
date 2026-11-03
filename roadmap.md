@@ -16,8 +16,8 @@ A lean task list, not a log. Check before reporting work complete.
 - Stale-while-revalidate: stale snapshots are served immediately, refreshed via `waitUntil`, and deduped per login
 - Six builtin themes (obsidian, monolith, verdigris, paper, tidepool, sandstone), all passing WCAG AA validation
 - `theme.font` drives the SVG font stack and `hide_border=1` removes the card outline
+- Versioned JSON API: `/v1` aliases for every route, `X-Sigil-Api-Version`, `schema`-versioned snapshots, and a docs section
 
 ## Open
 
-- Public JSON API documentation and versioning
 - Deploy the render Worker and point the studio at it (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `GITHUB_TOKEN`, `SUPABASE_*`)

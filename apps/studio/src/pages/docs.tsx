@@ -1,6 +1,6 @@
 import React from "react";
 import { AppShell } from "../components/layout/AppShell.js";
-import { BookOpen, Terminal, Layers, Code, Check } from "lucide-react";
+import { BookOpen, Terminal, Layers, Code, Check, Database } from "lucide-react";
 
 export const DocsPage: React.FC = () => {
   return (
@@ -123,6 +123,70 @@ export const DocsPage: React.FC = () => {
   src="https://sigil.dev/c/overview/torvalds?theme=obsidian"
 />`}
             </pre>
+          </section>
+
+          {/* Section 4: JSON API */}
+          <section className="flex flex-col gap-4">
+            <h2 className="font-display text-xl font-semibold text-ink flex items-center gap-2">
+              <Database className="h-5 w-5 text-ember" />
+              <span>JSON API</span>
+            </h2>
+            <p className="text-xs text-ink-muted leading-relaxed">
+              Every route is served under <code className="text-ink">/v1</code>. The unversioned
+              paths are kept as aliases, so existing embeds keep working. Every response carries{" "}
+              <code className="text-ink">X-Sigil-Api-Version: 1</code>; additive fields do not bump
+              the version, breaking changes do.
+            </p>
+
+            <div className="overflow-x-auto rounded-lg border border-line">
+              <table className="w-full text-left text-xs">
+                <thead className="border-b border-line bg-raised font-mono text-ink">
+                  <tr>
+                    <th className="p-3">Endpoint</th>
+                    <th className="p-3">Returns</th>
+                    <th className="p-3">Cache</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line/60 bg-panel text-ink-muted font-mono">
+                  <tr>
+                    <td className="p-3 text-ember">GET /v1/snapshot/:username</td>
+                    <td className="p-3">Full normalized snapshot</td>
+                    <td className="p-3">30 min</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 text-ember">GET /v1/themes</td>
+                    <td className="p-3">Builtin theme objects</td>
+                    <td className="p-3">1 hour</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 text-ember">GET /v1/c/:kind/:username</td>
+                    <td className="p-3">SVG card</td>
+                    <td className="p-3">5 min</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 text-ember">GET /v1/health</td>
+                    <td className="p-3">Status and API version</td>
+                    <td className="p-3">No cache</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <pre className="overflow-x-auto rounded-lg border border-line bg-obsidian p-4 font-mono text-xs text-ink-muted leading-relaxed">
+              {`curl -s https://sigil.dev/v1/snapshot/torvalds | jq '{schema, login, years: (.years | length)}'
+
+{
+  "schema": 1,
+  "login": "torvalds",
+  "years": 3
+}`}
+            </pre>
+
+            <p className="text-xs text-ink-muted leading-relaxed">
+              The snapshot body is versioned by its <code className="text-ink">schema</code> field.
+              If a field is renamed or removed, <code className="text-ink">schema</code> increments
+              and a new <code className="text-ink">/v2</code> prefix is added.
+            </p>
           </section>
         </div>
       </div>
