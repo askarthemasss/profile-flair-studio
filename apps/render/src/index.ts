@@ -11,8 +11,21 @@ import { API_VERSION } from "./version.js";
 
 const app = new Hono<{ Bindings: RenderEnv }>();
 
-// Enable CORS for studio SPA
-app.use("*", cors());
+// Enable CORS for the studio SPA. Custom headers must be exposed explicitly or
+// browser clients cannot read them from `fetch()`.
+app.use(
+  "*",
+  cors({
+    exposeHeaders: [
+      "X-Sigil-Api-Version",
+      "X-Sigil-Kind",
+      "X-Sigil-Theme",
+      "X-Sigil-Mode",
+      "X-Sigil-Stale",
+      "Retry-After",
+    ],
+  }),
+);
 
 // Every response advertises the API version so clients can pin against it.
 app.use("*", async (c, next) => {
