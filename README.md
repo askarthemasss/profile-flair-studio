@@ -16,7 +16,7 @@ Why this exists: Existing card tools are single-purpose, and the most popular pu
 
 Platform: Web app (studio), edge render API, GitHub Action, public JSON API.
 
-Deployment target: Studio on Vercel. Render API on Cloudflare Workers. Database on Supabase. Action published to the GitHub Marketplace.
+Deployment target: Studio on Vercel. Render API on Cloudflare Workers (stateless, no database). Action published to the GitHub Marketplace.
 
 Locked scope decisions (do not revisit):
 

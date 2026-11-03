@@ -13,13 +13,19 @@ import {
 } from "@sigil/core";
 import { executeGithubGraphQL } from "./github-client.js";
 import { fetchAvatarDataUri } from "./avatar.js";
-import type { SupabaseRest } from "../db/supabase-rest.js";
 import type { TokenPool } from "./token-pool.js";
+
+/** Where normalized snapshots are cached. No database, just the edge cache. */
+export interface SnapshotCache {
+  get(login: string): Promise<{ snapshot: GithubSnapshot; fetchedAt: number } | null>;
+  put(login: string, snapshot: GithubSnapshot): Promise<void>;
+  delete(login: string): Promise<void>;
+}
 
 interface RefreshOptions {
   login: string;
   tokenPool: TokenPool;
-  supabase?: SupabaseRest;
+  cache?: SnapshotCache;
   forceRefresh?: boolean;
 }
 
@@ -65,33 +71,26 @@ function refreshOnce(opts: RefreshOptions): Promise<RefreshResult> {
 }
 
 export async function getOrRefreshSnapshot(opts: RefreshOptions): Promise<SnapshotResult> {
-  const { login, supabase, forceRefresh } = opts;
+  const { login, cache, forceRefresh } = opts;
 
   // 1. Look up the cached snapshot. Fresh entries short-circuit; stale ones are
   // served immediately while a refresh runs in the background.
   let staleSnapshot: GithubSnapshot | null = null;
 
-  if (supabase && !forceRefresh) {
-    const cached = await supabase.get<any>(
-      "snapshots",
-      `login=eq.${encodeURIComponent(login)}&select=data,fetched_at`,
-    );
-    if (cached && cached.length > 0 && cached[0]?.data) {
-      const fetchedAt = new Date(cached[0].fetched_at).getTime();
-      const ageMs = Date.now() - fetchedAt;
-
-      if (ageMs < FRESH_TTL_MS) {
-        return { snapshot: cached[0].data as GithubSnapshot, error: null };
+  if (cache && !forceRefresh) {
+    const cached = await cache.get(login);
+    if (cached) {
+      if (Date.now() - cached.fetchedAt < FRESH_TTL_MS) {
+        return { snapshot: cached.snapshot, error: null };
       }
-
-      staleSnapshot = cached[0].data as GithubSnapshot;
+      staleSnapshot = cached.snapshot;
     }
   }
 
   if (staleSnapshot) {
     // Never make a reader wait on GitHub for a snapshot we already have. The
     // caller hands `revalidate` to `waitUntil` so the isolate stays alive long
-    // enough to persist the refreshed copy.
+    // enough to write the refreshed copy.
     return {
       snapshot: staleSnapshot,
       error: null,
@@ -109,7 +108,7 @@ export async function getOrRefreshSnapshot(opts: RefreshOptions): Promise<Snapsh
 async function refreshSnapshot({
   login,
   tokenPool,
-  supabase,
+  cache,
 }: RefreshOptions): Promise<RefreshResult> {
   // 1. Resolve token
   const token = tokenPool.getToken();
@@ -147,8 +146,8 @@ async function refreshSnapshot({
 
     // The account was deleted or renamed. Drop the cached copy so later
     // requests return 404 instead of serving the old profile forever.
-    if (supabase) {
-      await supabase.delete("snapshots", `login=eq.${encodeURIComponent(login)}`);
+    if (cache) {
+      await cache.delete(login);
     }
     return { snapshot: null, error: "NOT_FOUND" };
   }
@@ -204,12 +203,8 @@ async function refreshSnapshot({
 
   // 4. Persist before resolving, so a `waitUntil`-ed refresh is not cancelled
   // mid-write when the response has already been sent.
-  if (supabase) {
-    await supabase.upsert("snapshots", {
-      login,
-      data: snapshot,
-      fetched_at: new Date().toISOString(),
-    });
+  if (cache) {
+    await cache.put(login, snapshot);
   }
 
   return { snapshot, error: null };

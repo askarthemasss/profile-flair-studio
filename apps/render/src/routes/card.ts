@@ -9,14 +9,11 @@ import {
 } from "@sigil/core";
 import { getOrRefreshSnapshot } from "../pipeline/refresh-snapshot.js";
 import { getTokenPool } from "../pipeline/token-pool.js";
-import { SupabaseRest } from "../db/supabase-rest.js";
+import { createEdgeSnapshotCache } from "../pipeline/edge-cache.js";
 
 export interface RenderEnv {
   GITHUB_TOKEN?: string;
   GITHUB_TOKEN_POOL?: string;
-  SUPABASE_URL?: string;
-  SUPABASE_ANON_KEY?: string;
-  SUPABASE_SERVICE_ROLE_KEY?: string;
   ENVIRONMENT?: string;
 }
 
@@ -68,25 +65,19 @@ cardRoute.get("/c/:kind/:username", async (c) => {
     return cached;
   }
 
-  // --- Prepare Token Pool & Supabase ---
+  // --- Prepare Token Pool & edge snapshot cache ---
   const tokenPool = getTokenPool(c.env.GITHUB_TOKEN_POOL || c.env.GITHUB_TOKEN);
-  const supabase =
-    c.env.SUPABASE_URL && (c.env.SUPABASE_SERVICE_ROLE_KEY || c.env.SUPABASE_ANON_KEY)
-      ? new SupabaseRest({
-          url: c.env.SUPABASE_URL,
-          serviceKey: c.env.SUPABASE_SERVICE_ROLE_KEY || c.env.SUPABASE_ANON_KEY!,
-        })
-      : undefined;
+  const snapshotCache = createEdgeSnapshotCache(cache);
 
   // --- Retrieve Snapshot ---
   const { snapshot, error, stale, revalidate } = await getOrRefreshSnapshot({
     login: username,
     tokenPool,
-    supabase,
+    cache: snapshotCache,
   });
 
   // A stale snapshot is already served; keep the isolate alive so the refresh
-  // can finish and land in Supabase.
+  // can finish and land in the edge cache.
   if (revalidate) {
     c.executionCtx.waitUntil(revalidate);
   }
