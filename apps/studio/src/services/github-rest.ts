@@ -206,11 +206,22 @@ async function searchCount(query: string, login: string, signal?: AbortSignal): 
   }
 }
 
-async function ghCount(path: string, signal?: AbortSignal): Promise<number> {
+async function ghListCount(path: string, signal?: AbortSignal): Promise<number> {
   try {
-    const res = await fetch(`${API_ROOT}${path}?per_page=1`, { signal });
-    const total = Number(res.headers.get("x-total-count"));
-    return Number.isFinite(total) && total > 0 ? total : 0;
+    const res = await fetch(`${API_ROOT}${path}?per_page=1`, {
+      headers: { Accept: "application/vnd.github+json" },
+      signal,
+    });
+    if (!res.ok) return 0;
+
+    // List endpoints paginate instead of returning `x-total-count`; the
+    // `rel="last"` page number is the item count at per_page=1.
+    const last = /page=(\d+)>; rel="last"/.exec(res.headers.get("link") ?? "");
+    if (last) return Number(last[1]);
+
+    // A single page: the body length is the count (0 or 1 at per_page=1).
+    const body = (await res.json()) as unknown;
+    return Array.isArray(body) ? body.length : 0;
   } catch (error) {
     if (signal?.aborted) throw error;
     return 0;
@@ -417,8 +428,8 @@ async function fetchLiveProfile(login: string, signal?: AbortSignal): Promise<Gi
       if (signal?.aborted) throw error;
       return [];
     }),
-    ghCount(`/users/${handle}/gists`, signal),
-    ghCount(`/users/${handle}/orgs`, signal),
+    ghListCount(`/users/${handle}/gists`, signal),
+    ghListCount(`/users/${handle}/orgs`, signal),
   ]);
 
   // 3. Contribution history, latest three years that have any data.
@@ -462,14 +473,19 @@ async function fetchLiveProfile(login: string, signal?: AbortSignal): Promise<Gi
     )
     .filter((y): y is ContributionYear => y !== null);
 
-  // The most recent year drives the streak window; the current calendar year
-  // is skipped on the path where GitHub has nothing yet for it.
-  const latest = years[years.length - 1] ?? null;
-  const latestDays = latest
-    ? contribs.contributions
-        .filter((d) => Number(d.date.slice(0, 4)) === latest.year)
-        .map((d) => ({ date: d.date, count: d.count }))
-    : [];
+  // Streaks follow the Worker's rolling 52-week window (the GraphQL
+  // contribution calendar), not a calendar year: splitting by year would drop
+  // the December days before January 1 and break a streak crossing the new
+  // year. The window ends today and starts 364 days earlier, inclusive.
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const windowStart = new Date(today);
+  windowStart.setUTCDate(windowStart.getUTCDate() - 364);
+  const windowStartIso = windowStart.toISOString().slice(0, 10);
+  const todayIso = today.toISOString().slice(0, 10);
+  const streakDays = contribs.contributions
+    .filter((d) => d.date >= windowStartIso && d.date <= todayIso)
+    .map((d) => ({ date: d.date, count: d.count }))
+    .sort((a, b) => a.date.localeCompare(b.date));
 
   // 4. Commits are attributed to this login with `author:` across the top own
   //    repositories, in one commit-search request. Unauthenticated GitHub
@@ -501,14 +517,14 @@ async function fetchLiveProfile(login: string, signal?: AbortSignal): Promise<Gi
       prsMerged,
       reviews,
       issues,
-      ownedRepos: user.public_repos,
+      ownedRepos: owned.length,
       contributedTo,
       discussionAnswers: 0,
       starsEarned: owned.reduce((sum, r) => sum + r.stargazers_count, 0),
       forksEarned: owned.reduce((sum, r) => sum + r.forks_count, 0),
       restrictedContributions: 0,
     },
-    streak: computeStreak(latestDays),
+    streak: computeStreak(streakDays),
     years,
     languages: aggregateLanguages(owned),
     topRepos: toRepoStats(owned, 30),
