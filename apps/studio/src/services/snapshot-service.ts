@@ -102,7 +102,7 @@ export function getDemoSnapshot(login: string): GithubSnapshot {
 const LIVE_TTL_MS = 1000 * 60 * 10;
 const liveCache = new Map<string, { snapshot: GithubSnapshot; expiresAt: number }>();
 
-export async function fetchSnapshot(login: string): Promise<GithubSnapshot> {
+export async function fetchSnapshot(login: string, signal?: AbortSignal): Promise<GithubSnapshot> {
   const handle = login.trim();
   if (!handle) return getDemoSnapshot("torvalds");
 
@@ -112,9 +112,11 @@ export async function fetchSnapshot(login: string): Promise<GithubSnapshot> {
     try {
       const res = await fetch(`${ENV.RENDER_API_URL}/snapshot/${encodeURIComponent(handle)}`, {
         headers: { Accept: "application/json" },
+        signal,
       });
       if (res.ok) return (await res.json()) as GithubSnapshot;
-    } catch {
+    } catch (error) {
+      if (signal?.aborted) throw error;
       // fall through to the browser-side fetch below
     }
   }
@@ -125,7 +127,7 @@ export async function fetchSnapshot(login: string): Promise<GithubSnapshot> {
   const cached = liveCache.get(key);
   if (cached && cached.expiresAt > Date.now()) return cached.snapshot;
 
-  const snapshot = await fetchLiveProfile(handle);
+  const snapshot = await fetchLiveProfile(handle, signal);
   liveCache.set(key, { snapshot, expiresAt: Date.now() + LIVE_TTL_MS });
   return snapshot;
 }

@@ -13,15 +13,24 @@ import { Loader2, TriangleAlert, Users } from "lucide-react";
 
 export const StudioPage: React.FC = () => {
   const { user, theme, overrides, cards } = useStudioStore();
-  const { data: snapshot, isLoading, isError, error } = useSnapshot(user);
+  const {
+    data: snapshot,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    isDebouncing,
+    handle: snapshotHandle,
+  } = useSnapshot(user);
 
   const activeSnapshot = snapshot ?? getDemoSnapshot(user || "torvalds");
   const resolvedTheme = resolveTheme(theme, overrides);
+  const isLookingUp = isLoading || isFetching || isDebouncing;
   const notFound = error instanceof SnapshotError && error.kind === "not_found";
   const snapshotError =
-    isError && error instanceof SnapshotError
+    !isDebouncing && isError && error instanceof SnapshotError
       ? notFound
-        ? `No GitHub user named "${user}". Adjust the handle or check the spelling.`
+        ? `No GitHub user named "${snapshotHandle}". Adjust the handle or check the spelling.`
         : `${error.message}. Showing sample data meanwhile.`
       : null;
 
@@ -38,13 +47,13 @@ export const StudioPage: React.FC = () => {
             </p>
           </div>
 
-          {isLoading && (
+          {isLookingUp && (
             <div className="flex items-center gap-2 rounded-full border border-line bg-panel px-3 py-1 text-xs text-ink-muted">
               <Loader2 className="h-3.5 w-3.5 animate-spin text-ember" />
-              <span>Fetching GitHub data for @{user}...</span>
+              <span>Fetching GitHub data for @{user.trim() || "..."}...</span>
             </div>
           )}
-          {!isLoading && snapshot && !snapshotError && (
+          {!isLookingUp && snapshot && !snapshotError && (
             <div className="flex items-center gap-2 rounded-full border border-verdigris/40 bg-verdigris/10 px-3 py-1 text-xs text-verdigris">
               <Users className="h-3.5 w-3.5" />
               <span>Live GitHub data for @{snapshot.login}</span>

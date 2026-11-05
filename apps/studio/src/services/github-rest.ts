@@ -5,24 +5,27 @@
  * relies on GitHub's public unauthenticated endpoints plus a CORS-enabled
  * contributions service; everything serves `Access-Control-Allow-Origin: *`:
  *
- * - `GET api.github.com/users/:login/:login/repos` for repositories, walked
- *   through the `Link: rel="next"` chain (up to 1,000 own repos) and sorted by
- *   stars here, because the list endpoint cannot sort by stars.
+ * - `GET api.github.com/users/:login/repos` for repositories, walked through
+ *   the `Link: rel="next"` chain (up to 1,000 own repos) and sorted by stars
+ *   here, because the list endpoint cannot sort by stars.
  * - `GET github-contributions-api.jogruber.de/v4/:login?y=all` for the
  *   contribution calendar, which the GitHub GraphQL API would need a token for.
- * - `GET api.github.com/repos/:repo/commits?per_page=1` over the top own
- *   repositories: the `rel="last"` page number is the commit count, giving a
- *   commit-only, lifetime-cost figure for totals.commits (the search API
- *   cannot answer commits-by-author without a repository qualifier).
+ * - `GET api.github.com/search/commits` with `repo:` qualifiers for the top own
+ *   repositories and `author:login`, giving an attributed, commit-only
+ *   `totals.commits` (the commits list endpoint cannot expose a last page when
+ *   filtered by author, and an unfiltered repository history would include
+ *   collaborators' commits).
  * - `GET api.github.com/search/issues` for lifetime PR, merged-PR, issue, and
  *   review counts.
  * - `GET api.github.com/users/:login/events/public` for the set of repositories
  *   contributed to (the events feed covers roughly the last 90 days).
  *
  * Unauthenticated budgets: 60 core requests/hour/IP and 10 searches/minute/IP.
- * A typical lookup costs 6 core requests plus one per paginated repository
- * batch and one per top repository, and `snapshot-service.ts` caches results,
- * so normal browsing stays under it. Counters GitHub cannot hand back
+ * A typical lookup costs about 5 core requests (profile, events, gist/org
+ * counts, and one repository page) plus five searches (four issue counts and
+ * one commit count). `useSnapshot` debounces typing and aborts superseded
+ * lookups, and `snapshot-service.ts` caches results for 10 minutes, so normal
+ * browsing stays under the limits. Counters GitHub cannot hand back
  * unauthenticated (`discussionAnswers`, the restricted-contribution split)
  * stay at zero rather than being invented.
  */
@@ -155,13 +158,15 @@ interface ContribResponse {
   contributions: ContribDay[];
 }
 
-async function ghJson<T>(path: string): Promise<T> {
+async function ghJson<T>(path: string, signal?: AbortSignal): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`${API_ROOT}${path}`, {
       headers: { Accept: "application/vnd.github+json" },
+      signal,
     });
-  } catch {
+  } catch (error) {
+    if (signal?.aborted) throw error;
     throw new SnapshotError("network", "Could not reach api.github.com", 0);
   }
 
@@ -181,15 +186,16 @@ async function ghJson<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-async function searchCount(query: string, login: string): Promise<number> {
+async function searchCount(query: string, login: string, signal?: AbortSignal): Promise<number> {
   const q = new URLSearchParams();
   q.set("q", `${query}:${login}`);
   q.set("per_page", "1");
 
   try {
-    const body = await ghJson<SearchCount>(`/search/issues?${q.toString()}`);
+    const body = await ghJson<SearchCount>(`/search/issues?${q.toString()}`, signal);
     return body.total_count ?? 0;
   } catch (error) {
+    if (signal?.aborted) throw error;
     // Search has a much tighter budget than core; a failed search zeroes one
     // counter instead of costing the whole snapshot. Rate limiting is the
     // exception: without it the counters would silently read as zero.
@@ -200,21 +206,25 @@ async function searchCount(query: string, login: string): Promise<number> {
   }
 }
 
-async function ghCount(path: string): Promise<number> {
+async function ghCount(path: string, signal?: AbortSignal): Promise<number> {
   try {
-    const res = await fetch(`${API_ROOT}${path}?per_page=1`);
+    const res = await fetch(`${API_ROOT}${path}?per_page=1`, { signal });
     const total = Number(res.headers.get("x-total-count"));
     return Number.isFinite(total) && total > 0 ? total : 0;
-  } catch {
+  } catch (error) {
+    if (signal?.aborted) throw error;
     return 0;
   }
 }
 
-async function fetchContributions(login: string): Promise<ContribResponse> {
+async function fetchContributions(login: string, signal?: AbortSignal): Promise<ContribResponse> {
   let res: Response;
   try {
-    res = await fetch(`${CONTRIB_API_ROOT}/${encodeURIComponent(login.toLowerCase())}?y=all`);
-  } catch {
+    res = await fetch(`${CONTRIB_API_ROOT}/${encodeURIComponent(login.toLowerCase())}?y=all`, {
+      signal,
+    });
+  } catch (error) {
+    if (signal?.aborted) throw error;
     throw new SnapshotError("network", "Could not reach the contributions service", 0);
   }
   if (!res.ok) {
@@ -237,14 +247,17 @@ async function fetchContributions(login: string): Promise<ContribResponse> {
  */
 const REPO_PAGE_CAP = 10;
 
-async function fetchOwnedRepos(handle: string): Promise<GithubRepo[]> {
+async function fetchOwnedRepos(handle: string, signal?: AbortSignal): Promise<GithubRepo[]> {
   const all: GithubRepo[] = [];
 
   for (let page = 1; page <= REPO_PAGE_CAP; page++) {
     let res: Response;
     try {
-      res = await fetch(`${API_ROOT}/users/${handle}/repos?per_page=100&sort=pushed&page=${page}`);
-    } catch {
+      res = await fetch(`${API_ROOT}/users/${handle}/repos?per_page=100&sort=pushed&page=${page}`, {
+        signal,
+      });
+    } catch (error) {
+      if (signal?.aborted) throw error;
       throw new SnapshotError("network", "Could not reach api.github.com", 0);
     }
     if (res.status === 404) {
@@ -271,20 +284,40 @@ async function fetchOwnedRepos(handle: string): Promise<GithubRepo[]> {
 }
 
 /**
- * Count of commits on a repository's default branch, read the way GitHub
- * itself paginates: one request, and the `rel="last"` page number is the
- * count. One request per repository keeps this affordable.
+ * The login's commit count across the top own repositories, attributed with
+ * `author:` in a single search request.
+ *
+ * The commits list endpoint supports `author=`, but GitHub does not attach a
+ * `rel="last"` page to author-filtered commit lists, so counting that way
+ * would mean walking every page. Commit search returns the exact
+ * `total_count` and accepts multiple `repo:` qualifiers, which keeps the
+ * lookup at one search request.
  */
-const COMMITS_BY_REPOSITORY_CAP = 15;
+const COMMITS_REPO_LIMIT = 15;
 
-async function fetchRepositoryCommits(nameWithOwner: string): Promise<number | null> {
+async function searchCommitCount(
+  login: string,
+  repos: GithubRepo[],
+  signal?: AbortSignal,
+): Promise<number> {
+  if (repos.length === 0) return 0;
+
+  const qualifiers = repos.map((r) => `repo:${r.full_name}`).join(" ");
+  const q = new URLSearchParams();
+  q.set("q", `${qualifiers} author:${login}`);
+  q.set("per_page", "1");
+
   try {
-    const res = await fetch(`${API_ROOT}/repos/${nameWithOwner}/commits?per_page=1`);
-    if (!res.ok) return null;
-    const last = /page=(\d+)>; rel="last"/.exec(res.headers.get("link") ?? "");
-    return last ? Number(last[1]) : null;
-  } catch {
-    return null;
+    const body = await ghJson<SearchCount>(`/search/commits?${q.toString()}`, signal);
+    return body.total_count ?? 0;
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    // A failed commit search leaves the commit total at zero rather than
+    // failing the profile; the other cards still have live data.
+    if (error instanceof SnapshotError && error.kind === "rate_limit") {
+      throw new SnapshotError("rate_limit", "GitHub request limit reached, try again later", 403);
+    }
+    return 0;
   }
 }
 
@@ -342,9 +375,9 @@ function selectYears(available: number[], now: Date): number[] {
   return years.sort((a, b) => a - b);
 }
 
-async function fetchAvatarDataUri(url: string): Promise<string | null> {
+async function fetchAvatarDataUri(url: string, signal?: AbortSignal): Promise<string | null> {
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, { signal });
     if (!res.ok) return null;
     const blob = await res.blob();
     return await new Promise<string | null>((resolve) => {
@@ -353,38 +386,43 @@ async function fetchAvatarDataUri(url: string): Promise<string | null> {
       reader.onerror = () => resolve(null);
       reader.readAsDataURL(blob);
     });
-  } catch {
+  } catch (error) {
+    if (signal?.aborted) throw error;
     return null;
   }
 }
 
-async function fetchLiveProfile(login: string): Promise<GithubSnapshot> {
+async function fetchLiveProfile(login: string, signal?: AbortSignal): Promise<GithubSnapshot> {
   const now = new Date();
   const handle = encodeURIComponent(login.toLowerCase());
 
   // 1. Profile and, if the login has more than a thousand own repositories,
   //    every one of the pages before the cap.
-  const user = await ghJson<GithubUser>(`/users/${handle}`);
-  const repos = await fetchOwnedRepos(handle);
+  const user = await ghJson<GithubUser>(`/users/${handle}`, signal);
+  const repos = await fetchOwnedRepos(handle, signal);
   const owned = repos
     .filter((r) => !r.fork)
     .sort((a, b) => b.stargazers_count - a.stargazers_count);
 
   // 2. Lifetime counters. Four searches; each failure zeroes just its counter.
   const [prsOpened, prsMerged, reviews, issues, events, gists, orgs] = await Promise.all([
-    searchCount("is:pr author", login),
-    searchCount("is:pr is:merged author", login),
-    searchCount("is:pr reviewed-by", login),
-    searchCount("is:issue author", login),
+    searchCount("is:pr author", login, signal),
+    searchCount("is:pr is:merged author", login, signal),
+    searchCount("is:pr reviewed-by", login, signal),
+    searchCount("is:issue author", login, signal),
     ghJson<Array<{ type?: string; repo: { name: string } | null }>>(
       `/users/${handle}/events/public?per_page=100`,
-    ).catch(() => []),
-    ghCount(`/users/${handle}/gists`),
-    ghCount(`/users/${handle}/orgs`),
+      signal,
+    ).catch((error) => {
+      if (signal?.aborted) throw error;
+      return [];
+    }),
+    ghCount(`/users/${handle}/gists`, signal),
+    ghCount(`/users/${handle}/orgs`, signal),
   ]);
 
   // 3. Contribution history, latest three years that have any data.
-  const contribs = await fetchContributions(login);
+  const contribs = await fetchContributions(login, signal);
 
   // Contributions to other people's repositories: keep the feed to genuine
   // contribution events, and cut out the user's own namespace the way
@@ -433,22 +471,17 @@ async function fetchLiveProfile(login: string): Promise<GithubSnapshot> {
         .map((d) => ({ date: d.date, count: d.count }))
     : [];
 
-  // 4. Commits are counted from the repositories that produce them, over the
-  //    top own repositories. Unauthenticated GitHub cannot answer
-  //    "commits by this author, lifetime, all repositories": the commit search
-  //    API requires a repo qualifier and its pages only match by name
-  //    substring, and calendars lump commits with PRs and issues. The
-  //    default-branch commit count of the top own repositories is a
-  //    commit-only figure that covers prior years, minus other authors'
-  //    merged commits on those repositories.
-  const commitRepos = owned.slice(0, COMMITS_BY_REPOSITORY_CAP);
-  const commitCounts = await Promise.all(
-    commitRepos.map((r) => fetchRepositoryCommits(r.full_name)),
-  );
-  const commits = commitCounts.reduce((sum: number, n) => sum + (n ?? 0), 0);
+  // 4. Commits are attributed to this login with `author:` across the top own
+  //    repositories, in one commit-search request. Unauthenticated GitHub
+  //    cannot answer "commits by this author, lifetime, all repositories":
+  //    commit search needs repo qualifiers, and calendars lump commits with
+  //    PRs and issues. This is an author-attributed lower bound because
+  //    repositories outside the top set are not visited.
+  const commitRepos = owned.slice(0, COMMITS_REPO_LIMIT);
+  const commits = await searchCommitCount(login, commitRepos, signal);
 
   // 5. Avatar as an embeddable data URI, best effort.
-  const avatarDataUri = user.avatar_url ? await fetchAvatarDataUri(user.avatar_url) : null;
+  const avatarDataUri = user.avatar_url ? await fetchAvatarDataUri(user.avatar_url, signal) : null;
 
   return {
     schema: 1,

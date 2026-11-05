@@ -19,7 +19,7 @@ A lean task list, not a log. Check before reporting work complete.
 - Studio no longer defaults to the dead `sigil.dev` host: without `VITE_RENDER_API_URL` it stays on demo data and the export panel says so
 - Removed the database: no Supabase client, migrations, env vars, or cron refresh; snapshots live in the per-colo Cloudflare Cache API with an in-isolate fallback for `workers.dev`, where the Cache API is a no-op
 - Studio docs, landing preview, and export snippets now derive the Worker origin from `VITE_RENDER_API_URL` (with an obvious placeholder when unset) instead of the unowned `sigil.dev` host; the unused `BRAND.baseUrl` was dropped
-- Studio fetches live GitHub profile data when a username is entered: deployed Worker when `VITE_RENDER_API_URL` is set, otherwise browser-side public API calls (unauthenticated), with not-found and rate-limit states shown instead of silently swapping to sample data; card previews now apply the same param schema as the API, so defaults like heatmap `weeks` are honored
+- Studio fetches live GitHub profile data when a username is entered: deployed Worker when `VITE_RENDER_API_URL` is set, otherwise browser-side public API calls (unauthenticated), with not-found and rate-limit states shown instead of silently swapping to sample data; lookups are debounced and superseded requests aborted, commit totals come from an author-filtered commit search over the top repos, and card previews apply the same param schema as the API, so defaults like heatmap `weeks` are honored
 
 ## Open
 
