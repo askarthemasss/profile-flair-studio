@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { CARD_RENDERERS } from "@sigil/core";
+import { CARD_PARAM_SCHEMAS, CARD_RENDERERS } from "@sigil/core";
 import type { CardPreviewProps } from "../../types.js";
 
 export const CardPreview: React.FC<CardPreviewProps> = ({ card, snapshot, theme }) => {
@@ -10,16 +10,28 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card, snapshot, theme 
     }
 
     try {
+      // Parse through the same schema as the render route, so numeric coercion
+      // and defaults (heatmap weeks, achievement cols, show toggles) land the
+      // card in a fully defaulted state instead of rendering `undefined`.
+      const parsed = CARD_PARAM_SCHEMAS[card.card].safeParse({
+        user: snapshot.login,
+        theme: theme.id,
+        animate: "1",
+        hide_border: "0",
+        ...card.params,
+      });
+      const params = (parsed.success ? parsed.data : undefined) ?? {
+        user: snapshot.login,
+        theme: theme.id,
+        animate: "1",
+        hide_border: "0",
+        ...card.params,
+      };
+
       return renderer({
         snapshot,
         theme,
-        params: {
-          user: snapshot.login,
-          theme: theme.id,
-          animate: "1",
-          hide_border: "0",
-          ...card.params,
-        },
+        params,
         now: new Date(),
       });
     } catch (err) {
