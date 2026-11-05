@@ -5,19 +5,26 @@
  * relies on GitHub's public unauthenticated endpoints plus a CORS-enabled
  * contributions service; everything serves `Access-Control-Allow-Origin: *`:
  *
- * - `GET api.github.com/users/:login` and `:login/repos` for the profile.
+ * - `GET api.github.com/users/:login/:login/repos` for repositories, walked
+ *   through the `Link: rel="next"` chain (up to 1,000 own repos) and sorted by
+ *   stars here, because the list endpoint cannot sort by stars.
  * - `GET github-contributions-api.jogruber.de/v4/:login?y=all` for the
- *   contribution calendar, which GitHub's GraphQL API would need a token for.
+ *   contribution calendar, which the GitHub GraphQL API would need a token for.
+ * - `GET api.github.com/repos/:repo/commits?per_page=1` over the top own
+ *   repositories: the `rel="last"` page number is the commit count, giving a
+ *   commit-only, lifetime-cost figure for totals.commits (the search API
+ *   cannot answer commits-by-author without a repository qualifier).
  * - `GET api.github.com/search/issues` for lifetime PR, merged-PR, issue, and
  *   review counts.
- * - `GET api.github.com/users/:login/events/public` for the set of repos
+ * - `GET api.github.com/users/:login/events/public` for the set of repositories
  *   contributed to (the events feed covers roughly the last 90 days).
  *
  * Unauthenticated budgets: 60 core requests/hour/IP and 10 searches/minute/IP.
- * A lookup costs about 6 core requests and 4 searches, and
- * `snapshot-service.ts` caches results, so normal browsing stays under it.
- * Counters GitHub cannot hand back unauthenticated (`discussionAnswers`,
- * the restricted-contribution split) stay at zero rather than being invented.
+ * A typical lookup costs 6 core requests plus one per paginated repository
+ * batch and one per top repository, and `snapshot-service.ts` caches results,
+ * so normal browsing stays under it. Counters GitHub cannot hand back
+ * unauthenticated (`discussionAnswers`, the restricted-contribution split)
+ * stay at zero rather than being invented.
  */
 import type { ContributionYear, GithubSnapshot, LanguageStat, RepoStat } from "@sigil/core";
 import { buildContributionYear, computeStreak, type RawContributionCalendar } from "@sigil/core";
@@ -220,7 +227,70 @@ async function fetchContributions(login: string): Promise<ContribResponse> {
   return (await res.json()) as ContribResponse;
 }
 
-/** Weighs each repo's primary language equally; shares land in the right order. */
+/**
+ * Follows the `Link: rel="next"` chain on `/users/:login/repos` until no more
+ * pages are handed out, so the top-by-stars selection sees every own repo
+ * rather than just the most recently pushed hundred. The cap bounds what a
+ * single lookup can spend (10 pages = up to 1,000 own repos) to respect the
+ * 60/hour unauthenticated budget; profiles beyond the cap only undercount
+ * their own numbers, they do not fail.
+ */
+const REPO_PAGE_CAP = 10;
+
+async function fetchOwnedRepos(handle: string): Promise<GithubRepo[]> {
+  const all: GithubRepo[] = [];
+
+  for (let page = 1; page <= REPO_PAGE_CAP; page++) {
+    let res: Response;
+    try {
+      res = await fetch(`${API_ROOT}/users/${handle}/repos?per_page=100&sort=pushed&page=${page}`);
+    } catch {
+      throw new SnapshotError("network", "Could not reach api.github.com", 0);
+    }
+    if (res.status === 404) {
+      throw new SnapshotError("not_found", "No GitHub user with that login", 404);
+    }
+    if (res.status === 403) {
+      if (res.headers.get("x-ratelimit-remaining") === "0") {
+        throw new SnapshotError("rate_limit", "GitHub request limit reached, try again later", 403);
+      }
+      throw new SnapshotError("unauthenticated", "GitHub refused the request (403)", 403);
+    }
+    if (!res.ok) {
+      throw new SnapshotError("upstream", `GitHub responded with ${res.status}`, res.status);
+    }
+
+    const body = (await res.json()) as GithubRepo[];
+    if (!Array.isArray(body) || body.length === 0) break;
+    all.push(...body);
+
+    if (!(res.headers.get("link") ?? "").includes('rel="next"')) break;
+  }
+
+  return all;
+}
+
+/**
+ * Count of commits on a repository's default branch, read the way GitHub
+ * itself paginates: one request, and the `rel="last"` page number is the
+ * count. One request per repository keeps this affordable.
+ */
+const COMMITS_BY_REPOSITORY_CAP = 15;
+
+async function fetchRepositoryCommits(nameWithOwner: string): Promise<number | null> {
+  try {
+    const res = await fetch(`${API_ROOT}/repos/${nameWithOwner}/commits?per_page=1`);
+    if (!res.ok) return null;
+    const last = /page=(\d+)>; rel="last"/.exec(res.headers.get("link") ?? "");
+    return last ? Number(last[1]) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Weighs each repo's primary language equally; shares land in the right order.
+ */
 function aggregateLanguages(repos: GithubRepo[]): LanguageStat[] {
   const counts = new Map<string, number>();
   for (const repo of repos) {
@@ -292,10 +362,10 @@ async function fetchLiveProfile(login: string): Promise<GithubSnapshot> {
   const now = new Date();
   const handle = encodeURIComponent(login.toLowerCase());
 
-  // 1. Profile and own repositories; a login with more than 100 of them still
-  //    gets a full top-30 by stars from this page.
+  // 1. Profile and, if the login has more than a thousand own repositories,
+  //    every one of the pages before the cap.
   const user = await ghJson<GithubUser>(`/users/${handle}`);
-  const repos = await ghJson<GithubRepo[]>(`/users/${handle}/repos?per_page=100&sort=pushed`);
+  const repos = await fetchOwnedRepos(handle);
   const owned = repos
     .filter((r) => !r.fork)
     .sort((a, b) => b.stargazers_count - a.stargazers_count);
@@ -306,7 +376,7 @@ async function fetchLiveProfile(login: string): Promise<GithubSnapshot> {
     searchCount("is:pr is:merged author", login),
     searchCount("is:pr reviewed-by", login),
     searchCount("is:issue author", login),
-    ghJson<Array<{ repo: { name: string } | null }>>(
+    ghJson<Array<{ type?: string; repo: { name: string } | null }>>(
       `/users/${handle}/events/public?per_page=100`,
     ).catch(() => []),
     ghCount(`/users/${handle}/gists`),
@@ -315,9 +385,30 @@ async function fetchLiveProfile(login: string): Promise<GithubSnapshot> {
 
   // 3. Contribution history, latest three years that have any data.
   const contribs = await fetchContributions(login);
+
+  // Contributions to other people's repositories: keep the feed to genuine
+  // contribution events, and cut out the user's own namespace the way
+  // GitHub's profile "Contributed to" count does.
+  const CONTRIBUTION_EVENT_TYPES = new Set([
+    "PushEvent",
+    "PullRequestEvent",
+    "PullRequestReviewEvent",
+    "IssueCommentEvent",
+    "IssuesEvent",
+    "CommitCommentEvent",
+    "GollumEvent",
+  ]);
+  const ownPrefix = `${login.toLowerCase()}/`;
   const publicEvents = Array.isArray(events) ? events : [];
   const contributedTo = new Set(
-    publicEvents.map((e) => e.repo?.name).filter((n): n is string => Boolean(n)),
+    publicEvents
+      .filter(
+        (e) =>
+          CONTRIBUTION_EVENT_TYPES.has(e.type ?? "") &&
+          e.repo?.name &&
+          !e.repo.name.toLowerCase().startsWith(ownPrefix),
+      )
+      .map((e) => e.repo!.name),
   ).size;
 
   const years = selectYears(
@@ -333,8 +424,8 @@ async function fetchLiveProfile(login: string): Promise<GithubSnapshot> {
     )
     .filter((y): y is ContributionYear => y !== null);
 
-  // The most recent year drives the headline counters; the current calendar
-  // year is skipped on the path where GitHub has nothing yet for it.
+  // The most recent year drives the streak window; the current calendar year
+  // is skipped on the path where GitHub has nothing yet for it.
   const latest = years[years.length - 1] ?? null;
   const latestDays = latest
     ? contribs.contributions
@@ -342,7 +433,21 @@ async function fetchLiveProfile(login: string): Promise<GithubSnapshot> {
         .map((d) => ({ date: d.date, count: d.count }))
     : [];
 
-  // 4. Avatar as an embeddable data URI, best effort.
+  // 4. Commits are counted from the repositories that produce them, over the
+  //    top own repositories. Unauthenticated GitHub cannot answer
+  //    "commits by this author, lifetime, all repositories": the commit search
+  //    API requires a repo qualifier and its pages only match by name
+  //    substring, and calendars lump commits with PRs and issues. The
+  //    default-branch commit count of the top own repositories is a
+  //    commit-only figure that covers prior years, minus other authors'
+  //    merged commits on those repositories.
+  const commitRepos = owned.slice(0, COMMITS_BY_REPOSITORY_CAP);
+  const commitCounts = await Promise.all(
+    commitRepos.map((r) => fetchRepositoryCommits(r.full_name)),
+  );
+  const commits = commitCounts.reduce((sum: number, n) => sum + (n ?? 0), 0);
+
+  // 5. Avatar as an embeddable data URI, best effort.
   const avatarDataUri = user.avatar_url ? await fetchAvatarDataUri(user.avatar_url) : null;
 
   return {
@@ -358,7 +463,7 @@ async function fetchLiveProfile(login: string): Promise<GithubSnapshot> {
     gists,
     organizations: orgs,
     totals: {
-      commits: latest?.total ?? 0,
+      commits,
       prsOpened,
       prsMerged,
       reviews,
