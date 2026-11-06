@@ -58,7 +58,7 @@ Check it with `curl https://sigil-render.<your-subdomain>.workers.dev/health`, t
 
 ### 4. Point the studio at it
 
-`apps/studio` reads `VITE_RENDER_API_URL` at build time. Set it in the Vercel project (Settings → Environment Variables) to the Worker URL above, then redeploy the studio. Without it the studio still shows real data by fetching GitHub directly from the browser (unauthenticated: about 5 core requests and 5 searches per lookup, debounced while typing and cached for 10 minutes, subject to the 60/hour and 10/minute anonymous limits — see `apps/studio/src/services/github-rest.ts`), but the export panel warns that the copied embed URLs are not live, since SVG rendering happens on the Worker.
+`apps/studio` reads `VITE_RENDER_API_URL` at build time. Set it in the Vercel project (Settings → Environment Variables) to the Worker URL above, then redeploy the studio. Without it the studio still shows real data by fetching GitHub directly from the browser (unauthenticated: about 7 core requests and 4 searches per lookup, debounced while typing and cached for 10 minutes, subject to the 60/hour and 10/minute anonymous limits — see `apps/studio/src/services/github-rest.ts`), but the export panel warns that the copied embed URLs are not live, since SVG rendering happens on the Worker.
 
 ### Custom domain
 
