@@ -15,7 +15,9 @@ export const ControlPanel: React.FC = () => {
   const [draftUser, setDraftUser] = useState(user);
   const loadProfile = useProfileLoader();
   const isFetching = useIsFetching({ queryKey: ["snapshot"] }) > 0;
-  const canLoad = draftUser.trim().length > 0 && !isFetching;
+  // A different handle must be able to supersede an in-flight lookup; the
+  // loader and useSnapshot cancel the old request when the store moves.
+  const canLoad = draftUser.trim().length > 0;
 
   // Keep the draft in sync when the store changes from outside this input
   // (Reset, preset load, or a restored persisted handle).
@@ -88,11 +90,11 @@ export const ControlPanel: React.FC = () => {
             ) : (
               <Search className="h-3.5 w-3.5" aria-hidden="true" />
             )}
-            <span>{isFetching ? "Loading" : "Load"}</span>
+            <span>Load</span>
           </button>
         </form>
         <p className="text-[10px] leading-relaxed text-ink-faint">
-          Fetches only when you press Load, so typing never spends GitHub API calls.
+          Fetches when you press Load; typing never spends GitHub API calls.
         </p>
       </div>
 

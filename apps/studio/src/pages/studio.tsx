@@ -62,6 +62,12 @@ export const StudioPage: React.FC = () => {
               <span>Live GitHub data for @{snapshot.login}</span>
             </div>
           )}
+          {!isLookingUp && !snapshot && !snapshotError && (
+            <div className="flex items-center gap-2 rounded-full border border-line bg-panel px-3 py-1 text-xs text-ink-muted">
+              <Users className="h-3.5 w-3.5" />
+              <span>Sample data · press Load for live stats</span>
+            </div>
+          )}
         </div>
 
         {snapshotError && (
