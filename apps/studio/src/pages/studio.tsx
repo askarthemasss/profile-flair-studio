@@ -8,14 +8,31 @@ import { useStudioStore } from "../store/studio-store.js";
 import { useSnapshot } from "../hooks/useSnapshot.js";
 import { resolveTheme } from "@sigil/core";
 import { getDemoSnapshot } from "../services/snapshot-service.js";
-import { Loader2 } from "lucide-react";
+import { SnapshotError } from "../services/github-rest.js";
+import { Loader2, TriangleAlert, Users } from "lucide-react";
 
 export const StudioPage: React.FC = () => {
   const { user, theme, overrides, cards } = useStudioStore();
-  const { data: snapshot, isLoading } = useSnapshot(user);
+  const {
+    data: snapshot,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    isDebouncing,
+    handle: snapshotHandle,
+  } = useSnapshot(user);
 
   const activeSnapshot = snapshot ?? getDemoSnapshot(user || "torvalds");
   const resolvedTheme = resolveTheme(theme, overrides);
+  const isLookingUp = isLoading || isFetching || isDebouncing;
+  const notFound = error instanceof SnapshotError && error.kind === "not_found";
+  const snapshotError =
+    !isDebouncing && isError && error instanceof SnapshotError
+      ? notFound
+        ? `No GitHub user named "${snapshotHandle}". Adjust the handle or check the spelling.`
+        : `${error.message}. Showing sample data meanwhile.`
+      : null;
 
   return (
     <AppShell>
@@ -30,13 +47,29 @@ export const StudioPage: React.FC = () => {
             </p>
           </div>
 
-          {isLoading && (
+          {isLookingUp && (
             <div className="flex items-center gap-2 rounded-full border border-line bg-panel px-3 py-1 text-xs text-ink-muted">
               <Loader2 className="h-3.5 w-3.5 animate-spin text-ember" />
-              <span>Fetching snapshot...</span>
+              <span>Fetching GitHub data for @{user.trim() || "..."}...</span>
+            </div>
+          )}
+          {!isLookingUp && snapshot && !snapshotError && (
+            <div className="flex items-center gap-2 rounded-full border border-verdigris/40 bg-verdigris/10 px-3 py-1 text-xs text-verdigris">
+              <Users className="h-3.5 w-3.5" />
+              <span>Live GitHub data for @{snapshot.login}</span>
             </div>
           )}
         </div>
+
+        {snapshotError && (
+          <div
+            role="alert"
+            className="mb-6 flex items-start gap-3 rounded-lg border border-gold/40 bg-gold/10 px-4 py-3"
+          >
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+            <p className="text-xs leading-relaxed text-ink-muted">{snapshotError}</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
           {/* Left Controls & Cards list */}

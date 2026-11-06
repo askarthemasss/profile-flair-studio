@@ -1,5 +1,6 @@
 import type { GithubSnapshot } from "@sigil/core";
 import { ENV } from "../lib/env.js";
+import { SnapshotError, fetchLiveProfile } from "./github-rest.js";
 import { buildDemoContributions } from "./demo-contributions.js";
 
 /**
@@ -98,18 +99,35 @@ export function getDemoSnapshot(login: string): GithubSnapshot {
   };
 }
 
-export async function fetchSnapshot(login: string): Promise<GithubSnapshot> {
-  if (!login || !ENV.HAS_RENDER_API) return getDemoSnapshot(login || "torvalds");
+const LIVE_TTL_MS = 1000 * 60 * 10;
+const liveCache = new Map<string, { snapshot: GithubSnapshot; expiresAt: number }>();
 
-  try {
-    const res = await fetch(`${ENV.RENDER_API_URL}/snapshot/${encodeURIComponent(login)}`, {
-      headers: { Accept: "application/json" },
-    });
-    if (!res.ok) {
-      return getDemoSnapshot(login);
+export async function fetchSnapshot(login: string, signal?: AbortSignal): Promise<GithubSnapshot> {
+  const handle = login.trim();
+  if (!handle) return getDemoSnapshot("torvalds");
+
+  // Deployed Worker first: the same user-facing answer, one request, and the
+  // token pool lives server-side.
+  if (ENV.HAS_RENDER_API) {
+    try {
+      const res = await fetch(`${ENV.RENDER_API_URL}/snapshot/${encodeURIComponent(handle)}`, {
+        headers: { Accept: "application/json" },
+        signal,
+      });
+      if (res.ok) return (await res.json()) as GithubSnapshot;
+    } catch (error) {
+      if (signal?.aborted) throw error;
+      // fall through to the browser-side fetch below
     }
-    return await res.json();
-  } catch {
-    return getDemoSnapshot(login);
   }
+
+  // Direct browser fetch of GitHub's public API. Results are cached briefly so
+  // typing or reloading does not burn the unauthenticated hourly budget.
+  const key = handle.toLowerCase();
+  const cached = liveCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return cached.snapshot;
+
+  const snapshot = await fetchLiveProfile(handle, signal);
+  liveCache.set(key, { snapshot, expiresAt: Date.now() + LIVE_TTL_MS });
+  return snapshot;
 }

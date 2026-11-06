@@ -3,8 +3,10 @@
  *
  * `VITE_RENDER_API_URL` points at the deployed render Worker (for example
  * `https://sigil-render.<account>.workers.dev`). It is intentionally not
- * defaulted to a public host: without it the studio runs on demo data instead
- * of waiting on a DNS lookup that will never resolve.
+ * defaulted to a public host: without it the studio leans on the browser-side
+ * GitHub fetch (`services/github-rest.ts`) instead of waiting on a DNS lookup
+ * that will never resolve. Prefer the Worker when set — one request, server
+ * token pool, 4 hour freshness.
  */
 const renderApiUrl = (import.meta.env.VITE_RENDER_API_URL ?? "").replace(/\/$/, "");
 
