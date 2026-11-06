@@ -22,13 +22,13 @@
  *   contributed to.
  *
  * Unauthenticated budgets: 60 core requests/hour/IP and 10 searches/minute/IP.
- * A typical lookup costs about 7 core requests (profile, one repository page,
- * up to three event pages, and gist/org counts) plus four searches (three
- * issue counts and one commit count). `useSnapshot` debounces typing and
- * aborts superseded lookups, and `snapshot-service.ts` caches results for 10
- * minutes, so normal browsing stays under the limits. Counters GitHub cannot
- * hand back unauthenticated (`discussionAnswers`, the restricted-contribution
- * split) stay at zero rather than being invented.
+ * A typical lookup costs about 6 core requests (profile, one repository page,
+ * up to three event pages, and the org count) plus four searches (three issue
+ * counts and one commit count). The studio only starts a lookup when the user
+ * presses Load, aborts superseded lookups, and `snapshot-service.ts` caches
+ * results for 10 minutes, so normal browsing stays under the limits. Counters
+ * GitHub cannot hand back unauthenticated (`discussionAnswers`, the
+ * restricted-contribution split) stay at zero rather than being invented.
  */
 import type { ContributionYear, GithubSnapshot, LanguageStat, RepoStat } from "@sigil/core";
 import { buildContributionYear, computeStreak, type RawContributionCalendar } from "@sigil/core";
@@ -132,6 +132,7 @@ interface GithubUser {
   followers: number;
   following: number;
   public_repos: number;
+  public_gists: number;
 }
 
 interface GithubRepo {
@@ -261,42 +262,73 @@ async function fetchContributions(login: string, signal?: AbortSignal): Promise<
  * single lookup can spend (10 pages = up to 1,000 own repos) to respect the
  * 60/hour unauthenticated budget; profiles beyond the cap only undercount
  * their own numbers, they do not fail.
+ *
+ * The first page reveals the last page number, so the rest are fetched
+ * together instead of one round-trip at a time. Page order does not matter
+ * because the caller sorts the combined list by stars.
  */
 const REPO_PAGE_CAP = 10;
 
-async function fetchOwnedRepos(handle: string, signal?: AbortSignal): Promise<GithubRepo[]> {
-  const all: GithubRepo[] = [];
+interface RepoPage {
+  repos: GithubRepo[];
+  hasNext: boolean;
+  lastPage: number | null;
+}
 
-  for (let page = 1; page <= REPO_PAGE_CAP; page++) {
-    let res: Response;
-    try {
-      res = await fetch(`${API_ROOT}/users/${handle}/repos?per_page=100&sort=pushed&page=${page}`, {
-        signal,
-      });
-    } catch (error) {
-      if (signal?.aborted) throw error;
-      throw new SnapshotError("network", "Could not reach api.github.com", 0);
-    }
-    if (res.status === 404) {
-      throw new SnapshotError("not_found", "No GitHub user with that login", 404);
-    }
-    if (res.status === 403) {
-      if (res.headers.get("x-ratelimit-remaining") === "0") {
-        throw new SnapshotError("rate_limit", "GitHub request limit reached, try again later", 403);
-      }
-      throw new SnapshotError("unauthenticated", "GitHub refused the request (403)", 403);
-    }
-    if (!res.ok) {
-      throw new SnapshotError("upstream", `GitHub responded with ${res.status}`, res.status);
-    }
+function lastPageFromLink(link: string | null): number | null {
+  const match = /[?&]page=(\d+)>; rel="last"/.exec(link ?? "");
+  return match ? Number(match[1]) : null;
+}
 
-    const body = (await res.json()) as GithubRepo[];
-    if (!Array.isArray(body) || body.length === 0) break;
-    all.push(...body);
-
-    if (!(res.headers.get("link") ?? "").includes('rel="next"')) break;
+async function fetchRepoPage(
+  handle: string,
+  page: number,
+  signal?: AbortSignal,
+): Promise<RepoPage> {
+  let res: Response;
+  try {
+    res = await fetch(`${API_ROOT}/users/${handle}/repos?per_page=100&sort=pushed&page=${page}`, {
+      signal,
+    });
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    throw new SnapshotError("network", "Could not reach api.github.com", 0);
+  }
+  if (res.status === 404) {
+    throw new SnapshotError("not_found", "No GitHub user with that login", 404);
+  }
+  if (res.status === 403) {
+    if (res.headers.get("x-ratelimit-remaining") === "0") {
+      throw new SnapshotError("rate_limit", "GitHub request limit reached, try again later", 403);
+    }
+    throw new SnapshotError("unauthenticated", "GitHub refused the request (403)", 403);
+  }
+  if (!res.ok) {
+    throw new SnapshotError("upstream", `GitHub responded with ${res.status}`, res.status);
   }
 
+  const body = (await res.json()) as unknown;
+  const repos = Array.isArray(body) ? (body as GithubRepo[]) : [];
+  const link = res.headers.get("link");
+  return {
+    repos,
+    hasNext: repos.length > 0 && (link ?? "").includes('rel="next"'),
+    lastPage: lastPageFromLink(link),
+  };
+}
+
+async function fetchOwnedRepos(handle: string, signal?: AbortSignal): Promise<GithubRepo[]> {
+  const first = await fetchRepoPage(handle, 1, signal);
+  const all = [...first.repos];
+  if (!first.hasNext) return all;
+
+  const lastPage = Math.min(first.lastPage ?? REPO_PAGE_CAP, REPO_PAGE_CAP);
+  if (lastPage <= 1) return all;
+
+  const remaining = await Promise.all(
+    Array.from({ length: lastPage - 1 }, (_, index) => fetchRepoPage(handle, index + 2, signal)),
+  );
+  for (const page of remaining) all.push(...page.repos);
   return all;
 }
 
@@ -427,6 +459,22 @@ function selectYears(available: number[], now: Date): number[] {
   return years.sort((a, b) => a - b);
 }
 
+/**
+ * The banner draws the avatar at 56px. Requesting 96px covers 2x displays and
+ * keeps the base64 data URI small enough to stay out of the SVG size budget.
+ */
+const AVATAR_SIZE_PX = 96;
+
+function avatarAtSize(url: string, size: number): string {
+  try {
+    const parsed = new URL(url);
+    parsed.searchParams.set("s", String(size));
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
 async function fetchAvatarDataUri(url: string, signal?: AbortSignal): Promise<string | null> {
   try {
     const res = await fetch(url, { signal });
@@ -448,27 +496,36 @@ async function fetchLiveProfile(login: string, signal?: AbortSignal): Promise<Gi
   const now = new Date();
   const handle = encodeURIComponent(login.toLowerCase());
 
-  // 1. Profile and, if the login has more than a thousand own repositories,
-  //    every one of the pages before the cap.
+  // Validate the login first so a typo costs one request instead of firing the
+  // whole fan-out against a user that does not exist.
   const user = await ghJson<GithubUser>(`/users/${handle}`, signal);
-  const repos = await fetchOwnedRepos(handle, signal);
+
+  // Everything below is independent: repositories feed the commit search and
+  // stats, while the counters, events, and contribution calendar feed their own
+  // cards. Run them together so the browser's connection pool hides most of
+  // the latency.
+  const [repos, prsOpened, prsMerged, issues, events, orgs, contribs, avatarDataUri] =
+    await Promise.all([
+      fetchOwnedRepos(handle, signal),
+      searchCount("is:pr author", login, signal),
+      searchCount("is:pr is:merged author", login, signal),
+      searchCount("is:issue author", login, signal),
+      fetchPublicEvents(handle, signal),
+      ghListCount(`/users/${handle}/orgs`, signal),
+      // The calendar comes from a third-party service; an outage there should
+      // not hide otherwise-live GitHub data. Degrade to empty years/streak.
+      fetchContributions(login, signal).catch((error) => {
+        if (signal?.aborted) throw error;
+        return { total: {}, contributions: [] } satisfies ContribResponse;
+      }),
+      user.avatar_url
+        ? fetchAvatarDataUri(avatarAtSize(user.avatar_url, AVATAR_SIZE_PX), signal)
+        : Promise.resolve(null),
+    ]);
+
   const owned = repos
     .filter((r) => !r.fork)
     .sort((a, b) => b.stargazers_count - a.stargazers_count);
-
-  // 2. Lifetime counters. Three searches, plus the public events feed for
-  //    review submissions and contributed-to repositories.
-  const [prsOpened, prsMerged, issues, events, gists, orgs] = await Promise.all([
-    searchCount("is:pr author", login, signal),
-    searchCount("is:pr is:merged author", login, signal),
-    searchCount("is:issue author", login, signal),
-    fetchPublicEvents(handle, signal),
-    ghListCount(`/users/${handle}/gists`, signal),
-    ghListCount(`/users/${handle}/orgs`, signal),
-  ]);
-
-  // 3. Contribution history, latest three years that have any data.
-  const contribs = await fetchContributions(login, signal);
 
   // Contributions to other people's repositories: keep the feed to genuine
   // contribution events, and cut out the user's own namespace the way
@@ -528,17 +585,14 @@ async function fetchLiveProfile(login: string, signal?: AbortSignal): Promise<Gi
     .map((d) => ({ date: d.date, count: d.count }))
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  // 4. Commits are attributed to this login with `author:` across the top own
-  //    repositories, in one commit-search request. Unauthenticated GitHub
-  //    cannot answer "commits by this author, lifetime, all repositories":
-  //    commit search needs repo qualifiers, and calendars lump commits with
-  //    PRs and issues. This is an author-attributed lower bound because
-  //    repositories outside the top set are not visited.
+  // Commits are attributed to this login with `author:` across the top own
+  // repositories, in one commit-search request. Unauthenticated GitHub
+  // cannot answer "commits by this author, lifetime, all repositories":
+  // commit search needs repo qualifiers, and calendars lump commits with
+  // PRs and issues. This is an author-attributed lower bound because
+  // repositories outside the top set are not visited.
   const commitRepos = owned.slice(0, COMMITS_REPO_LIMIT);
   const commits = await searchCommitCount(login, commitRepos, signal);
-
-  // 5. Avatar as an embeddable data URI, best effort.
-  const avatarDataUri = user.avatar_url ? await fetchAvatarDataUri(user.avatar_url, signal) : null;
 
   return {
     schema: 1,
@@ -550,7 +604,7 @@ async function fetchLiveProfile(login: string, signal?: AbortSignal): Promise<Gi
     avatarDataUri,
     followers: user.followers,
     following: user.following,
-    gists,
+    gists: user.public_gists ?? 0,
     organizations: orgs,
     totals: {
       commits,

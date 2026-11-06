@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { AppShell } from "../components/layout/AppShell.js";
 import { ControlPanel } from "../components/studio/ControlPanel.js";
 import { PackList } from "../components/studio/PackList.js";
@@ -19,19 +19,22 @@ export const StudioPage: React.FC = () => {
     isFetching,
     isError,
     error,
-    isDebouncing,
     handle: snapshotHandle,
   } = useSnapshot(user);
 
-  const activeSnapshot = snapshot ?? getDemoSnapshot(user || "torvalds");
-  const resolvedTheme = resolveTheme(theme, overrides);
-  const isLookingUp = isLoading || isFetching || isDebouncing;
+  const demoSnapshot = useMemo(() => getDemoSnapshot(user || "torvalds"), [user]);
+  const activeSnapshot = snapshot ?? demoSnapshot;
+  const resolvedTheme = useMemo(() => resolveTheme(theme, overrides), [theme, overrides]);
+  const isLookingUp = isLoading || isFetching;
   const notFound = error instanceof SnapshotError && error.kind === "not_found";
+  const fallbackNote = snapshot
+    ? "Showing the last loaded data."
+    : "Showing sample data meanwhile.";
   const snapshotError =
-    !isDebouncing && isError && error instanceof SnapshotError
+    isError && error instanceof SnapshotError
       ? notFound
         ? `No GitHub user named "${snapshotHandle}". Adjust the handle or check the spelling.`
-        : `${error.message}. Showing sample data meanwhile.`
+        : `${error.message}. ${fallbackNote}`
       : null;
 
   return (
@@ -57,6 +60,12 @@ export const StudioPage: React.FC = () => {
             <div className="flex items-center gap-2 rounded-full border border-verdigris/40 bg-verdigris/10 px-3 py-1 text-xs text-verdigris">
               <Users className="h-3.5 w-3.5" />
               <span>Live GitHub data for @{snapshot.login}</span>
+            </div>
+          )}
+          {!isLookingUp && !snapshot && !snapshotError && (
+            <div className="flex items-center gap-2 rounded-full border border-line bg-panel px-3 py-1 text-xs text-ink-muted">
+              <Users className="h-3.5 w-3.5" />
+              <span>Sample data · press Load for live stats</span>
             </div>
           )}
         </div>

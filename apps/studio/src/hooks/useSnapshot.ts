@@ -1,37 +1,44 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchSnapshot } from "../services/snapshot-service.js";
-import { useDebouncedValue } from "./useDebouncedValue.js";
+import type { GithubSnapshot } from "@sigil/core";
 
-/** Wait for typing to settle before spending the anonymous GitHub budget. */
-const USERNAME_DEBOUNCE_MS = 500;
+const SNAPSHOT_STALE_MS = 1000 * 60 * 10;
+
+/** The one place that decides how a profile lookup is keyed. */
+export function snapshotQueryKey(username: string) {
+  return ["snapshot", username.trim().toLowerCase()] as const;
+}
 
 export function useSnapshot(username: string) {
   const handle = username.trim().toLowerCase();
-  const debouncedHandle = useDebouncedValue(handle, USERNAME_DEBOUNCE_MS);
   const queryClient = useQueryClient();
+  const previousHandle = useRef(handle);
 
-  // When the debounced handle moves on, cancel the lookup for the previous
-  // one. Its abort signal stops the in-flight request chain, so obsolete
-  // lookups cannot race the final one for the hourly budget.
+  // Moving to another handle supersedes the old lookup. Its abort signal stops
+  // the request chain so an abandoned profile cannot race the new one for the
+  // hourly GitHub budget.
   useEffect(() => {
-    return () => {
-      void queryClient.cancelQueries({ queryKey: ["snapshot", debouncedHandle] });
-    };
-  }, [queryClient, debouncedHandle]);
+    if (previousHandle.current === handle) return;
+    const superseded = previousHandle.current;
+    previousHandle.current = handle;
+    void queryClient.cancelQueries({ queryKey: snapshotQueryKey(superseded) });
+  }, [handle, queryClient]);
 
-  const query = useQuery({
-    queryKey: ["snapshot", debouncedHandle],
-    queryFn: ({ signal }) => fetchSnapshot(debouncedHandle, signal),
-    enabled: Boolean(debouncedHandle),
-    staleTime: 1000 * 60 * 10, // 10 minutes
+  const query = useQuery<GithubSnapshot>({
+    queryKey: snapshotQueryKey(handle),
+    // Pressing Load is the only fetch trigger: `useProfileLoader` seeds this
+    // key with `fetchQuery`. The observer still subscribes to cache updates,
+    // so live data appears as soon as that explicit fetch resolves. Keeping
+    // `enabled` false also stops mount, focus, and reset from spending the
+    // anonymous GitHub budget behind the user's back.
+    enabled: false,
+    staleTime: SNAPSHOT_STALE_MS,
     retry: false, // surfaced immediately: not-found and rate-limit states
   });
 
   return {
     ...query,
-    /** The input has moved past the handle this result belongs to. */
-    isDebouncing: handle !== debouncedHandle,
-    handle: debouncedHandle,
+    /** The normalized handle this result belongs to. */
+    handle,
   };
 }

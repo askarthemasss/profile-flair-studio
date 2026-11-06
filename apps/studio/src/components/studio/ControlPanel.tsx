@@ -1,31 +1,52 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useIsFetching } from "@tanstack/react-query";
 import { BUILTIN_THEMES, type Theme } from "@sigil/core";
 import { useStudioStore } from "../../store/studio-store.js";
-import { User, Palette, Sliders, RotateCcw } from "lucide-react";
+import { useProfileLoader } from "../../hooks/useProfileLoader.js";
+import { User, Palette, Sliders, RotateCcw, Search, Loader2 } from "lucide-react";
 
 export const ControlPanel: React.FC = () => {
-  const {
-    user,
-    theme,
-    overrides,
-    cards,
-    selectedUid,
-    setUser,
-    setTheme,
-    setOverride,
-    updateParams,
-    reset,
-  } = useStudioStore();
+  const { user, theme, overrides, cards, selectedUid, setTheme, setOverride, updateParams, reset } =
+    useStudioStore();
 
   const selectedCard = cards.find((c) => c.uid === selectedUid);
   const themeList = Object.values(BUILTIN_THEMES) as Theme[];
+
+  const [draftUser, setDraftUser] = useState(user);
+  const loadProfile = useProfileLoader();
+  const isFetching = useIsFetching({ queryKey: ["snapshot"] }) > 0;
+  // A different handle must be able to supersede an in-flight lookup; the
+  // loader and useSnapshot cancel the old request when the store moves.
+  const canLoad = draftUser.trim().length > 0;
+
+  // Keep the draft in sync when the store changes from outside this input
+  // (Reset, preset load, or a restored persisted handle).
+  useEffect(() => {
+    setDraftUser(user);
+  }, [user]);
+
+  const handleLoad = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!canLoad) return;
+
+    const handle = draftUser.trim();
+    setDraftUser(handle);
+    loadProfile(handle);
+  };
+
+  const handleReset = () => {
+    reset();
+    // Reset also restores the default handle; if it was already the store
+    // value, the sync effect above would not fire, so update the draft here.
+    setDraftUser(useStudioStore.getState().user);
+  };
 
   return (
     <div className="flex flex-col gap-5 rounded-lg border border-line bg-panel p-4 shadow-card">
       <div className="flex items-center justify-between border-b border-line pb-3">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-ink">Pack Settings</h2>
         <button
-          onClick={reset}
+          onClick={handleReset}
           className="flex items-center gap-1 text-[11px] text-ink-muted hover:text-ember transition-colors"
           title="Reset to default pack"
         >
@@ -36,19 +57,45 @@ export const ControlPanel: React.FC = () => {
 
       {/* GitHub Username */}
       <div className="flex flex-col gap-1.5">
-        <label className="flex items-center gap-1.5 text-xs font-medium text-ink-muted">
+        <label
+          htmlFor="github-username"
+          className="flex items-center gap-1.5 text-xs font-medium text-ink-muted"
+        >
           <User className="h-3.5 w-3.5" />
           <span>GitHub Username</span>
         </label>
-        <div className="relative">
+        <form onSubmit={handleLoad} className="flex items-stretch gap-1.5">
           <input
+            id="github-username"
             type="text"
-            value={user}
-            onChange={(e) => setUser(e.target.value.trim())}
+            value={draftUser}
+            onChange={(e) => setDraftUser(e.target.value)}
             placeholder="e.g. torvalds"
-            className="w-full rounded border border-line bg-raised px-3 py-1.5 font-mono text-xs text-ink transition-colors placeholder:text-ink-faint focus:border-ember focus:outline-none"
+            autoComplete="off"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            maxLength={39}
+            className="min-w-0 flex-1 rounded border border-line bg-raised px-3 py-1.5 font-mono text-xs text-ink transition-colors placeholder:text-ink-faint focus:border-ember focus:outline-none"
           />
-        </div>
+          <button
+            type="submit"
+            disabled={!canLoad}
+            aria-busy={isFetching}
+            title={isFetching ? "Fetching GitHub data..." : "Fetch this profile"}
+            className="flex shrink-0 items-center gap-1.5 rounded bg-ember px-3 py-1.5 text-xs font-medium text-obsidian shadow-glow transition-colors hover:bg-ember-glow disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+          >
+            {isFetching ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+            ) : (
+              <Search className="h-3.5 w-3.5" aria-hidden="true" />
+            )}
+            <span>Load</span>
+          </button>
+        </form>
+        <p className="text-[10px] leading-relaxed text-ink-faint">
+          Fetches when you press Load; typing never spends GitHub API calls.
+        </p>
       </div>
 
       {/* Theme selection */}
