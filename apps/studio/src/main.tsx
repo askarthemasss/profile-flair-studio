@@ -11,6 +11,9 @@ const queryClient = new QueryClient({
     queries: {
       // Stale data is served instantly; refresh in background.
       staleTime: 1000 * 60 * 2, // 2 min
+      // Profile lookups are explicit and the anonymous GitHub budget is small;
+      // tab focus should not silently spend it.
+      refetchOnWindowFocus: false,
       retry: 2,
     },
   },
