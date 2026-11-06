@@ -15,19 +15,20 @@
  *   `totals.commits` (the commits list endpoint cannot expose a last page when
  *   filtered by author, and an unfiltered repository history would include
  *   collaborators' commits).
- * - `GET api.github.com/search/issues` for lifetime PR, merged-PR, issue, and
- *   review counts.
- * - `GET api.github.com/users/:login/events/public` for the set of repositories
- *   contributed to (the events feed covers roughly the last 90 days).
+ * - `GET api.github.com/search/issues` for lifetime PR, merged-PR, and issue
+ *   counts.
+ * - `GET api.github.com/users/:login/events/public` (up to 300 events, about
+ *   the last 90 days) for review submissions and the set of repositories
+ *   contributed to.
  *
  * Unauthenticated budgets: 60 core requests/hour/IP and 10 searches/minute/IP.
- * A typical lookup costs about 5 core requests (profile, events, gist/org
- * counts, and one repository page) plus five searches (four issue counts and
- * one commit count). `useSnapshot` debounces typing and aborts superseded
- * lookups, and `snapshot-service.ts` caches results for 10 minutes, so normal
- * browsing stays under the limits. Counters GitHub cannot hand back
- * unauthenticated (`discussionAnswers`, the restricted-contribution split)
- * stay at zero rather than being invented.
+ * A typical lookup costs about 7 core requests (profile, one repository page,
+ * up to three event pages, and gist/org counts) plus four searches (three
+ * issue counts and one commit count). `useSnapshot` debounces typing and
+ * aborts superseded lookups, and `snapshot-service.ts` caches results for 10
+ * minutes, so normal browsing stays under the limits. Counters GitHub cannot
+ * hand back unauthenticated (`discussionAnswers`, the restricted-contribution
+ * split) stay at zero rather than being invented.
  */
 import type { ContributionYear, GithubSnapshot, LanguageStat, RepoStat } from "@sigil/core";
 import { buildContributionYear, computeStreak, type RawContributionCalendar } from "@sigil/core";
@@ -156,6 +157,11 @@ interface ContribDay {
 interface ContribResponse {
   total: Record<string, number>;
   contributions: ContribDay[];
+}
+
+interface PublicEvent {
+  type?: string;
+  repo: { name: string } | null;
 }
 
 async function ghJson<T>(path: string, signal?: AbortSignal): Promise<T> {
@@ -295,6 +301,41 @@ async function fetchOwnedRepos(handle: string, signal?: AbortSignal): Promise<Gi
 }
 
 /**
+ * The public events feed is capped by GitHub at 300 events covering roughly
+ * the last 90 days, so three pages is the whole available window. It is the
+ * only unauthenticated source for review submissions and contributed-to
+ * repositories.
+ */
+const EVENTS_PAGE_CAP = 3;
+
+async function fetchPublicEvents(handle: string, signal?: AbortSignal): Promise<PublicEvent[]> {
+  const all: PublicEvent[] = [];
+
+  for (let page = 1; page <= EVENTS_PAGE_CAP; page++) {
+    try {
+      const res = await fetch(
+        `${API_ROOT}/users/${handle}/events/public?per_page=100&page=${page}`,
+        {
+          headers: { Accept: "application/vnd.github+json" },
+          signal,
+        },
+      );
+      if (!res.ok) break;
+
+      const body = (await res.json()) as PublicEvent[];
+      if (!Array.isArray(body) || body.length === 0) break;
+      all.push(...body);
+      if (body.length < 100) break;
+    } catch (error) {
+      if (signal?.aborted) throw error;
+      break;
+    }
+  }
+
+  return all;
+}
+
+/**
  * The login's commit count across the top own repositories, attributed with
  * `author:` in a single search request.
  *
@@ -415,19 +456,13 @@ async function fetchLiveProfile(login: string, signal?: AbortSignal): Promise<Gi
     .filter((r) => !r.fork)
     .sort((a, b) => b.stargazers_count - a.stargazers_count);
 
-  // 2. Lifetime counters. Four searches; each failure zeroes just its counter.
-  const [prsOpened, prsMerged, reviews, issues, events, gists, orgs] = await Promise.all([
+  // 2. Lifetime counters. Three searches, plus the public events feed for
+  //    review submissions and contributed-to repositories.
+  const [prsOpened, prsMerged, issues, events, gists, orgs] = await Promise.all([
     searchCount("is:pr author", login, signal),
     searchCount("is:pr is:merged author", login, signal),
-    searchCount("is:pr reviewed-by", login, signal),
     searchCount("is:issue author", login, signal),
-    ghJson<Array<{ type?: string; repo: { name: string } | null }>>(
-      `/users/${handle}/events/public?per_page=100`,
-      signal,
-    ).catch((error) => {
-      if (signal?.aborted) throw error;
-      return [];
-    }),
+    fetchPublicEvents(handle, signal),
     ghListCount(`/users/${handle}/gists`, signal),
     ghListCount(`/users/${handle}/orgs`, signal),
   ]);
@@ -447,8 +482,14 @@ async function fetchLiveProfile(login: string, signal?: AbortSignal): Promise<Gi
     "CommitCommentEvent",
     "GollumEvent",
   ]);
+  // Review submissions, not PRs that were reviewed: `reviewed-by:` matches a
+  // PR once no matter how many reviews it received. The events feed covers
+  // roughly 90 days and is capped at 300 events, so this is a recent lower
+  // bound; the Worker path uses GraphQL's lifetime total.
+  const reviews = events.filter((e) => e.type === "PullRequestReviewEvent").length;
+
   const ownPrefix = `${login.toLowerCase()}/`;
-  const publicEvents = Array.isArray(events) ? events : [];
+  const publicEvents = events;
   const contributedTo = new Set(
     publicEvents
       .filter(
