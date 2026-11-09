@@ -17,7 +17,7 @@
     "check:svg": "tsx scripts/check-svg-size.ts"
   },
   "devDependencies": {
-    "prettier": "^3.7.3",
-    "tsx": "^4.20.0"
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15"
   }
 }
