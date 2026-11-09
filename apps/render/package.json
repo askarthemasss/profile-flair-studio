@@ -11,12 +11,12 @@
   },
   "dependencies": {
     "@sigil/core": "workspace:*",
-    "hono": "^4.7.11",
-    "zod": "^4.6.6"
+    "hono": "^4.13.17",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250620.0",
-    "typescript": "^5.8.3",
-    "wrangler": "^4.24.3"
+    "@cloudflare/workers-types": "^4.20260702.1",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.158.0"
   }
 }
