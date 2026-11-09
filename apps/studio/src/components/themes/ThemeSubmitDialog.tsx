@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ThemeSchema, type Theme } from "@sigil/core";
@@ -45,6 +45,23 @@ export const ThemeSubmitDialog: React.FC<Props> = ({ open, onClose }) => {
     },
   });
 
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, onClose]);
+
   if (!open) return null;
 
   const onSubmit = async (data: Theme) => {
@@ -65,18 +82,31 @@ export const ThemeSubmitDialog: React.FC<Props> = ({ open, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-lg rounded-xl border border-line bg-panel p-6 shadow-elevated">
-        <div className="flex items-center justify-between border-b border-line pb-3">
+    <div
+      className="fixed inset-0 z-[2000] flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-[6px]"
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="theme-submit-title"
+        className="notebook-card relative max-h-[90vh] w-full max-w-lg overflow-y-auto bg-warm-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3 border-b border-line pb-3">
           <div className="flex items-center gap-2">
-            <PlusCircle className="h-5 w-5 text-ember" />
-            <h2 className="font-display text-base font-semibold text-ink">
+            <PlusCircle className="h-5 w-5 text-terracotta" />
+            <h2
+              id="theme-submit-title"
+              className="font-display text-2xl font-light tracking-[0.03em] text-charcoal"
+            >
               Submit Community Theme
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="rounded p-1 text-ink-muted hover:text-ink transition-colors"
+            className="notebook-btn notebook-btn--ghost notebook-btn--icon shrink-0"
+            aria-label="Close dialog"
           >
             <X className="h-4 w-4" />
           </button>
@@ -89,52 +119,40 @@ export const ThemeSubmitDialog: React.FC<Props> = ({ open, onClose }) => {
             ) : (
               <AlertCircle className="h-10 w-10 text-crimson" />
             )}
-            <p className="mt-3 text-sm font-medium text-ink">{result.message}</p>
+            <p className="mt-3 font-display text-lg text-charcoal">{result.message}</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="mt-4 flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-medium text-ink-muted">Theme ID (kebab)</label>
-                <input
-                  {...register("id")}
-                  className="mt-1 w-full rounded border border-line bg-raised px-2.5 py-1.5 font-mono text-xs text-ink"
-                />
-                {errors.id && <span className="text-[10px] text-crimson">{errors.id.message}</span>}
+                <label className="notebook-label">Theme ID (kebab)</label>
+                <input {...register("id")} className="notebook-field mt-1 font-mono text-xs" />
+                {errors.id ? (
+                  <span className="text-[10px] text-crimson">{errors.id.message}</span>
+                ) : null}
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-ink-muted">Display Name</label>
-                <input
-                  {...register("name")}
-                  className="mt-1 w-full rounded border border-line bg-raised px-2.5 py-1.5 text-xs text-ink"
-                />
-                {errors.name && (
+                <label className="notebook-label">Display Name</label>
+                <input {...register("name")} className="notebook-field mt-1 text-xs" />
+                {errors.name ? (
                   <span className="text-[10px] text-crimson">{errors.name.message}</span>
-                )}
+                ) : null}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-medium text-ink-muted">
-                  Author (GitHub login)
-                </label>
-                <input
-                  {...register("author")}
-                  className="mt-1 w-full rounded border border-line bg-raised px-2.5 py-1.5 font-mono text-xs text-ink"
-                />
-                {errors.author && (
+                <label className="notebook-label">Author (GitHub login)</label>
+                <input {...register("author")} className="notebook-field mt-1 font-mono text-xs" />
+                {errors.author ? (
                   <span className="text-[10px] text-crimson">{errors.author.message}</span>
-                )}
+                ) : null}
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-ink-muted">Mode</label>
-                <select
-                  {...register("mode")}
-                  className="mt-1 w-full rounded border border-line bg-raised px-2.5 py-1.5 text-xs text-ink"
-                >
+                <label className="notebook-label">Mode</label>
+                <select {...register("mode")} className="notebook-field mt-1 text-xs">
                   <option value="dark">Dark</option>
                   <option value="light">Light</option>
                 </select>
@@ -143,24 +161,24 @@ export const ThemeSubmitDialog: React.FC<Props> = ({ open, onClose }) => {
 
             <div className="grid grid-cols-3 gap-2 border-t border-line pt-3">
               <div>
-                <label className="text-[10px] text-ink-faint">Background</label>
+                <label className="text-[10px] text-warm-grey">Background</label>
                 <input
                   {...register("colors.bg")}
-                  className="mt-1 w-full rounded border border-line bg-raised px-2 py-1 font-mono text-[11px] text-ink"
+                  className="notebook-field mt-1 px-2 py-1 font-mono text-[11px]"
                 />
               </div>
               <div>
-                <label className="text-[10px] text-ink-faint">Accent</label>
+                <label className="text-[10px] text-warm-grey">Accent</label>
                 <input
                   {...register("colors.accent")}
-                  className="mt-1 w-full rounded border border-line bg-raised px-2 py-1 font-mono text-[11px] text-ink"
+                  className="notebook-field mt-1 px-2 py-1 font-mono text-[11px]"
                 />
               </div>
               <div>
-                <label className="text-[10px] text-ink-faint">Text</label>
+                <label className="text-[10px] text-warm-grey">Text</label>
                 <input
                   {...register("colors.text")}
-                  className="mt-1 w-full rounded border border-line bg-raised px-2 py-1 font-mono text-[11px] text-ink"
+                  className="notebook-field mt-1 px-2 py-1 font-mono text-[11px]"
                 />
               </div>
             </div>
@@ -169,14 +187,14 @@ export const ThemeSubmitDialog: React.FC<Props> = ({ open, onClose }) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-md px-3 py-1.5 text-xs text-ink-muted hover:text-ink"
+                className="notebook-btn notebook-btn--ghost notebook-btn--sm"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-md bg-ember px-4 py-1.5 text-xs font-medium text-obsidian shadow-glow transition-colors hover:bg-ember-glow"
+                className="notebook-btn notebook-btn--primary notebook-btn--sm"
               >
                 {isSubmitting ? "Validating..." : "Submit Theme"}
               </button>
