@@ -8,11 +8,20 @@
     <script>
       // Theme detection must run before the first stylesheet paints.
       (function () {
+        var stored = null;
         try {
-          var stored = localStorage.getItem("color-scheme");
-          var prefersDark =
+          stored = localStorage.getItem("color-scheme");
+        } catch (e) {}
+
+        var prefersDark = false;
+        try {
+          prefersDark =
             window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-          var theme = stored === "dark" || (!stored && prefersDark) ? "dark" : "light";
+        } catch (e) {}
+
+        var theme = stored === "dark" || (stored !== "light" && prefersDark) ? "dark" : "light";
+
+        try {
           document.documentElement.setAttribute("data-theme", theme);
           var scheme = document.querySelector('meta[name="color-scheme"]');
           if (scheme) scheme.setAttribute("content", theme);

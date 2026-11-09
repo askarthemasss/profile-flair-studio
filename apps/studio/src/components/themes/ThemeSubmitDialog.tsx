@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ThemeSchema, type Theme } from "@sigil/core";
@@ -12,6 +12,7 @@ interface Props {
 
 export const ThemeSubmitDialog: React.FC<Props> = ({ open, onClose }) => {
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   const {
     register,
@@ -48,8 +49,49 @@ export const ThemeSubmitDialog: React.FC<Props> = ({ open, onClose }) => {
   useEffect(() => {
     if (!open) return;
 
+    const dialog = dialogRef.current;
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    const getFocusable = () =>
+      dialog
+        ? Array.from(
+            dialog.querySelectorAll<HTMLElement>(
+              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+            ),
+          )
+        : [];
+
+    // Start on the first field so keyboard users can fill the form immediately.
+    const initial =
+      dialog?.querySelector<HTMLElement>("input, select, textarea") ?? getFocusable()[0];
+    initial?.focus();
+
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+
+      const focusable = getFocusable();
+      if (focusable.length === 0) {
+        event.preventDefault();
+        return;
+      }
+
+      const first = focusable[0]!;
+      const last = focusable[focusable.length - 1]!;
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
 
     const previousOverflow = document.body.style.overflow;
@@ -59,6 +101,7 @@ export const ThemeSubmitDialog: React.FC<Props> = ({ open, onClose }) => {
     return () => {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
+      previouslyFocused?.focus();
     };
   }, [open, onClose]);
 
@@ -87,6 +130,7 @@ export const ThemeSubmitDialog: React.FC<Props> = ({ open, onClose }) => {
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="theme-submit-title"
