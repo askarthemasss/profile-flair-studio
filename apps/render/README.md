@@ -69,7 +69,7 @@ https://sigil-render.<your-subdomain>.workers.dev
 pnpm exec wrangler secret put GITHUB_TOKEN
 ```
 
-Use a classic PAT with `public_repo` read, or a fine-grained token with public read. It may be a comma-separated pool; the Worker round-robins across it. The secret is live immediately (the command creates a new version).
+Use a read-only token: a classic PAT with **no scopes**, or a fine-grained token with **public-repository read** access. The Worker only performs GraphQL reads, so no write scopes are needed. It may be a comma-separated pool; the Worker round-robins across it. The secret is live immediately (the command creates a new version).
 
 Check it with `curl https://sigil-render.<your-subdomain>.workers.dev/health`, then try a card.
 

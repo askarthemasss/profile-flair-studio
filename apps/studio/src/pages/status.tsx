@@ -31,11 +31,11 @@ export const StatusPage: React.FC = () => {
       ok: workerConfigured,
     },
     {
-      name: "GitHub GraphQL Token Pool",
-      status: workerConfigured ? "Server-side" : "Not configured",
-      detail: workerConfigured ? "Worker secret" : "Requires a deployed Worker",
+      name: "GitHub GraphQL Token",
+      status: workerConfigured ? "Not verified" : "Not configured",
+      detail: workerConfigured ? "Worker secret · not checked" : "Requires a deployed Worker",
       icon: Activity,
-      ok: workerConfigured,
+      ok: false,
     },
     {
       name: "Snapshot Cache",
@@ -78,7 +78,7 @@ export const StatusPage: React.FC = () => {
               </h2>
               <p className="mt-0.5 text-xs leading-relaxed text-soft-black">
                 {workerConfigured
-                  ? "This build points at a render Worker. Check its /health endpoint for live telemetry."
+                  ? "This build points at a render Worker. Check its /health endpoint for live telemetry. The GitHub token is a Worker secret and is not verified here."
                   : "This build uses the browser-side GitHub fallback. Live card embeds require a deployed Worker and VITE_RENDER_API_URL."}
               </p>
             </div>

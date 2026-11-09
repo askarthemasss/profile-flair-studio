@@ -3,7 +3,8 @@
 # Copy this file to apps/render/.dev.vars. Never commit the real file.
 # Use `wrangler secret put GITHUB_TOKEN` for a deployed Worker instead.
 
-# A classic PAT with public_repo read, or a fine-grained token with public read.
+# Use a read-only token: a classic PAT with no scopes, or a fine-grained token
+# with public-repository read access. No write scopes are needed.
 # Multiple tokens can be comma-separated; the Worker round-robins across them.
 GITHUB_TOKEN=replace-me
 
