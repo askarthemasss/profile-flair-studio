@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/askarthemasss/profile-flair-studio/discussions
+    about: Ask a question, share a setup, or discuss an idea before opening an issue.
+  - name: Security report
+    url: https://github.com/askarthemasss/profile-flair-studio/blob/main/SECURITY.md
+    about: Report vulnerabilities privately. Do not open a public issue for security problems.
+  - name: Documentation
+    url: https://github.com/askarthemasss/profile-flair-studio#readme
+    about: Setup, architecture, environment variables, deployment, and current status.

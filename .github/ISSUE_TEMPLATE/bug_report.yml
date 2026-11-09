@@ -1,0 +1,84 @@
+name: Bug report
+description: Report a reproducible problem in the studio, render API, core package, or Action.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please search existing issues first, and do not include secrets or private tokens.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the actual behavior and what you expected instead.
+      placeholder: "The heatmap card shows..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Give the smallest sequence that reliably reproduces the problem.
+      placeholder: |
+        1. Open /studio
+        2. Load a username
+        3. Add a heatmap card
+        4. ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Studio UI
+        - Render API / Worker
+        - Core package / card rendering
+        - GitHub Action
+        - Theme or theme validation
+        - Docs
+        - CI or deployment
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: route
+    attributes:
+      label: Route or endpoint
+      description: If applicable, the page path or API URL.
+      placeholder: "/studio or /c/overview/torvalds?theme=obsidian"
+    validations:
+      required: false
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, OS, Node version, pnpm version, and whether a render Worker was configured.
+      placeholder: "Chrome 140 / macOS 15 / Node 20.20 / pnpm 9 / VITE_RENDER_API_URL unset"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output or screenshots
+      description: Paste relevant errors, network responses, or screenshots. Redact tokens and personal data.
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: I removed secrets, tokens, and private data from this report.
+          required: true

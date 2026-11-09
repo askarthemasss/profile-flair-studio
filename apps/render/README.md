@@ -11,6 +11,23 @@ Every route is also available under `/v1`. See `apps/studio/src/pages/docs.tsx` 
 
 There is no database. GitHub responses are normalized in memory and cached in the per-colo Cloudflare Cache API for 4 hours, with stale-while-revalidate: an expired entry is served immediately and refreshed in the background.
 
+## Local development
+
+```bash
+cp apps/render/.dev.vars.example apps/render/.dev.vars
+# Add a GitHub token to apps/render/.dev.vars
+pnpm --filter @sigil/render dev
+```
+
+Wrangler serves the Worker at `http://localhost:8787`. Check it with:
+
+```bash
+curl http://localhost:8787/health
+curl http://localhost:8787/c/overview/torvalds?theme=obsidian
+```
+
+`.dev.vars` is git-ignored. Use `wrangler secret put GITHUB_TOKEN` for a deployed Worker; never commit the token.
+
 ## Deploy
 
 ### 1. Cloudflare credentials

@@ -1,0 +1,14 @@
+# Local secrets for `wrangler dev`.
+#
+# Copy this file to apps/render/.dev.vars. Never commit the real file.
+# Use `wrangler secret put GITHUB_TOKEN` for a deployed Worker instead.
+
+# A classic PAT with public_repo read, or a fine-grained token with public read.
+# Multiple tokens can be comma-separated; the Worker round-robins across them.
+GITHUB_TOKEN=replace-me
+
+# Optional: a dedicated pool. Takes precedence over GITHUB_TOKEN when set.
+# GITHUB_TOKEN_POOL=token-one,token-two
+
+# Optional: overrides the ENVIRONMENT var in wrangler.toml.
+# ENVIRONMENT=development
