@@ -1,0 +1,74 @@
+name: Theme submission
+description: Propose a community theme for the Sigil gallery.
+title: "[Theme]: "
+labels: ["enhancement", "theme"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Community themes are JSON files in `themes/community/`. Read `themes/community/README.md` for the schema and validation steps. A pull request is preferred, but this issue is fine for early feedback.
+
+  - type: input
+    id: theme-name
+    attributes:
+      label: Theme name
+      placeholder: "Foggy Morning"
+    validations:
+      required: true
+
+  - type: input
+    id: theme-id
+    attributes:
+      label: Theme ID
+      description: Lowercase letters, digits, and hyphens; 2–40 characters.
+      placeholder: "foggy-morning"
+    validations:
+      required: true
+
+  - type: input
+    id: author
+    attributes:
+      label: GitHub username
+      description: The theme author's GitHub login.
+      placeholder: "octocat"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      options:
+        - dark
+        - light
+    validations:
+      required: true
+
+  - type: textarea
+    id: palette
+    attributes:
+      label: Palette
+      description: Paste the color object from the theme JSON, including `bg`, `bgAlt`, `border`, `text`, `textMuted`, `accent`, `accent2`, `success`, `warning`, `danger`, and the five `heat` stops.
+      render: json
+    validations:
+      required: true
+
+  - type: textarea
+    id: preview
+    attributes:
+      label: Preview
+      description: Add a screenshot or a link to a rendered card.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I ran `pnpm validate:themes` and the theme passes.
+          required: true
+        - label: The theme has a unique ID and does not copy an existing theme.
+          required: true
+        - label: I am the author of this theme or have permission to submit it.
+          required: true

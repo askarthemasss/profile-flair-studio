@@ -11,6 +11,23 @@ Every route is also available under `/v1`. See `apps/studio/src/pages/docs.tsx` 
 
 There is no database. GitHub responses are normalized in memory and cached in the per-colo Cloudflare Cache API for 4 hours, with stale-while-revalidate: an expired entry is served immediately and refreshed in the background.
 
+## Local development
+
+```bash
+cp apps/render/.dev.vars.example apps/render/.dev.vars
+# Add a GitHub token to apps/render/.dev.vars
+pnpm --filter @sigil/render dev
+```
+
+Wrangler serves the Worker at `http://localhost:8787`. Check it with:
+
+```bash
+curl http://localhost:8787/health
+curl http://localhost:8787/c/overview/torvalds?theme=obsidian
+```
+
+`.dev.vars` is git-ignored. Use `wrangler secret put GITHUB_TOKEN` for a deployed Worker; never commit the token.
+
 ## Deploy
 
 ### 1. Cloudflare credentials
@@ -52,7 +69,7 @@ https://sigil-render.<your-subdomain>.workers.dev
 pnpm exec wrangler secret put GITHUB_TOKEN
 ```
 
-Use a classic PAT with `public_repo` read, or a fine-grained token with public read. It may be a comma-separated pool; the Worker round-robins across it. The secret is live immediately (the command creates a new version).
+Use a read-only token: a classic PAT with **no scopes**, or a fine-grained token with **public-repository read** access. The Worker only performs GraphQL reads, so no write scopes are needed. It may be a comma-separated pool; the Worker round-robins across it. The secret is live immediately (the command creates a new version).
 
 Check it with `curl https://sigil-render.<your-subdomain>.workers.dev/health`, then try a card.
 
