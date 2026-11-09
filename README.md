@@ -47,11 +47,11 @@ Built-in themes: `obsidian`, `monolith`, `verdigris`, `paper`, `tidepool`, and `
 | Area          | Stack                                                                                                                               |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Monorepo      | pnpm 9 workspaces, TypeScript 5 in strict mode                                                                                      |
-| Studio        | React 19, Vite 8, Tailwind CSS 4, React Router 6, TanStack Query 5, Zustand 5, React Hook Form 7, Zod 3, Sonner, Lucide             |
+| Studio        | React 19, Vite 8, Tailwind CSS 4, React Router 6, TanStack Query 5, Zustand 5, React Hook Form 7, Zod 4, Sonner, Lucide             |
 | Core          | Framework-free TypeScript, Zod schemas, tsup/esbuild output                                                                         |
 | Render API    | Hono 4 on Cloudflare Workers, Wrangler 4, Cloudflare Cache API, GitHub GraphQL                                                      |
 | GitHub Action | Node 20 action with a committed esbuild bundle                                                                                      |
-| Testing       | Vitest 3 (33 core tests), ESLint 9, Prettier 3                                                                                      |
+| Testing       | Vitest 4 (33 core tests), ESLint 9, Prettier 3                                                                                      |
 | CI/CD         | GitHub Actions for typecheck, lint, tests, builds, theme validation, and SVG budgets; Vercel for the studio; Cloudflare for the API |
 | Persistence   | None. No database, no user accounts, no stored GitHub tokens                                                                        |
 
