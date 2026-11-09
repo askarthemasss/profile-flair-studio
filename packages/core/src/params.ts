@@ -81,12 +81,12 @@ export const CARD_PARAM_SCHEMAS = {
   banner: BannerParamsSchema,
 } as const satisfies Record<CardId, z.ZodTypeAny>;
 
-export type OverviewParams = typeof OverviewParamsSchema._type;
-export type StreakParams = typeof StreakParamsSchema._type;
-export type LanguagesParams = typeof LanguagesParamsSchema._type;
-export type HeatmapParams = typeof HeatmapParamsSchema._type;
-export type SkylineParams = typeof SkylineParamsSchema._type;
-export type ActivityParams = typeof ActivityParamsSchema._type;
-export type AchievementsParams = typeof AchievementsParamsSchema._type;
-export type RepoParams = typeof RepoParamsSchema._type;
-export type BannerParams = typeof BannerParamsSchema._type;
+export type OverviewParams = z.infer<typeof OverviewParamsSchema>;
+export type StreakParams = z.infer<typeof StreakParamsSchema>;
+export type LanguagesParams = z.infer<typeof LanguagesParamsSchema>;
+export type HeatmapParams = z.infer<typeof HeatmapParamsSchema>;
+export type SkylineParams = z.infer<typeof SkylineParamsSchema>;
+export type ActivityParams = z.infer<typeof ActivityParamsSchema>;
+export type AchievementsParams = z.infer<typeof AchievementsParamsSchema>;
+export type RepoParams = z.infer<typeof RepoParamsSchema>;
+export type BannerParams = z.infer<typeof BannerParamsSchema>;
