@@ -283,7 +283,3 @@ Contributions are welcome — code, docs, themes, bug reports, and design feedba
 ## License
 
 [MIT](LICENSE) © 2026 askarthemasss
-
-## Built with Lovable
-
-This project is connected to [Lovable](https://lovable.dev). Pushes to `main` sync back into the Lovable editor. Please do not force-push, rebase, or squash published history — use a branch and a merge commit so both sides stay in sync.
