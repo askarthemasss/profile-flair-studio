@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import { AppShell } from "../components/layout/AppShell.js";
 import { ThemeGrid } from "../components/themes/ThemeGrid.js";
-import { ThemeSubmitDialog } from "../components/themes/ThemeSubmitDialog.js";
 import { SectionTitle } from "../components/ui/SectionTitle.js";
 import { Plus } from "lucide-react";
 
-export const ThemesPage: React.FC = () => {
-  const [submitOpen, setSubmitOpen] = useState(false);
+const THEME_SUBMISSION_URL =
+  "https://github.com/askarthemasss/profile-flair-studio/issues/new?template=theme_submission.yml";
 
+export const ThemesPage: React.FC = () => {
   return (
     <AppShell>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -20,18 +20,18 @@ export const ThemesPage: React.FC = () => {
             Theme Gallery
           </SectionTitle>
 
-          <button
-            onClick={() => setSubmitOpen(true)}
+          <a
+            href={THEME_SUBMISSION_URL}
+            target="_blank"
+            rel="noreferrer"
             className="notebook-btn notebook-btn--primary self-start sm:self-auto"
           >
             <Plus className="h-4 w-4" />
-            <span>Submit Theme</span>
-          </button>
+            <span>Submit a Theme</span>
+          </a>
         </div>
 
         <ThemeGrid />
-
-        <ThemeSubmitDialog open={submitOpen} onClose={() => setSubmitOpen(false)} />
       </div>
     </AppShell>
   );

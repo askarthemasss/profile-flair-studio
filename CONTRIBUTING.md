@@ -59,7 +59,7 @@ pnpm dev
 
 | Path                | Responsibility                                                               |
 | ------------------- | ---------------------------------------------------------------------------- |
-| `apps/studio`       | React SPA: landing, studio, themes, docs, presets, status, theme toggle      |
+| `apps/studio`       | React SPA: landing, studio, themes, docs, theme toggle                       |
 | `apps/render`       | Hono + Cloudflare Worker API: cards, snapshots, themes, health, edge cache   |
 | `packages/core`     | Shared types, Zod schemas, themes, stats, GitHub queries, nine SVG renderers |
 | `packages/action`   | GitHub Action that writes static SVG cards                                   |

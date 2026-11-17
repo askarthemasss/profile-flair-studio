@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { CardId, Theme } from "@sigil/core";
-import type { ExportFormat, PackCard, PresetParams, StudioState } from "../types.js";
+import type { ExportFormat, PackCard, StudioState } from "../types.js";
 
 function makeUid(card: CardId): string {
   return `${card}-${Math.random().toString(36).slice(2, 8)}`;
@@ -81,17 +81,6 @@ export const useStudioStore = create<ExtendedStudioState>()(
         set((s) => ({
           cards: s.cards.map((c) => (c.uid === uid ? { ...c, params: { ...c.params, ...p } } : c)),
         })),
-
-      loadPreset: (preset) =>
-        set({
-          theme: preset.theme,
-          overrides: preset.overrides,
-          cards: preset.cards.map((c) => ({
-            uid: makeUid(c.card),
-            card: c.card,
-            params: c.params,
-          })),
-        }),
 
       setSelectedUid: (selectedUid) => set({ selectedUid }),
       setExportFormat: (exportFormat) => set({ exportFormat }),

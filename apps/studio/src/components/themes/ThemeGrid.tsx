@@ -7,17 +7,17 @@ import { Reveal } from "../ui/Reveal.js";
 import { Search } from "lucide-react";
 
 export const ThemeGrid: React.FC = () => {
-  const { themes, voteTheme } = useThemes();
+  const { themes } = useThemes();
   const { setTheme } = useStudioStore();
   const navigate = useNavigate();
   const [filter, setFilter] = useState<"all" | "dark" | "light">("all");
   const [query, setQuery] = useState("");
 
-  const filtered = themes.filter((t) => {
-    if (filter !== "all" && t.theme.mode !== filter) return false;
+  const filtered = themes.filter((theme) => {
+    if (filter !== "all" && theme.mode !== filter) return false;
     if (query) {
       const q = query.toLowerCase();
-      return t.theme.name.toLowerCase().includes(q) || t.theme.author.toLowerCase().includes(q);
+      return theme.name.toLowerCase().includes(q) || theme.author.toLowerCase().includes(q);
     }
     return true;
   });
@@ -71,15 +71,9 @@ export const ThemeGrid: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((item, index) => (
-            <Reveal key={item.theme.id} delay={Math.min(index, 6) * 60}>
-              <ThemeCard
-                theme={item.theme}
-                votes={item.votes}
-                voted={item.voted}
-                onVote={voteTheme}
-                onApply={handleApply}
-              />
+          {filtered.map((theme, index) => (
+            <Reveal key={theme.id} delay={Math.min(index, 6) * 60}>
+              <ThemeCard theme={theme} onApply={handleApply} />
             </Reveal>
           ))}
         </div>
