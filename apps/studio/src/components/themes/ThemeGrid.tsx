@@ -1,17 +1,38 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useThemes } from "../../hooks/useThemes.js";
 import { useStudioStore } from "../../store/studio-store.js";
 import { ThemeCard } from "./ThemeCard.js";
 import { Reveal } from "../ui/Reveal.js";
 import { Search } from "lucide-react";
 
+type ModeFilter = "all" | "dark" | "light";
+
 export const ThemeGrid: React.FC = () => {
   const { themes } = useThemes();
   const { setTheme } = useStudioStore();
   const navigate = useNavigate();
-  const [filter, setFilter] = useState<"all" | "dark" | "light">("all");
-  const [query, setQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const query = searchParams.get("q") ?? "";
+  const modeParam = searchParams.get("mode");
+  const filter: ModeFilter = modeParam === "dark" || modeParam === "light" ? modeParam : "all";
+
+  const updateParams = (updates: { q?: string; mode?: ModeFilter }) => {
+    const next = new URLSearchParams(searchParams);
+    const nextQuery = updates.q ?? query;
+    const nextMode = updates.mode ?? filter;
+
+    if (nextQuery) next.set("q", nextQuery);
+    else next.delete("q");
+
+    if (nextMode !== "all") next.set("mode", nextMode);
+    else next.delete("mode");
+
+    setSearchParams(next, { replace: true });
+  };
+
+  const clearFilters = () => setSearchParams({}, { replace: true });
 
   const filtered = themes.filter((theme) => {
     if (filter !== "all" && theme.mode !== filter) return false;
@@ -36,11 +57,14 @@ export const ThemeGrid: React.FC = () => {
             aria-hidden="true"
           />
           <input
-            type="text"
-            placeholder="Search themes or authors..."
+            type="search"
+            name="theme-search"
+            placeholder="Search themes or authors…"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => updateParams({ q: e.target.value })}
             aria-label="Search themes"
+            autoComplete="off"
+            spellCheck={false}
             className="notebook-field pl-9 text-xs"
           />
         </div>
@@ -50,8 +74,10 @@ export const ThemeGrid: React.FC = () => {
             <button
               key={m}
               type="button"
-              onClick={() => setFilter(m)}
+              onClick={() => updateParams({ mode: m })}
               data-active={filter === m}
+              aria-pressed={filter === m}
+              aria-label={m === "all" ? "Show all themes" : `Show ${m} themes`}
               className="segmented__btn capitalize"
             >
               {m}
@@ -60,14 +86,29 @@ export const ThemeGrid: React.FC = () => {
         </div>
       </div>
 
+      <h2 className="sr-only">Theme results</h2>
+
+      <p className="-mt-3 text-xs text-warm-grey" role="status" aria-live="polite">
+        {filtered.length} {filtered.length === 1 ? "theme" : "themes"}
+        {query ? ` matching “${query}”` : ""}
+        {filter !== "all" ? ` in ${filter} mode` : ""}
+      </p>
+
       {filtered.length === 0 ? (
         <div className="notebook-card p-10 text-center">
           <p className="font-display text-xl font-light tracking-[0.03em] text-charcoal">
-            Nothing on this page yet
+            No themes match{query ? ` “${query}”` : " this filter"}
           </p>
           <p className="mt-1 text-xs text-warm-grey">
-            Try a different search, or clear the mode filter.
+            Try another search, or clear the mode filter.
           </p>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="notebook-btn notebook-btn--secondary notebook-btn--sm mt-4"
+          >
+            Clear Filters
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

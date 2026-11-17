@@ -17,6 +17,7 @@ const DEFAULT_CARDS: PackCard[] = [
 interface ExtendedStudioState extends StudioState {
   setSelectedUid(uid: string | null): void;
   setExportFormat(format: ExportFormat): void;
+  restoreCard(card: PackCard, index: number): void;
   reset(): void;
 }
 
@@ -84,6 +85,12 @@ export const useStudioStore = create<ExtendedStudioState>()(
 
       setSelectedUid: (selectedUid) => set({ selectedUid }),
       setExportFormat: (exportFormat) => set({ exportFormat }),
+      restoreCard: (card, index) =>
+        set((s) => {
+          const nextCards = [...s.cards];
+          nextCards.splice(Math.max(0, Math.min(index, nextCards.length)), 0, card);
+          return { cards: nextCards, selectedUid: card.uid };
+        }),
       reset: () =>
         set({
           user: "torvalds",

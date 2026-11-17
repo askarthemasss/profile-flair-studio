@@ -21,6 +21,50 @@ pack selection, unlabelled form controls, destructive actions without
 confirmation or undo, unannounced copy feedback, missing toggle state, and a
 console error from the snapshot query setup.
 
+## Resolution
+
+All eight P1 findings and all nine P2 findings were fixed on
+`fix/ui-audit-p1`. The P3 table-semantics and heading-anchor items were also
+fixed; the React Router future-flag warnings remain open and are unrelated to
+this pass.
+
+| Finding                                    | Status | Change                                                                                                                  |
+| ------------------------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------- |
+| P1-1 Pack rows are clickable `div`s        | Fixed  | The row label is a real `<button>` with `aria-pressed`; move/remove buttons stay as siblings.                           |
+| P1-2 Controls have no programmatic labels  | Fixed  | Every color override and card parameter has a `<label htmlFor>` and a `name`; icon-only controls keep accessible names. |
+| P1-3 Reset is immediate                    | Fixed  | Reset opens an inline confirmation, focuses the confirm button, supports Escape, and returns focus to Reset.            |
+| P1-4 Copy is unannounced                   | Fixed  | A polite live region announces success and failure; the failure state is visible and the timer is cleared on unmount.   |
+| P1-5 Snapshot query console errors         | Fixed  | `queryFn: skipToken` replaces `enabled: false`, keeping Load as the only fetch trigger with no console error.           |
+| P1-6 Toggle groups lack state              | Fixed  | Theme, export format, and mode filter buttons expose `aria-pressed`.                                                    |
+| P1-7 Mobile export buttons are unnamed     | Fixed  | Each format button has an `aria-label` in addition to its hidden visible label.                                         |
+| P1-8 Card removal is immediate             | Fixed  | Removal shows a Sonner toast with Undo; `restoreCard` reinserts the card at its original index.                         |
+| P2-1 Theme filters are not in the URL      | Fixed  | `q` and `mode` use `useSearchParams` and survive reload.                                                                |
+| P2-2 Gallery skips a heading level         | Fixed  | A visually hidden `<h2>` names the results region.                                                                      |
+| P2-3 Three-period ellipses                 | Fixed  | Copy uses `…` throughout.                                                                                               |
+| P2-4 “Live preview” over sample data       | Fixed  | Renamed to “Pack preview”.                                                                                              |
+| P2-5 Non-clickable card hover              | Fixed  | Removed the interactive class from theme and feature cards.                                                             |
+| P2-6 Grip icon implies dragging            | Fixed  | Removed; reordering uses the labelled up/down buttons.                                                                  |
+| P2-7 Nav active state is wrong             | Fixed  | Active is an exact path match and exposes `aria-current="page"`.                                                        |
+| P2-8 Status chip changes are silent        | Fixed  | The status container is a polite live region.                                                                           |
+| P2-9 Theme empty state is vague            | Fixed  | It names the search, explains the filter, and offers Clear Filters.                                                     |
+| P3-2 Docs tables lack `scope`              | Fixed  | Header cells use `scope="col"`.                                                                                         |
+| P3-3 Heading anchors hide under the header | Fixed  | Headings have `scroll-margin-top: 5rem`.                                                                                |
+| P3-1 React Router future flags             | Open   | Warnings only; defer until the router upgrade.                                                                          |
+
+### Re-audit (fix/ui-audit-p1)
+
+- `/`, `/studio`, `/themes`, `/docs` at 1440×900 and 390×844, light and dark:
+  no horizontal overflow, no console errors.
+- No unlabelled `input`, `select`, or `textarea`; no unnamed buttons.
+- Pack rows are reachable by Tab and activate with Space; the focus ring is
+  visible on the row button.
+- Reset confirmation, Escape-to-cancel, focus return, card undo, copy success,
+  copy failure, theme apply, and URL-backed theme filters were exercised in the
+  browser.
+- Reduced motion still reveals all hero and section content immediately.
+- The only console messages left are the two React Router v7 future-flag
+  warnings.
+
 ## What passed
 
 - All four routes render without a blank screen or route error.
@@ -182,9 +226,8 @@ confirmation step.
 
 ## Follow-up
 
-- Fix P1 findings on a separate `fix/ui-audit-p1` branch.
-- Re-run the browser matrix after the fixes and update this document with the
-  resolved status.
+- The P1 and P2 fixes are on `fix/ui-audit-p1`; the findings above remain as the
+  record of the baseline, not as open work.
 - The optional `@playwright/test` CI smoke suite is still deferred. The manual
-  matrix and the baseline come first; adding a browser job to CI before the P1
-  fixes would only make the red build noisier.
+  matrix and the baseline come first; the next step is a deterministic smoke job
+  for the four routes, not a full visual-regression suite.

@@ -26,7 +26,7 @@ export const ThemesPage: React.FC = () => {
             rel="noreferrer"
             className="notebook-btn notebook-btn--primary self-start sm:self-auto"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4" aria-hidden="true" />
             <span>Submit a Theme</span>
           </a>
         </div>

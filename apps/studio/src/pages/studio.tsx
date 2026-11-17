@@ -35,7 +35,7 @@ export const StudioPage: React.FC = () => {
   const snapshotError =
     isError && error instanceof SnapshotError
       ? notFound
-        ? `No GitHub user named "${snapshotHandle}". Adjust the handle or check the spelling.`
+        ? `No GitHub user named “${snapshotHandle}”. Adjust the handle or check the spelling.`
         : `${error.message}. ${fallbackNote}`
       : null;
 
@@ -51,11 +51,15 @@ export const StudioPage: React.FC = () => {
             Flair Pack Studio
           </SectionTitle>
 
-          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+          <div
+            role="status"
+            aria-live="polite"
+            className="flex flex-wrap items-center gap-2 lg:justify-end"
+          >
             {isLookingUp ? (
               <span className="notebook-chip notebook-chip--status border-gold/40 bg-gold/10 text-terracotta-ink">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-                <span>Fetching @{user.trim() || "..."}</span>
+                <span>Fetching @{user.trim() || "…"}</span>
               </span>
             ) : null}
             {!isLookingUp && snapshot && !snapshotError ? (
@@ -78,7 +82,10 @@ export const StudioPage: React.FC = () => {
             role="alert"
             className="notebook-card mb-6 flex items-start gap-3 border-gold/40 bg-gold/10 px-4 py-3"
           >
-            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-terracotta-ink" />
+            <TriangleAlert
+              className="mt-0.5 h-4 w-4 shrink-0 text-terracotta-ink"
+              aria-hidden="true"
+            />
             <p className="text-xs leading-relaxed text-soft-black">{snapshotError}</p>
           </div>
         ) : null}
@@ -101,9 +108,9 @@ export const StudioPage: React.FC = () => {
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-3">
                 <div className="flex items-center gap-2.5">
                   <span className="status-dot text-verdigris" aria-hidden="true" />
-                  <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-charcoal">
-                    Live preview ({cards.length} cards)
-                  </span>
+                  <h2 className="font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-charcoal">
+                    Pack preview ({cards.length} cards)
+                  </h2>
                 </div>
                 <span className="font-mono text-[10px] text-warm-grey">
                   {user ? `@${user}` : "demo"} · {resolvedTheme.name}

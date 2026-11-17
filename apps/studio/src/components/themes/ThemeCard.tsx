@@ -4,7 +4,7 @@ import { Check, ArrowRight } from "lucide-react";
 
 export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, onApply }) => {
   return (
-    <div className="notebook-card notebook-card--interactive flex flex-col gap-4 p-4">
+    <div className="notebook-card flex flex-col gap-4 p-4">
       <div>
         {/* Visual swatch preview: product content, so its colors stay independent. */}
         <div
@@ -29,7 +29,7 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, onApply }) => {
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5" aria-hidden="true">
             {theme.heat.map((c: string, i: number) => (
               <span
                 key={i}
@@ -50,12 +50,14 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, onApply }) => {
 
       <div className="flex items-center justify-end border-t border-line pt-3">
         <button
+          type="button"
           onClick={() => onApply(theme.id)}
+          aria-label={`Use the ${theme.name} theme`}
           className="notebook-btn notebook-btn--secondary notebook-btn--sm"
         >
-          <Check className="h-3 w-3" />
+          <Check className="h-3 w-3" aria-hidden="true" />
           <span>Use Theme</span>
-          <ArrowRight className="h-3 w-3" />
+          <ArrowRight className="h-3 w-3" aria-hidden="true" />
         </button>
       </div>
     </div>

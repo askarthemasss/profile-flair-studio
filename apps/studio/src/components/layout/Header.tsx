@@ -19,8 +19,7 @@ const navLinkClass = (active: boolean) =>
 export const Header: React.FC = () => {
   const location = useLocation();
 
-  const isActive = (path: string) =>
-    location.pathname === path || (path === "/studio" && location.pathname === "/");
+  const isActive = (path: string) => location.pathname === path;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--card-border)] bg-[var(--badge-bg)] backdrop-blur-sm">
@@ -40,7 +39,12 @@ export const Header: React.FC = () => {
             {navLinks.map((link) => {
               const active = isActive(link.path);
               return (
-                <Link key={link.path} to={link.path} className={navLinkClass(active)}>
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={navLinkClass(active)}
+                  aria-current={active ? "page" : undefined}
+                >
                   {link.name}
                   {active ? (
                     <span
@@ -63,7 +67,7 @@ export const Header: React.FC = () => {
             className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--card-border)] text-warm-grey transition-colors hover:border-[var(--card-border-hover)] hover:text-charcoal"
             aria-label="GitHub repository"
           >
-            <Github className="h-4 w-4" />
+            <Github className="h-4 w-4" aria-hidden="true" />
           </a>
         </div>
       </div>
@@ -75,7 +79,12 @@ export const Header: React.FC = () => {
         {navLinks.map((link) => {
           const active = isActive(link.path);
           return (
-            <Link key={link.path} to={link.path} className={navLinkClass(active)}>
+            <Link
+              key={link.path}
+              to={link.path}
+              className={navLinkClass(active)}
+              aria-current={active ? "page" : undefined}
+            >
               {link.name}
               {active ? (
                 <span

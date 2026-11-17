@@ -71,10 +71,10 @@ export const LandingPage: React.FC = () => {
               <div className="hero-anim hero-anim--4 flex flex-wrap items-center gap-3">
                 <Link to="/studio" className="notebook-btn notebook-btn--primary">
                   <span>Open the Studio</span>
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
                 <Link to="/themes" className="notebook-btn notebook-btn--secondary">
-                  <Palette className="h-4 w-4" />
+                  <Palette className="h-4 w-4" aria-hidden="true" />
                   <span>Browse Themes</span>
                 </Link>
               </div>
@@ -111,7 +111,7 @@ export const LandingPage: React.FC = () => {
               <div className="hero-orbit hidden lg:block" aria-hidden="true" />
               <div className="notebook-card hero-anim hero-anim--3 relative p-3 sm:p-4">
                 <div className="flex items-center justify-between gap-3 border-b border-line px-2 pb-3">
-                  <span className="notebook-kicker text-[0.55rem]">Live vector preview</span>
+                  <span className="notebook-kicker text-[0.55rem]">Vector preview</span>
                   <span className="truncate font-mono text-[9px] text-warm-grey">
                     {renderHost()}/c/overview/torvalds
                   </span>
@@ -159,10 +159,10 @@ export const LandingPage: React.FC = () => {
               const Icon = feature.icon;
               return (
                 <Reveal key={feature.number} delay={index * 100}>
-                  <article className="notebook-card notebook-card--interactive p-6">
+                  <article className="notebook-card p-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="notebook-icon text-terracotta">
-                        <Icon className="h-5 w-5" />
+                        <Icon className="h-5 w-5" aria-hidden="true" />
                       </div>
                       <span className="font-display text-sm italic text-terracotta-ink">
                         {feature.number}
@@ -207,11 +207,11 @@ export const LandingPage: React.FC = () => {
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link to="/studio" className="notebook-btn notebook-btn--primary">
                 <span>Launch the Studio</span>
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
               <Link to="/docs" className="notebook-btn notebook-btn--secondary">
-                <BookOpen className="h-4 w-4" />
-                <span>Read the docs</span>
+                <BookOpen className="h-4 w-4" aria-hidden="true" />
+                <span>Read the Docs</span>
               </Link>
             </div>
 

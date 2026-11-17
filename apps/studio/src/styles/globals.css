@@ -123,6 +123,14 @@
     outline-offset: 3px;
   }
 
+  :where(a, button, [role="button"], input, select, textarea, summary) {
+    touch-action: manipulation;
+  }
+
+  :where(h1, h2, h3, h4, h5, h6) {
+    scroll-margin-top: 5rem;
+  }
+
   /* Lucide ships at stroke-width 2; thin it toward the drawn-ink line weight. */
   .lucide {
     stroke-width: 1.25;
@@ -265,6 +273,17 @@
     color: var(--terracotta-ink);
   }
 
+  .notebook-btn--danger {
+    background: transparent;
+    color: var(--sg-crimson);
+    border-color: color-mix(in oklab, var(--sg-crimson) 35%, transparent);
+  }
+
+  .notebook-btn--danger:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--sg-crimson) 10%, transparent);
+    border-color: var(--sg-crimson);
+  }
+
   .notebook-btn--sm {
     padding: 0.45rem 0.8rem;
     font-size: 0.7rem;
@@ -339,6 +358,7 @@
     font-size: clamp(1.05rem, 1.6vw, 1.22rem);
     line-height: 1.85;
     color: var(--soft-black);
+    text-wrap: pretty;
   }
 
   .notebook-body {
@@ -393,6 +413,7 @@
     letter-spacing: 0.06em;
     line-height: 1.15;
     color: var(--charcoal);
+    text-wrap: balance;
   }
 
   .section-title::after {
@@ -551,7 +572,6 @@
     border: 1px solid var(--card-border);
     border-radius: var(--r-md);
     padding: 0.55rem 0.75rem;
-    cursor: pointer;
     color: var(--soft-black);
     transition:
       background-color 0.25s var(--ease-out),
@@ -569,6 +589,20 @@
     background: var(--card-item-hover);
     border-color: var(--terracotta);
     color: var(--charcoal);
+  }
+
+  .pack-item__select {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    align-items: center;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
   }
 
   .preview-canvas {
