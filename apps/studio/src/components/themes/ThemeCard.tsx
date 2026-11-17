@@ -1,8 +1,8 @@
 import React from "react";
 import type { ThemeCardProps } from "../../types.js";
-import { Heart, Check, ArrowRight } from "lucide-react";
+import { Check, ArrowRight } from "lucide-react";
 
-export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, votes, voted, onVote, onApply }) => {
+export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, onApply }) => {
   return (
     <div className="notebook-card notebook-card--interactive flex flex-col gap-4 p-4">
       <div>
@@ -48,18 +48,7 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, votes, voted, onVot
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 border-t border-line pt-3">
-        <button
-          onClick={() => onVote(theme.id)}
-          className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs transition-colors ${
-            voted ? "bg-crimson/10 text-crimson" : "text-warm-grey hover:text-charcoal"
-          }`}
-          title="Vote for this theme"
-        >
-          <Heart className={`h-3.5 w-3.5 ${voted ? "fill-crimson" : ""}`} />
-          <span>{votes}</span>
-        </button>
-
+      <div className="flex items-center justify-end border-t border-line pt-3">
         <button
           onClick={() => onApply(theme.id)}
           className="notebook-btn notebook-btn--secondary notebook-btn--sm"

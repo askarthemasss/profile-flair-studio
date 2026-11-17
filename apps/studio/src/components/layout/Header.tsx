@@ -9,8 +9,6 @@ const navLinks = [
   { name: "Studio", path: "/studio" },
   { name: "Themes", path: "/themes" },
   { name: "Docs", path: "/docs" },
-  { name: "Presets", path: "/presets" },
-  { name: "Status", path: "/status" },
 ];
 
 const navLinkClass = (active: boolean) =>

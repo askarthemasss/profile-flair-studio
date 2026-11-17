@@ -16,7 +16,7 @@ Sigil is an open-source (MIT) studio and edge API that turns a GitHub username i
 - **Themes are first-class.** Six built-in themes ship with WCAG AA-validated text and accent contrast, and every card supports custom color overrides. Community theme JSON is accepted through `themes/community/`.
 - **Stateless by design.** The render Worker has no database and stores no user tokens. GitHub responses are normalized in memory and cached at the edge with stale-while-revalidate.
 - **A real fallback.** The studio can fetch public GitHub data without a server, and the GitHub Action can commit static SVGs to your own repository so your profile survives an outage.
-- **No signup, no OAuth, no tracking.** Public data only. The studio keeps presets and theme votes in your browser's `localStorage`.
+- **No signup, no OAuth, no tracking.** Public data only. Your current pack stays in your browser's `localStorage`.
 
 ## Preview
 
@@ -47,7 +47,7 @@ Built-in themes: `obsidian`, `monolith`, `verdigris`, `paper`, `tidepool`, and `
 | Area          | Stack                                                                                                                               |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Monorepo      | pnpm 9 workspaces, TypeScript 5 in strict mode                                                                                      |
-| Studio        | React 19, Vite 8, Tailwind CSS 4, React Router 6, TanStack Query 5, Zustand 5, React Hook Form 7, Zod 4, Sonner, Lucide             |
+| Studio        | React 19, Vite 8, Tailwind CSS 4, React Router 6, TanStack Query 5, Zustand 5, Sonner, Lucide                                       |
 | Core          | Framework-free TypeScript, Zod schemas, tsup/esbuild output                                                                         |
 | Render API    | Hono 4 on Cloudflare Workers, Wrangler 4, Cloudflare Cache API, GitHub GraphQL                                                      |
 | GitHub Action | Node 20 action with a committed esbuild bundle                                                                                      |
@@ -104,7 +104,7 @@ The studio uses the same core package for previews, so the card you see locally 
 ```text
 .
 ├── apps/
-│   ├── studio/              React SPA: landing, studio, themes, docs, presets, status
+│   ├── studio/              React SPA: landing, studio, themes, docs
 │   └── render/              Hono + Cloudflare Worker render API
 ├── packages/
 │   ├── core/                Types, schemas, themes, stats, GitHub queries, nine SVG renderers
@@ -239,25 +239,21 @@ The Action renders the same nine cards with the user's own token and commits sta
 
 This section is intentionally explicit so contributors know what is real, what is local-only, and what still needs work.
 
-| Area                    | State                                                                                                                    |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Studio UI               | Live on Vercel, with the Drawn Notebook design system in light and dark modes                                            |
-| Studio routes           | `/`, `/studio`, `/themes`, `/docs`, `/presets`, `/status`                                                                |
-| Status page             | Shows build configuration and readiness; live telemetry is not connected                                                 |
-| Render Worker           | Implemented and typechecked; shares the tested core package; not deployed in the hosted setup                            |
-| Live card embeds        | Require a deployed Worker and `VITE_RENDER_API_URL`; without them, export URLs point at a placeholder host               |
-| Browser fallback        | Works with GitHub's anonymous REST limits (about 60 core requests/hour and 10 searches/minute per IP)                    |
-| Presets                 | Stored in `localStorage`; no account sync                                                                                |
-| Theme votes             | Stored in `localStorage`; counts are illustrative, not a global tally                                                    |
-| Theme submission dialog | Validates a theme locally and returns a success message; it does not persist or open a pull request                      |
-| Community themes        | Accepted as JSON files under [`themes/community/`](themes/community/) via pull request; gallery wiring is on the roadmap |
-| GitHub Action           | Implemented with a committed bundle; not published to the GitHub Marketplace                                             |
-| Database                | None. Snapshots live in Cloudflare's cache and the Worker's in-isolate memory                                            |
+| Area             | State                                                                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Studio UI        | Live on Vercel, with the Drawn Notebook design system in light and dark modes                                                 |
+| Studio routes    | `/`, `/studio`, `/themes`, `/docs`                                                                                            |
+| Render Worker    | Implemented and typechecked; shares the tested core package; not deployed in the hosted setup                                 |
+| Live card embeds | Require a deployed Worker and `VITE_RENDER_API_URL`; without them, export URLs point at a placeholder host                    |
+| Browser fallback | Works with GitHub's anonymous REST limits (about 60 core requests/hour and 10 searches/minute per IP)                         |
+| Community themes | Accepted as JSON files under [`themes/community/`](themes/community/) via pull request or the theme submission issue template |
+| GitHub Action    | Implemented with a committed bundle; not published to the GitHub Marketplace                                                  |
+| Database         | None. Snapshots live in Cloudflare's cache and the Worker's in-isolate memory                                                 |
 
 ### Known limitations
 
 - No OAuth or private contribution counts; Sigil only reads public data.
-- No persistent community backend, accounts, or cross-device preset sync.
+- No persistent community backend or user accounts.
 - No PNG endpoint, year-in-review page, coding clock, i18n, or AI features.
 - The hosted studio's browser fallback is subject to GitHub's anonymous rate limits. A deployed Worker removes that limit from the browser path.
 - `sigil.dev` is not controlled by this project. Do not point embeds at it; use your own Worker origin or the placeholder in local development.

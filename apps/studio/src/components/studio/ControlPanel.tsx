@@ -20,7 +20,7 @@ export const ControlPanel: React.FC = () => {
   const canLoad = draftUser.trim().length > 0;
 
   // Keep the draft in sync when the store changes from outside this input
-  // (Reset, preset load, or a restored persisted handle).
+  // (Reset or a restored persisted handle).
   useEffect(() => {
     setDraftUser(user);
   }, [user]);

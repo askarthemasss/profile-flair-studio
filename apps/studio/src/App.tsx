@@ -4,8 +4,6 @@ import { LandingPage } from "./pages/landing.js";
 import { StudioPage } from "./pages/studio.js";
 import { ThemesPage } from "./pages/themes.js";
 import { DocsPage } from "./pages/docs.js";
-import { PresetsPage } from "./pages/presets.js";
-import { StatusPage } from "./pages/status.js";
 
 export function App() {
   return (
@@ -14,8 +12,6 @@ export function App() {
       <Route path="/studio" element={<StudioPage />} />
       <Route path="/themes" element={<ThemesPage />} />
       <Route path="/docs" element={<DocsPage />} />
-      <Route path="/presets" element={<PresetsPage />} />
-      <Route path="/status" element={<StatusPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
