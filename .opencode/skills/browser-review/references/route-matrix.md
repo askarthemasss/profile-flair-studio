@@ -39,4 +39,9 @@ widths. Every cell also requires a clean console and no horizontal overflow.
 
 Name screenshots `{route}-{theme}-{width}.png`, for example
 `studio-dark-390.png`. Keep them in `.playwright-cli/`; attach only the useful
-ones to a pull request.
+ones to a pull request. Because `--filename` resolves against the workspace
+root, pass the directory explicitly:
+
+```bash
+pnpm exec playwright cli -s=sigil-review screenshot --filename=.playwright-cli/studio-dark-390.png
+```
