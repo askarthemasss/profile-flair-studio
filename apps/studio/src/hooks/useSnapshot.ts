@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { skipToken, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { GithubSnapshot } from "@sigil/core";
 
 const SNAPSHOT_STALE_MS = 1000 * 60 * 10;
@@ -27,11 +27,10 @@ export function useSnapshot(username: string) {
   const query = useQuery<GithubSnapshot>({
     queryKey: snapshotQueryKey(handle),
     // Pressing Load is the only fetch trigger: `useProfileLoader` seeds this
-    // key with `fetchQuery`. The observer still subscribes to cache updates,
-    // so live data appears as soon as that explicit fetch resolves. Keeping
-    // `enabled` false also stops mount, focus, and reset from spending the
-    // anonymous GitHub budget behind the user's back.
-    enabled: false,
+    // key with `fetchQuery`. `skipToken` keeps the observer subscribed to cache
+    // updates without registering an automatic query function, so mount, focus,
+    // and reset cannot spend the anonymous GitHub budget behind the user's back.
+    queryFn: skipToken,
     staleTime: SNAPSHOT_STALE_MS,
     retry: false, // surfaced immediately: not-found and rate-limit states
   });

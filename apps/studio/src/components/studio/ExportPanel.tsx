@@ -1,13 +1,22 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useStudioStore } from "../../store/studio-store.js";
 import { ENV } from "../../lib/env.js";
 import { renderOrigin } from "../../lib/render-url.js";
 import type { ExportFormat } from "../../types.js";
-import { Copy, Check, Code, FileText, Globe, type LucideIcon } from "lucide-react";
+import { Copy, Check, Code, FileText, Globe, TriangleAlert, type LucideIcon } from "lucide-react";
+
+type CopyStatus = "idle" | "copied" | "failed";
 
 export const ExportPanel: React.FC = () => {
   const { user, theme, overrides, cards, exportFormat, setExportFormat } = useStudioStore();
-  const [copied, setCopied] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<CopyStatus>("idle");
+  const resetTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimer.current !== null) window.clearTimeout(resetTimer.current);
+    };
+  }, []);
 
   const getCardUrl = (cardId: string, params: Record<string, string>) => {
     // Without a configured Worker this still resolves to an explicit
@@ -53,13 +62,19 @@ export const ExportPanel: React.FC = () => {
   const codeText = generateOutput(exportFormat);
 
   const handleCopy = async () => {
+    if (resetTimer.current !== null) window.clearTimeout(resetTimer.current);
+
     try {
       await navigator.clipboard.writeText(codeText);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setCopyStatus("copied");
     } catch {
-      // fallback
+      setCopyStatus("failed");
     }
+
+    resetTimer.current = window.setTimeout(() => {
+      setCopyStatus("idle");
+      resetTimer.current = null;
+    }, 3000);
   };
 
   const formats: { id: ExportFormat; label: string; icon: LucideIcon }[] = [
@@ -72,22 +87,43 @@ export const ExportPanel: React.FC = () => {
     <div className="notebook-card flex flex-col gap-3 p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-charcoal">
+          <h2 className="font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-charcoal">
             Export Snippets
-          </h3>
+          </h2>
           <p className="mt-0.5 font-display text-xs italic text-warm-grey">
             Embed your flair into README.md or a portfolio.
           </p>
         </div>
 
         <button
+          type="button"
           onClick={handleCopy}
           className="notebook-btn notebook-btn--primary notebook-btn--sm"
         >
-          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-          <span>{copied ? "Copied!" : "Copy Snippet"}</span>
+          {copyStatus === "copied" ? (
+            <Check className="h-3.5 w-3.5" aria-hidden="true" />
+          ) : copyStatus === "failed" ? (
+            <TriangleAlert className="h-3.5 w-3.5" aria-hidden="true" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+          )}
+          <span>
+            {copyStatus === "copied"
+              ? "Copied"
+              : copyStatus === "failed"
+                ? "Copy Failed"
+                : "Copy Snippet"}
+          </span>
         </button>
       </div>
+
+      <p className="sr-only" role="status" aria-live="polite">
+        {copyStatus === "copied"
+          ? "Snippet copied to clipboard."
+          : copyStatus === "failed"
+            ? "Copy failed. Select the snippet and copy it manually."
+            : ""}
+      </p>
 
       <div className="segmented w-full">
         {formats.map(({ id, label, icon: Icon }) => (
@@ -96,9 +132,11 @@ export const ExportPanel: React.FC = () => {
             type="button"
             onClick={() => setExportFormat(id)}
             data-active={exportFormat === id}
+            aria-pressed={exportFormat === id}
+            aria-label={label}
             className="segmented__btn flex flex-1 items-center justify-center gap-1.5"
           >
-            <Icon className="h-3 w-3" />
+            <Icon className="h-3 w-3" aria-hidden="true" />
             <span className="hidden sm:inline">{label}</span>
           </button>
         ))}
@@ -107,6 +145,12 @@ export const ExportPanel: React.FC = () => {
       <pre className="notebook-code max-h-40">
         <code>{codeText}</code>
       </pre>
+
+      {copyStatus === "failed" ? (
+        <p className="text-[11px] leading-relaxed text-crimson">
+          Could not copy automatically. Select the snippet above and copy it manually.
+        </p>
+      ) : null}
 
       {!ENV.HAS_RENDER_API ? (
         <p className="text-[11px] leading-relaxed text-terracotta-ink">

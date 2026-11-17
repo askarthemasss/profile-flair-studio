@@ -1,10 +1,13 @@
 import React from "react";
 import { CARD_IDS, type CardId } from "@sigil/core";
+import { toast } from "sonner";
 import { useStudioStore } from "../../store/studio-store.js";
-import { Plus, Trash2, ArrowUp, ArrowDown, GripVertical } from "lucide-react";
+import type { PackCard } from "../../types.js";
+import { Trash2, ArrowUp, ArrowDown } from "lucide-react";
 
 export const PackList: React.FC = () => {
-  const { cards, selectedUid, setSelectedUid, addCard, removeCard, moveCard } = useStudioStore();
+  const { cards, selectedUid, setSelectedUid, addCard, removeCard, moveCard, restoreCard } =
+    useStudioStore();
 
   const handleAdd = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value as CardId;
@@ -14,13 +17,24 @@ export const PackList: React.FC = () => {
     }
   };
 
+  const handleRemove = (card: PackCard, index: number) => {
+    removeCard(card.uid);
+    toast("Card removed", {
+      description: `${card.card} is out of the pack.`,
+      action: {
+        label: "Undo",
+        onClick: () => restoreCard(card, index),
+      },
+    });
+  };
+
   return (
     <div className="notebook-card flex flex-col gap-3 p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-charcoal">
+          <h2 className="font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-charcoal">
             Active Cards ({cards.length})
-          </h3>
+          </h2>
           <p className="mt-0.5 font-display text-xs italic text-warm-grey">
             Arrange and configure your flair stack.
           </p>
@@ -33,7 +47,7 @@ export const PackList: React.FC = () => {
           className="notebook-field h-8 w-auto shrink-0 px-2.5 text-xs"
         >
           <option value="" disabled>
-            + Add Card...
+            + Add Card…
           </option>
           {CARD_IDS.map((id: CardId) => (
             <option key={id} value={id}>
@@ -55,54 +69,47 @@ export const PackList: React.FC = () => {
           cards.map((card, idx) => {
             const isSelected = card.uid === selectedUid;
             return (
-              <div
-                key={card.uid}
-                onClick={() => setSelectedUid(card.uid)}
-                data-selected={isSelected}
-                className="pack-item"
-              >
-                <div className="flex min-w-0 items-center gap-2">
-                  <GripVertical className="h-3.5 w-3.5 shrink-0 text-light-grey" />
+              <div key={card.uid} data-selected={isSelected} className="pack-item">
+                <button
+                  type="button"
+                  onClick={() => setSelectedUid(card.uid)}
+                  aria-pressed={isSelected}
+                  className="pack-item__select"
+                >
                   <span className="truncate font-mono text-[11px] font-medium">
                     {idx + 1}. {card.card.toUpperCase()}
                   </span>
-                </div>
+                </button>
 
                 <div className="flex items-center gap-0.5">
                   <button
+                    type="button"
                     disabled={idx === 0}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      moveCard(idx, idx - 1);
-                    }}
-                    className="rounded-full p-1 text-warm-grey transition-colors hover:text-charcoal disabled:opacity-30"
+                    onClick={() => moveCard(idx, idx - 1)}
+                    className="flex h-6 w-6 items-center justify-center rounded-full text-warm-grey transition-colors hover:text-charcoal disabled:opacity-30"
                     title="Move up"
                     aria-label={`Move ${card.card} up`}
                   >
-                    <ArrowUp className="h-3 w-3" />
+                    <ArrowUp className="h-3 w-3" aria-hidden="true" />
                   </button>
                   <button
+                    type="button"
                     disabled={idx === cards.length - 1}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      moveCard(idx, idx + 1);
-                    }}
-                    className="rounded-full p-1 text-warm-grey transition-colors hover:text-charcoal disabled:opacity-30"
+                    onClick={() => moveCard(idx, idx + 1)}
+                    className="flex h-6 w-6 items-center justify-center rounded-full text-warm-grey transition-colors hover:text-charcoal disabled:opacity-30"
                     title="Move down"
                     aria-label={`Move ${card.card} down`}
                   >
-                    <ArrowDown className="h-3 w-3" />
+                    <ArrowDown className="h-3 w-3" aria-hidden="true" />
                   </button>
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeCard(card.uid);
-                    }}
-                    className="rounded-full p-1 text-warm-grey transition-colors hover:text-crimson"
+                    type="button"
+                    onClick={() => handleRemove(card, idx)}
+                    className="flex h-6 w-6 items-center justify-center rounded-full text-warm-grey transition-colors hover:text-crimson"
                     title="Remove card"
                     aria-label={`Remove ${card.card}`}
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash2 className="h-3 w-3" aria-hidden="true" />
                   </button>
                 </div>
               </div>

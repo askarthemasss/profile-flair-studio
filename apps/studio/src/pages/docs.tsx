@@ -23,7 +23,7 @@ export const DocsPage: React.FC = () => {
           <section className="flex flex-col gap-4">
             <SectionTitle as="h2" size="section">
               <span className="inline-flex items-center gap-2">
-                <Terminal className="h-5 w-5 text-terracotta" />
+                <Terminal className="h-5 w-5 text-terracotta" aria-hidden="true" />
                 <span>Card Image Endpoints</span>
               </span>
             </SectionTitle>
@@ -48,7 +48,7 @@ export const DocsPage: React.FC = () => {
           <section className="flex flex-col gap-4">
             <SectionTitle as="h2" size="section">
               <span className="inline-flex items-center gap-2">
-                <Layers className="h-5 w-5 text-terracotta" />
+                <Layers className="h-5 w-5 text-terracotta" aria-hidden="true" />
                 <span>Common Query Parameters</span>
               </span>
             </SectionTitle>
@@ -57,10 +57,10 @@ export const DocsPage: React.FC = () => {
               <table className="notebook-table">
                 <thead>
                   <tr>
-                    <th>Param</th>
-                    <th>Type</th>
-                    <th>Default</th>
-                    <th>Description</th>
+                    <th scope="col">Param</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Default</th>
+                    <th scope="col">Description</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -113,7 +113,7 @@ export const DocsPage: React.FC = () => {
           <section className="flex flex-col gap-4">
             <SectionTitle as="h2" size="section">
               <span className="inline-flex items-center gap-2">
-                <Code className="h-5 w-5 text-terracotta" />
+                <Code className="h-5 w-5 text-terracotta" aria-hidden="true" />
                 <span>Embedding a Card</span>
               </span>
             </SectionTitle>
@@ -139,7 +139,7 @@ export const DocsPage: React.FC = () => {
           <section className="flex flex-col gap-4">
             <SectionTitle as="h2" size="section">
               <span className="inline-flex items-center gap-2">
-                <Database className="h-5 w-5 text-terracotta" />
+                <Database className="h-5 w-5 text-terracotta" aria-hidden="true" />
                 <span>JSON API</span>
               </span>
             </SectionTitle>
@@ -154,9 +154,9 @@ export const DocsPage: React.FC = () => {
               <table className="notebook-table">
                 <thead>
                   <tr>
-                    <th>Endpoint</th>
-                    <th>Returns</th>
-                    <th>Cache</th>
+                    <th scope="col">Endpoint</th>
+                    <th scope="col">Returns</th>
+                    <th scope="col">Cache</th>
                   </tr>
                 </thead>
                 <tbody>
