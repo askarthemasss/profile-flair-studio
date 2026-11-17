@@ -25,8 +25,17 @@
 - [ ] `pnpm build`
 - [ ] `pnpm validate:themes` (if a theme changed)
 - [ ] `pnpm check:svg` (if a card renderer or parameter changed)
-- [ ] Checked light and dark mode (if the studio changed)
-- [ ] Checked keyboard navigation and reduced motion (if the studio changed)
+
+## UI review (if the studio changed)
+
+- [ ] I read `DESIGN.md` and used the existing tokens and component classes.
+- [ ] `ui-review` reports no P0 or P1 findings.
+- [ ] `browser-review` passes for the routes I changed: light/dark, 1440/390.
+- [ ] No horizontal overflow at 390 px and no new console errors.
+- [ ] Keyboard navigation, focus-visible states, and reduced motion still work.
+- [ ] Destructive actions have confirmation or undo.
+- [ ] Copy, load, and validation feedback is announced to assistive technology.
+- [ ] No new placeholder route, fake feature, or unsupported claim.
 
 ## Screenshots or recordings
 

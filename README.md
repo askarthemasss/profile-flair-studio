@@ -188,6 +188,8 @@ cp apps/render/.dev.vars.example apps/render/.dev.vars
 | `pnpm format`                       | Format the repository with Prettier                                      |
 | `pnpm validate:themes`              | Validate theme JSON and WCAG AA text/accent contrast                     |
 | `pnpm check:svg`                    | Render all nine cards, check for `NaN`, and enforce the 45 KB SVG budget |
+| `pnpm browser:install`              | Install the Chromium build used by the browser review                    |
+| `pnpm browser:review`               | Open the repository-local Playwright CLI for a browser review            |
 | `pnpm --filter @sigil/render dev`   | Run the render Worker locally with Wrangler                              |
 | `pnpm --filter @sigil/action build` | Rebuild the committed GitHub Action bundle                               |
 
@@ -263,6 +265,7 @@ This section is intentionally explicit so contributors know what is real, what i
 Contributions are welcome — code, docs, themes, bug reports, and design feedback.
 
 - Read [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup, branch, commit, and review conventions.
+- Read [`DESIGN.md`](DESIGN.md) before changing UI. It is the source of truth for the Drawn Notebook language.
 - Follow the [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
 - Report security issues privately using [`SECURITY.md`](SECURITY.md), not a public issue.
 - Look for issues labeled **good first issue** or **help wanted**.
