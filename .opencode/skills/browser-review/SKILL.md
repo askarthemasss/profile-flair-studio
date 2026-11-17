@@ -51,6 +51,17 @@ The CLI reads `.playwright/cli.config.json` automatically. It sets Chromium,
 1440×900, an isolated profile, a 5s action timeout, and `.playwright-cli/` as
 the output directory. That directory is git-ignored.
 
+An explicit `--filename` is resolved against the workspace root, not the output
+directory. Prefix it with `.playwright-cli/` so evidence stays in one ignored
+place:
+
+```bash
+pnpm exec playwright cli -s=sigil-review screenshot --filename=.playwright-cli/studio-light-1440.png
+```
+
+Omit `--filename` and the CLI writes `page-{timestamp}.png` into
+`.playwright-cli/` on its own.
+
 ## Procedure
 
 1. **Open a named session** so this review does not collide with another agent:
@@ -75,7 +86,7 @@ the output directory. That directory is git-ignored.
    pnpm exec playwright cli -s=sigil-review goto http://localhost:5173/studio
    pnpm exec playwright cli -s=sigil-review snapshot --depth=4
    pnpm exec playwright cli -s=sigil-review console error
-   pnpm exec playwright cli -s=sigil-review screenshot --filename=studio-light-1440.png
+   pnpm exec playwright cli -s=sigil-review screenshot --filename=.playwright-cli/studio-light-1440.png
    pnpm exec playwright cli -s=sigil-review --raw eval "document.documentElement.scrollWidth > document.documentElement.clientWidth"
    ```
 
