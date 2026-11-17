@@ -42,6 +42,9 @@ dist-ssr
 # TypeScript build info
 *.tsbuildinfo
 
+# Playwright CLI review output (screenshots, snapshots, traces)
+.playwright-cli/
+
 # The GitHub Action runs from a committed bundle
 !packages/action/dist/
 !packages/action/dist/**

@@ -65,6 +65,9 @@ pnpm dev
 | `packages/action`   | GitHub Action that writes static SVG cards                                   |
 | `themes/community`  | Community theme JSON files                                                   |
 | `scripts`           | Theme validation and SVG size-budget checks                                  |
+| `DESIGN.md`         | Design source of truth: tokens, type, layout, components, motion, voice      |
+| `.opencode/skills`  | `ui-review` and `browser-review` project skills                              |
+| `docs/design`       | Design references, provenance, and the baseline UI audit                     |
 | `.github/workflows` | CI and conditional deployment                                                |
 
 ## Branch and commit conventions
@@ -110,10 +113,26 @@ pnpm dev
 
 ### The studio
 
-- Keep the Drawn Notebook design language: paper surfaces, ink typography, gold/terracotta accents, and restrained motion.
+- Read [`DESIGN.md`](DESIGN.md) before changing UI. It is the source of truth for the Drawn Notebook language: paper surfaces, ink typography, gold/terracotta accents, and restrained motion.
 - Both light and dark modes must work. Use the existing theme tokens instead of hard-coded colors.
 - Preserve keyboard access, focus-visible styles, dialog focus trapping, and reduced-motion behavior.
 - Do not add a runtime dependency without a clear reason; the studio bundle is already large.
+- Keep the working surface to `/`, `/studio`, `/themes`, and `/docs`. Do not add placeholder routes or features that are not wired up.
+
+#### Design review
+
+Run the project skills for UI changes:
+
+1. **`ui-review`** — static review against `DESIGN.md`, the Sigil checklist, and the pinned Vercel Web Interface Guidelines. Fix P0 and P1 findings.
+2. **`browser-review`** — rendered review with Playwright CLI across the four routes, light and dark, at 1440 and 390, with reduced motion.
+
+The first browser run needs Chromium:
+
+```bash
+pnpm exec playwright install chromium
+```
+
+The skills live in `.opencode/skills/`. OpenCode loads them automatically; other agents can read the `SKILL.md` files directly. Browser output goes to the git-ignored `.playwright-cli/` directory.
 
 ### The Action
 
@@ -136,11 +155,25 @@ pnpm check:svg
 
 For UI changes, also verify:
 
+- The change follows `DESIGN.md`; no new hard-coded colors, fonts, radii, or motion.
 - The route works in light and dark mode.
 - The layout has no horizontal overflow at 390 px.
 - Keyboard navigation and focus states still work.
 - Reduced-motion preferences do not hide content.
 - The browser console has no new errors.
+- Destructive actions have confirmation or undo.
+- Async feedback (copy, load, validation) is announced to assistive technology.
+- The `ui-review` skill reports no P0 or P1 findings.
+- The `browser-review` matrix passes for the routes you changed.
+
+To run the rendered matrix:
+
+```bash
+pnpm dev
+pnpm exec playwright cli -s=sigil-review open http://localhost:5173
+```
+
+See `.opencode/skills/browser-review/SKILL.md` for the exact route, theme, and width checks.
 
 ## Pull request process
 

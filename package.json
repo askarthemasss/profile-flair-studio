@@ -14,9 +14,12 @@
     "lint": "pnpm -r lint",
     "format": "prettier --write .",
     "validate:themes": "tsx scripts/validate-themes.ts",
-    "check:svg": "tsx scripts/check-svg-size.ts"
+    "check:svg": "tsx scripts/check-svg-size.ts",
+    "browser:install": "playwright install chromium",
+    "browser:review": "playwright cli"
   },
   "devDependencies": {
+    "playwright": "1.65.1",
     "prettier": "^3.9.10",
     "tsx": "^4.23.15"
   }
