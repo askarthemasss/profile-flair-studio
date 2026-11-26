@@ -7,7 +7,7 @@ const CELL = 11;
 const GAP = 2;
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-export const renderHeatmap: CardRenderer<HeatmapParams> = ({ snapshot, theme, params, now }) => {
+export const renderHeatmap: CardRenderer<HeatmapParams> = ({ snapshot, theme, params }) => {
   const animate = params.animate === "1";
   const weeks = params.weeks;
   const r = params.radius ?? theme.radius;
