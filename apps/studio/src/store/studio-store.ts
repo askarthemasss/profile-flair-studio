@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { CardId, Theme } from "@sigil/core";
+import type { CardId } from "@sigil/core";
 import type { ExportFormat, PackCard, StudioState } from "../types.js";
 
 function makeUid(card: CardId): string {

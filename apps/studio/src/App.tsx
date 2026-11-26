@@ -1,4 +1,3 @@
-import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { LandingPage } from "./pages/landing.js";
 import { StudioPage } from "./pages/studio.js";
